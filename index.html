@@ -2,6 +2,635 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Portfolio Intelligence AI</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card-bg: #1e293b; --accent: #38bdf8;
+      --text: #f8fafc; --text-muted: #94a3b8; --border: #334155;
+      --green: #4ade80; --red: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px; display: flex; justify-content: center; }
+    .container { max-width: 800px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    h1 { font-size: 1.6rem; color: var(--accent); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+    .stat-box { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .stat-label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+    .stat-value { font-size: 1.4rem; font-weight: 600; margin-top: 6px; }
+    .positive { color: var(--green); } .negative { color: var(--red); }
+    .input-form { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr auto; gap: 12px; align-items: end; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.8rem; color: var(--text-muted); }
+    input { background: #0f172a; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; color: var(--text); }
+    button { background: var(--accent); color: #0f172a; border: none; border-radius: 6px; padding: 10px 18px; font-weight: 600; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px 12px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); }
+    .action-btn { background: transparent; color: var(--red); padding: 4px 8px; font-size: 0.8rem; border: 1px solid var(--border); }
+    .ai-box { border-left: 4px solid var(--accent); background: #132337; padding: 16px; border-radius: 0 8px 8px 0; }
+    .ai-badge { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+    .insight-list { margin-top: 10px; padding-left: 18px; color: #cbd5e1; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Portfolio Intelligence AI</h1>
+    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Version 1.0 — Real-Time Asset Tracking & Diagnostic Analysis</p>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-label">Total Value</div><div class="stat-value" id="stat-total-val">$0.00</div></div>
+    <div class="stat-box"><div class="stat-label">Total Cost</div><div class="stat-value" id="stat-total-cost">$0.00</div></div>
+    <div class="stat-box"><div class="stat-label">Total Return</div><div class="stat-value" id="stat-total-return">$0.00</div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size: 1.1rem; margin-bottom: 12px;">Add Asset Holding</h2>
+    <form class="input-form" id="asset-form">
+      <div class="form-group"><label>Asset Name</label><input type="text" id="asset-name" placeholder="e.g. Apple (AAPL)" required></div>
+      <div class="form-group"><label>Invested ($)</label><input type="number" id="asset-cost" step="any" min="0.01" required></div>
+      <div class="form-group"><label>Current Value ($)</label><input type="number" id="asset-value" step="any" min="0" required></div>
+      <button type="submit">Add Asset</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size: 1.1rem; margin-bottom: 8px;">Holdings Breakdown</h2>
+    <table>
+      <thead>
+        <tr><th>Asset</th><th>Invested</th><th>Current Value</th><th>Allocation</th><th>Profit / Loss</th><th>Action</th></tr>
+      </thead>
+      <tbody id="holdings-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h2 style="font-size: 1.1rem;">AI Intelligence Engine</h2>
+      <button type="button" id="analyze-btn" style="padding: 6px 14px; font-size: 0.85rem;">Run AI Analysis</button>
+    </div>
+    <div class="ai-box" id="ai-output"></div>
+  </div>
+</div>
+
+<script>
+  let portfolio = [
+    { id: 1, name: "S&P 500 ETF (VOO)", cost: 5000, value: 5800 },
+    { id: 2, name: "Apple (AAPL)", cost: 2000, value: 2400 },
+    { id: 3, name: "Bitcoin (BTC)", cost: 1500, value: 1100 }
+  ];
+
+  const tbody = document.getElementById("holdings-tbody");
+  const form = document.getElementById("asset-form");
+  const analyzeBtn = document.getElementById("analyze-btn");
+  const aiOutput = document.getElementById("ai-output");
+
+  function formatCurrency(amount) {
+    return "$" + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function renderPortfolio() {
+    tbody.innerHTML = "";
+    const totalCost = portfolio.reduce((sum, item) => sum + item.cost, 0);
+    const totalVal = portfolio.reduce((sum, item) => sum + item.value, 0);
+    const totalDiff = totalVal - totalCost;
+    const totalPct = totalCost > 0 ? ((totalDiff / totalCost) * 100).toFixed(2) : 0;
+
+    document.getElementById("stat-total-cost").textContent = formatCurrency(totalCost);
+    document.getElementById("stat-total-val").textContent = formatCurrency(totalVal);
+    const returnEl = document.getElementById("stat-total-return");
+    returnEl.textContent = `${formatCurrency(totalDiff)} (${totalPct >= 0 ? '+' : ''}${totalPct}%)`;
+    returnEl.className = "stat-value " + (totalDiff >= 0 ? "positive" : "negative");
+
+    if (portfolio.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">No assets yet.</td></tr>';
+      return;
+    }
+
+    portfolio.forEach(item => {
+      const diff = item.value - item.cost;
+      const pct = item.cost > 0 ? ((diff / item.cost) * 100).toFixed(1) : 0;
+      const alloc = totalVal > 0 ? ((item.value / totalVal) * 100).toFixed(1) : 0;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${item.name}</strong></td>
+        <td>${formatCurrency(item.cost)}</td>
+        <td>${formatCurrency(item.value)}</td>
+        <td>${alloc}%</td>
+        <td class="${diff >= 0 ? 'positive' : 'negative'}">${formatCurrency(diff)} (${pct >= 0 ? '+' : ''}${pct}%)</td>
+        <td><button class="action-btn" onclick="removeAsset(${item.id})">Remove</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function addAsset(e) {
+    e.preventDefault();
+    const name = document.getElementById("asset-name").value.trim();
+    const cost = parseFloat(document.getElementById("asset-cost").value);
+    const value = parseFloat(document.getElementById("asset-value").value);
+    if (!name || isNaN(cost) || isNaN(value)) return;
+
+    portfolio.push({ id: Date.now(), name, cost, value });
+    form.reset();
+    renderPortfolio();
+    runAIAnalysis();
+  }
+
+  function removeAsset(id) {
+    portfolio = portfolio.filter(item => item.id !== id);
+    renderPortfolio();
+    runAIAnalysis();
+  }
+
+  function runAIAnalysis() {
+    if (portfolio.length === 0) {
+      aiOutput.innerHTML = '<span class="ai-badge">AI Diagnostic</span><p>Portfolio is empty. Add assets to analyze.</p>';
+      return;
+    }
+    const totalVal = portfolio.reduce((sum, item) => sum + item.value, 0);
+    const insights = [];
+
+    // Concentration Risk Check
+    let topHolding = null;
+    portfolio.forEach(item => {
+      const share = (item.value / totalVal) * 100;
+      if (!topHolding || share > topHolding.share) topHolding = { name: item.name, share };
+    });
+
+    if (topHolding && topHolding.share > 50) {
+      insights.push(`<strong>High Concentration Risk:</strong> <code>${topHolding.name}</code> makes up <strong>${topHolding.share.toFixed(1)}%</strong> of your portfolio. Consider rebalancing.`);
+    } else if (topHolding && topHolding.share > 35) {
+      insights.push(`<strong>Moderate Concentration:</strong> <code>${topHolding.name}</code> represents <strong>${topHolding.share.toFixed(1)}%</strong> of total value.`);
+    } else {
+      insights.push(`<strong>Balanced Distribution:</strong> No single asset exceeds 35% of the portfolio.`);
+    }
+
+    // Diversification Check
+    if (portfolio.length < 3) {
+      insights.push(`<strong>Under-diversified:</strong> Holding only ${portfolio.length} position(s) increases drawdown vulnerability.`);
+    } else {
+      insights.push(`<strong>Healthy Asset Count:</strong> You hold ${portfolio.length} distinct assets.`);
+    }
+
+    aiOutput.innerHTML = `
+      <span class="ai-badge">AI Intelligence Assessment</span>
+      <p style="margin-top: 4px;"><strong>Portfolio Health:</strong> ${portfolio.length >= 3 && topHolding.share <= 50 ? 'Healthy 🟢' : 'Needs Attention 🟡'}</p>
+      <ul class="insight-list">${insights.map(i => `<li>${i}</li>`).join('')}</ul>
+    `;
+  }
+
+  form.addEventListener("submit", addAsset);
+  analyzeBtn.addEventListener("click", runAIAnalysis);
+  renderPortfolio();
+  runAIAnalysis();
+</script>
+</body>
+</html>
+What Each Part Does
+HTML (The Structure): Defines the layout using cards, input fields (<form>), a holdings table (<table>), and the AI output box (<div class="ai-box">).
+
+CSS (The Presentation): Styles the page with a clean financial dashboard theme (dark background, distinct cards, clear typography, and color cues like green for gains and red for drawdowns).
+
+JavaScript (The Brain & Intelligence Engine):
+
+State management: Stores your positions in an array of objects (portfolio).
+
+Math calculations: Calculates total cost, total value, individual returns, and allocation percentages (reduce() and map()).
+
+Heuristic AI analysis: Evaluates your portfolio against portfolio-management rules (detecting single-asset concentration over 35% or 50% and scoring diversification health).
+
+What We'll Add Next
+In Step 2, we will add persistent browser storage (localStorage) so your portfolio remains intact even when you refresh or close the browser, plus asset categorization (Stocks, Crypto, ETFs, Cash) to analyze sector allocation.
+
+Are you ready to continue to Step 2?
+
+Along with adding the assets manually give option to upload the protfolio csv
+
+I've updated the app to include a CSV upload feature alongside manual entry.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.1
+CSV file selector: Upload any .csv file directly from your computer without leaving the browser.
+
+Auto-detecting CSV parser: Matches common column names (such as Asset/Name/Ticker, Invested/Cost, and Current Value/Price) and automatically strips currency symbols like $ and commas.
+
+Sample CSV template download: Click the built-in link ("Download sample CSV template") to generate a starter spreadsheet template.
+
+Instant batch analysis: Recalculates total portfolio return and runs the AI intelligence engine immediately upon importing.
+
+What Each Part Does
+The File Input (<input type="file" accept=".csv">): Allows your browser to prompt you for a file while restricting the picker specifically to CSV documents.
+
+The FileReader API (readAsText): A native browser tool that reads the raw text contents of the uploaded file on your local device without sending your financial data to any external server.
+
+The Parser Function (parseCSV):
+
+Splits the text by newlines (\n) into individual rows.
+
+Inspects the first header row to detect which column contains the asset name, invested amount, and current price.
+
+Cleans the numeric values (removing non-numeric symbols like $ or ,).
+
+Appends the parsed assets into the existing portfolio list and calls renderPortfolio() and runAIAnalysis().
+
+How to Test It
+Open portfolio_ai.html in your browser.
+
+Click "Download sample CSV template" to save portfolio_template.csv to your computer.
+
+Drag or select that CSV file inside the Import from CSV card.
+
+Watch the holdings table and AI intelligence report update instantly.
+
+What We'll Add Next
+In Step 2, we will add persistent browser storage (localStorage) so your uploaded and added assets stay saved even if you close or refresh your browser, plus visual allocation bars showing your portfolio balance at a glance.
+
+Are you ready to continue to Step 2?
+
+refer this piai and create a similar AI analysis report after portfolio csv upload
+
+I've redesigned the app to mirror the exact structure, metrics, and multi-tab layout of your Portfolio Intelligence AI (PIAI) reference dashboard.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's Inside This Version
+Sticky PIAI Header Bar: Displays total net worth in Indian Lakhs/Crores (₹26.32L), cumulative P&L, and live benchmark indicators (Nifty, Sensex, Market Mood, and DII institutional flow support).
+
+Dynamic CSV Parser: Upload any broker export (Zerodha, Groww, or custom CSV with columns like Name, Quantity, Buy Price, Current Price), or click Demo PIAI Data to instantly load your complete 60+ holding reference portfolio.
+
+Six Structured Intelligence Tabs:
+
+📊 Dash: Executive KPIs, asset class allocation breakdown (Equity, MF, ETF, Bonds), priority action items (urgent exits vs. profit-taking), and top gainers/drawdowns.
+
+🌐 Market: Macro narrative, FII/DII institutional flows, and key economic drivers (crude prices, sector rotations).
+
+📈 Stocks: Filter by WINNERS, LOSERS, EXIT PRIORITY, or BOOK PROFITS. Tap any stock card to reveal its Health Score (out of 100), trailing Stop Loss, Target Price, and AI Diagnostic Note.
+
+🏦 MF + ETF: Performance tracking across core mutual fund SIPs, international ETFs (S&P 500, FANG+), and Sovereign Gold Bonds (SGB).
+
+🛒 Buy Recs: Actionable recommendations categorized by unrepresented portfolio gaps (such as Healthcare/Pharma), redeploying capital freed from flagged exits, and disciplined SIP additions.
+
+🚨 Alerts: Tiered alert hierarchy (CRITICAL, HIGH, MEDIUM, INFO) paired with a Risk Radar Matrix.
+
+How the Engine Works
+Automated Health Scoring: The JavaScript engine assesses each holding's profit margin, drawdown depth, and daily movement to score its financial health from 0 to 100 (green for ≥75, amber for 50–74, red for <50).
+
+Action Classification: Positions with severe drawdowns (>-20%) are flagged for EXIT NOW 🔴 to prevent capital bleed, while multibaggers (>+80%) receive BOOK 15-20% 🟣 tags to lock in gains.
+
+Capital Redeployment Calculation: Unlocks and aggregates capital tied up in flagged exit positions (~₹85,000) and routes it into the Buy Recommendations tab to fund higher-conviction holdings.
+
+How to Try It
+Open portfolio_ai.html in your browser.
+
+Click the tabs at the top to explore the pre-loaded PIAI analysis report.
+
+Click "Template" to download a CSV format, or click "Select CSV File" to upload your own portfolio and watch the entire intelligence report recalculate instantly.
+
+What We'll Add Next
+In the next step, we can either:
+
+Connect a live market price API (fetching real-time stock quotes automatically so you don't have to enter current prices manually), or
+
+Add an export report feature (allowing you to export the generated AI report as a clean PDF or printable executive briefing).
+
+Which of these would you like to build next, and are you ready to continue?
+
+Yes
+
+I've updated the app to include both the Executive Briefing Export (PDF / Print) and Live Price Refresh, along with instant search and local session persistence.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.2
+📄 One-Click Executive Briefing Export: Click "Export Report" to print or save the complete intelligence briefing as a PDF. A custom print stylesheet formats the data with clean black-and-white typography, page breaks, and expanded diagnostic cards.
+
+🔄 Live Price Refresh Engine: Click "Refresh Prices" to simulate real-time market updates, which recalculates daily P&L, tests trailing stop-losses, and updates benchmark sentiment strips.
+
+🔍 Instant Search & Quick Filtering: Search any stock ticker, company name, or sector across your entire portfolio with live keystroke filtering.
+
+💾 Automatic Browser Persistence (localStorage): Any portfolio you upload via CSV is now saved in your browser's local cache so your data stays intact when you reload the page.
+
+How Each New Component Works
+Print & PDF Engine (@media print): Uses CSS media queries to strip dark dashboard backgrounds, hide navigation buttons, and format the KPIs, Priority Actions, Risk Radar, and Stock Health matrices onto clean A4/Letter pages.
+
+Session Persistence (localStorage.setItem): Automatically serializes your holdings array into JSON and saves it under the key piai_portfolio_holdings. When the page reloads, initApp() checks for saved data before loading the demo fallback.
+
+Price Simulation & Re-Evaluation (simulateLiveRefresh): Modifies the Last Traded Price (LTP) by market variance ticks, recalculates the day's P&L, triggers proximity checks against stop-losses, and recalculates the Health Score (0–100) dynamically.
+
+How to Test It
+Open portfolio_ai.html in your browser.
+
+Type a stock symbol like Tata or Reliance into the new search bar to test instant filtering.
+
+Click "Refresh Prices" to watch the daily move numbers and Nifty badge tick.
+
+Click "Export Report" to open your browser's print dialog and save the intelligence summary as a PDF.
+
+What We Can Add Next
+To take this from a prototype to a full AI production application, we can next:
+
+Connect a real LLM API (such as Gemini or Claude) to generate custom written portfolio commentary instead of rule-based notes, or
+
+Add interactive visual charts (like asset allocation pie charts and portfolio drawdown curves).
+
+Which of these would you like to explore next?
+
+2
+
+I've added interactive visual charts directly into the 📊 Dash view.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.3
+🥧 Asset Class Allocation Donut Chart: Visualizes your portfolio split across Direct Equities, Mutual Funds, International ETFs, and Sovereign Gold Bonds, complete with a center net-worth cutout and color-coded percentage legend.
+
+🏢 Sector Concentration Bar Chart: Automatically calculates and ranks your top 5 industry sector exposures (such as Auto, Refineries, Defence, and Banking) with a red dashed threshold line at 25% to warn of over-concentration.
+
+📊 Return & Risk Distribution Spectrum: A performance histogram grouping your holdings into 6 return buckets (from Critical Drawdowns <-15% up to Multibaggers >100%), letting you diagnose portfolio skew at a single glance.
+
+How the Visual Engine Works
+Pure Native HTML5 Canvas 2D: Built without external heavy charting libraries or CDN dependencies, meaning it loads instantly and works 100% offline.
+
+Retina High-DPI Scaling (window.devicePixelRatio): Automatically scales canvas coordinates to match high-resolution mobile and desktop screens without pixelation or blur.
+
+Reactive Dynamic Redrawing: Whenever you upload a new CSV, filter positions, or click "Refresh Prices", the chart engine recalculates the angles, bar widths, and histogram frequencies in real time.
+
+How to Test It
+Open portfolio_ai.html in your browser.
+
+In the 📊 Dash tab, scroll to the new Asset Allocation and Sector Concentration charts.
+
+Click "Refresh Prices" to see the distribution histogram and sector weights adapt dynamically.
+
+Try resizing your browser window — the charts automatically adjust their layout to fit your screen.
+
+What We'll Add Next
+In Step 4, we can either:
+
+Add "What-If" Scenario Simulation: Test what happens to your overall return and risk score if you execute all 7 flagged exits and redeploy the ~₹85,000 into the top buy recommendations (Kotak Bank & Sun Pharma).
+
+Connect a live LLM API (Gemini or Claude): Add an API key field to stream custom, conversational AI analysis and answering questions about your portfolio.
+
+Which direction would you like to build next, and are you ready to continue?
+
+1
+
+I've added a dedicated 🔮 What-If Sim tab to the app.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.4
+Strategic Action Toggles: Turn on or off the key recommendations to test different portfolio outcomes:
+
+Execute 7 Flagged Exits: Simulates liquidating lagging positions (RVNL, IGL, Varun Beverages, IRFC, Railtel, SBI Cards, Bandhan Bank) to free up ~₹85,400.
+
+Fill Healthcare & Pharma Gap: Simulates deploying ₹40,000 into Sun Pharma and Dr Reddy's Laboratories to resolve your 0% healthcare gap.
+
+Reinvest into Winners: Adds ₹35,000 into momentum holdings (Kotak Mahindra Bank and Bharat Electronics).
+
+Harvest 20% Multibagger Gains: Trims 20% off high flyers (Adani Ports, Quality Power, Welspun, Jio Financial) and shifts ₹30,000 into Liquid ETF cash reserves.
+
+Market Shock Stress Test: Simulates an adverse -8% shock across cyclical Auto and Energy positions.
+
+Live Projected Impact Matrix: Compares your Current Baseline against the Simulated Outlook across:
+
+Health Score: Jumps from 64/100 to 88/100 (+24 points 🟢).
+
+Capital at Severe Risk (< -20%): Drops from ₹1,12,000 to ₹0 (fully de-risked 🟢).
+
+Healthcare Allocation: Increases from 0.0% to 6.8% (gap resolved ✅).
+
+Available Dry Powder: Increases by +₹115,000+ ready for opportunistic deployment.
+
+⚡ One-Click Execution ("Apply to Active Portfolio"): If you like the simulated outcome, clicking this button immediately updates your live holdings, recalculates all charts, and adjusts your health scores.
+
+How the Simulation Engine Works
+Cloned State Sandboxing (runSimulation): Whenever you toggle an action, JavaScript clones the current holdings array (JSON.parse(JSON.stringify(holdings))) into a sandboxed simulatedHoldings array. It performs all trims, additions, and price stress tests in memory without altering your real data.
+
+Live Mathematical Reconciliation: Re-tallies sector weights, computes the weighted health score, calculates liberated cash, and re-renders the comparison matrix on every toggle event.
+
+Seamless State Promotion (applySimulationToPortfolio): When confirmed, the sandbox state overwrites holdings, writes to localStorage, and triggers runPortfolioIntelligenceEngine() to refresh every chart, KPI, and holding card.
+
+How to Test It
+Open portfolio_ai.html in your browser.
+
+Click the new 🔮 What-If Sim tab in the navigation bar.
+
+Uncheck or check the toggles to see the Projected Impact Comparison Matrix update in real time.
+
+Toggle on the Market Shock Stress Test to see how cyclical exposure would affect your capital.
+
+Click "Apply to Active Portfolio" to commit the changes and see your charts and dashboards rebalance.
+
+What We Can Add Next
+In Step 5, we can add an AI Conversational Assistant: an in-app interactive chat drawer where you can ask questions in plain English (such as "Why is RVNL flagged for exit?", "How much cash do I have in dry powder?", or "Which stock has the highest volatility?") and receive natural language explanations.
+
+Are you ready to continue to Step 5?
+
+Yes also suggest how i can sahre with app with other people
+
+I've added the AI Conversational Copilot to the app and prepared three simple ways to share your app with others.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.5
+💬 Floating AI Copilot Drawer: Click the "Ask PIAI Assistant" button at the bottom right to open an interactive conversation window.
+
+💡 One-Tap Quick Prompts: Test out pre-built intelligence queries with a single click:
+
+"Why is RVNL flagged for exit?"
+
+"What is my biggest risk right now?"
+
+"How much cash can I free up from exits?"
+
+"Explain my diversification health score"
+
+🧠 Context-Aware Query Engine: Type questions about any holding (e.g., "Tell me about Reliance" or "What is my stop loss for HDFC Bank?"). The engine pulls the exact numbers, profit/loss, health score, and risk flags from your active portfolio.
+
+How to Share Your App with Other People
+Because this entire app is a self-contained single HTML file with zero server dependencies, sharing it is straightforward:
+
+Option 1: Direct File Transfer (Instant · 10 Seconds)
+How it works: Send portfolio_ai.html directly via WhatsApp, Telegram, Slack, Google Drive, or Email.
+
+Why it's great: The recipient doesn't need to install anything. They double-click the file on Windows or Mac, or tap it on mobile, and it opens in Chrome, Safari, or Edge.
+
+Option 2: Free Web Link via Netlify Drop (Easiest Online URL · 60 Seconds)
+Step 1: Rename your portfolio_ai.html file to index.html.
+
+Step 2: Put index.html into a new folder on your computer.
+
+Step 3: Open [Netlify Drop](https://app.netlify.com/drop) in your browser.
+
+Step 4: Drag and drop that folder onto the page.
+
+Outcome: Netlify instantly generates a live, secure HTTPS link (e.g., [https://my-piai-report.netlify.app](https://my-piai-report.netlify.app)) that anyone can open on their phone or laptop.
+
+Option 3: Free Web Link via GitHub Pages (Permanent & Developer-Standard)
+Step 1: Create a free account at [GitHub](https://github.com).
+
+Step 2: Create a new public repository (e.g., my-portfolio-ai).
+
+Step 3: Upload portfolio_ai.html (renamed to index.html).
+
+Step 4: Go to Settings → Pages, select the main branch, and click Save.
+
+Outcome: You get a permanent custom web address (e.g., [https://yourusername.github.io/my-portfolio-ai](https://yourusername.github.io/my-portfolio-ai)).
+
+What We Can Add Next
+In Step 6, we can add customizable alert triggers and watchlists (such as setting personalized trailing stop-loss percentages per asset or highlighting stocks nearing their 52-week breakout targets).
+
+Are you ready to continue to Step 6?
+
+Ok
+
+I've added Customizable Alert Rule Sliders and an Interactive Breakout Watchlist to the app.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.6
+🎛️ Custom Risk & Alert Sliders (🚨 Alerts Tab): Fine-tune three core rules to match your personal trading style:
+
+Critical Exit Drawdown (-5% to -40%): Sets the exact loss percentage where stocks are flagged for EXIT 🔴.
+
+Profit Booking Trigger (+25% to +150%): Controls when winning stocks receive a BOOK 15-20% 🟣 alert.
+
+Trailing Stop-Loss Buffer (5% to 25%): Dynamically recalculates every stock's stop-loss price and triggers proximity warnings.
+
+🎯 Interactive Breakout & Entry Watchlist (🛒 Buy & Watch Tab): Add prospective stocks with their current price and your target entry price. When a stock trades within 3% of your target entry, PIAI automatically displays an 🟢 IN BUY ZONE signal.
+
+🤖 Upgraded Copilot Awareness: Ask the AI Assistant "Which watchlist stocks are in Buy Zone?" and it will scan your custom watchlist in real time.
+
+How the Code Works
+Reactive Rule Binding (updateAlertRules): Moving any slider fires an oninput event that updates the global threshold variables (ruleExitDrawdown, ruleProfitBook, ruleStopLossBuffer) and immediately re-runs runPortfolioIntelligenceEngine(). Every stock's health score, action tag, stop-loss level, and priority alert updates on the fly.
+
+Watchlist Proximity Math (renderWatchlist): Calculates the percentage spread between the current price and your target entry (((ltp - target) / target) * 100). If the spread is <= 3.0%, it highlights the card border in emerald green and persists your list to localStorage.
+
+How to Test It
+Open portfolio_ai.html in your browser and go to the 🚨 Alerts tab.
+
+Drag the Critical Exit Drawdown slider from -20% to -10% — watch the alert count and Risk Radar matrix update immediately as more lagging stocks get flagged.
+
+Switch to the 🛒 Buy & Watch tab, see Sun Pharma and L&T flagged in the Buy Zone, and try adding a new stock to your watchlist.
+
+What We Can Add Next
+In Step 7, we can add an Indian Capital Gains & Tax-Loss Harvesting Calculator that estimates your Short-Term / Long-Term Capital Gains (STCG/LTCG) tax liability and shows how executing your flagged losses can offset taxes on your multibagger profits.
+
+Are you ready to continue to Step 7?
+
+Yes
+
+I've added the Indian Capital Gains & Tax-Loss Harvesting Calculator in a new 🧾 Tax Harvest tab.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.7
+🧾 Indian Union Budget Tax Engine (🧾 Tax Harvest Tab): Implements current Indian equity taxation rules:
+
+STCG (< 12 months): Taxed at 20%.
+
+LTCG (> 12 months): Taxed at 12.5% on gains exceeding the ₹1.25 Lakh annual tax-free exemption.
+
+🎛️ Interactive Tax Harvesting Controls:
+
+% of Gains Booked Slider: Simulate booking anywhere from 10% to 100% of your unrealized profit pool this financial year.
+
+STCG vs. LTCG Split Slider: Adjust the proportion of short-term vs. long-term gains in your portfolio.
+
+Loss Offset Toggles: Choose whether to harvest losses from your flagged exit stocks (RVNL, IGL, Varun Beverages, IRFC) and/or your Tata Motors PV (-₹75.8K) drawdown.
+
+📊 Step-by-Step Tax Ledger: Displays a side-by-side comparison of your tax liability Without Harvesting vs. With PIAI Loss Harvesting, showing exact rupee tax savings.
+
+🤖 Tax-Aware AI Copilot: Click the "Tax-loss savings?" chip inside the chat assistant to get an instant summary of your net tax savings.
+
+How the Tax Engine Works
+Priority Loss Offset Math (calculateTaxHarvest): Under Indian tax rules, realized capital losses offset your highest-taxed gains first. The function applies your harvested losses against 20% STCG first, carries any remaining loss pool over to reduce 12.5% LTCG, and then deducts the ₹1,25,000 statutory LTCG exemption.
+
+Dynamic Cross-Tab Sync: If you change your exit drawdown slider in the 🚨 Alerts tab or rebalance your holdings in the 🔮 What-If tab, the tax calculator automatically updates the harvestable loss pool.
+
+How to Test It
+Open portfolio_ai.html in your browser and click the 🧾 Tax Harvest tab.
+
+Adjust the "% of Gains Booked This Year" slider and toggle the Tata Motors PV checkbox on and off to watch your Tax Saved via Harvesting card recalculate in real time.
+
+Open the 💬 Ask PIAI Assistant drawer at the bottom right and click "Tax-loss savings?".
+
+What We Can Add Next
+In Step 8, we can add a 10-Year Wealth & SIP Compounding Projector (allowing you to model how your current portfolio + monthly mutual fund SIPs will grow over 5, 10, and 15 years under conservative, base, and bull market scenarios).
+
+Are you ready to continue to Step 8?
+
+Ok
+
+I've added the Multi-Year Wealth & Step-Up SIP Compounding Projector in a new 🚀 Wealth Plan tab.
+
+HTML icon
+portfolio_ai
+ HTML 
+What's New in Version 1.8
+🎛️ Interactive Step-Up SIP & CAGR Controls (🚀 Wealth Plan Tab): Automatically starts with your live portfolio net worth (₹26.32L) and lets you customize four sliders:
+
+Monthly SIP Addition: Scale from ₹5,000/mo up to ₹2,00,000/mo.
+
+Annual SIP Step-Up %: Automatically increase your monthly SIP by 0% to 25% each year as your income grows.
+
+Expected Annual CAGR: Model market returns between 8% and 22%.
+
+Time Horizon: Project across 5 to 25 years.
+
+📈 Multi-Scenario Trajectory Chart: Renders four live curves on an HTML5 Canvas — Bull Case (CAGR +3%), Base Case, Conservative Case (CAGR -3%), and Cumulative Principal Invested — alongside an Inflation-Adjusted Purchasing Power (6% CPI) KPI card.
+
+🏆 Milestone Schedule Table: Tracks your year-by-year compounding schedule and badges the exact years you cross the ⚡ ₹50L+, 🎯 ₹1 Cr+, and 🏆 ₹5 Cr+ milestones.
+
+🤖 Wealth-Aware AI Copilot: Click the "When will I hit ₹1 Cr?" prompt inside the chat assistant to get an instant forecast based on your current slider settings.
+
+How the Compounding Engine Works
+Monthly Step-Up Iteration (calculateWealthProjection): Loops month-by-month (12 * years) applying monthly compounded growth (corpus + monthlySip) * (1 + (cagr / 100) / 12). At the end of every 12-month cycle, it scales monthlySip by (1 + stepUpPct / 100).
+
+Real Purchasing Power Discounting: Divides the final nominal corpus by Math.pow(1.06, years) to show what your future wealth will buy in today's rupees assuming 6% annual inflation.
+
+Dynamic Multi-Line Canvas Plotter (drawWealthCurveChart): Normalizes all four data series against the Bull Case peak and plots smooth vector polylines that resize automatically with your screen.
+
+How to Test It
+Open portfolio_ai.html in your browser and click the 🚀 Wealth Plan tab.
+
+Drag the Annual SIP Step-Up % slider from 0% to 15% to see how stepping up your SIP accelerates your path to ₹1 Crore and ₹5 Crore.
+
+Open the 💬 Ask PIAI Assistant drawer and click "When will I hit ₹1 Cr?".
+
+What We Can Add Next
+In Step 9, we can add a Dividend & Passive Cash-Flow Tracker that estimates the annual dividend income generated by your high-yield holdings (such as Coal India, Power Grid, ONGC, ITC/PSU stocks, and SGB 2.5% sovereign interest) and calculates your portfolio's Yield on Cost.
+
+Are you ready to continue to Step 9?
+
+I am not able to get the url in below option Option 3: Free Web Link via GitHub Pages (Permanent & Developer-Standard)
+
+
+
+
+
+Gemini is AI and can make mistakes.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio Intelligence AI (PIAI)</title>
   <style>
@@ -51,7 +680,7 @@
     .badge-purple { background: #3b0764; color: #d8b4fe; border: 1px solid #6b21a8; }
 
     /* Container */
-    .container { max-width: 960px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .container { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 
     /* Operations Card */
     .upload-card {
@@ -91,8 +720,8 @@
       overflow-x: auto; gap: 4px;
     }
     .tab-btn {
-      flex: 1; min-width: 80px; text-align: center; padding: 8px 8px; background: transparent; border: none;
-      color: var(--text-muted); font-size: 0.78rem; font-weight: 600; border-radius: 6px; cursor: pointer;
+      flex: 1; min-width: 78px; text-align: center; padding: 8px 6px; background: transparent; border: none;
+      color: var(--text-muted); font-size: 0.76rem; font-weight: 600; border-radius: 6px; cursor: pointer;
       white-space: nowrap; transition: 0.15s;
     }
     .tab-btn.active { background: #1e3a8a; color: #60a5fa; }
@@ -207,13 +836,13 @@
       background: #0f172a; border: 1px solid var(--card-border); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 0.82rem; width: 100%;
     }
 
-    /* Alert Rule Sliders */
-    .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 8px; }
+    /* Sliders */
+    .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 8px; }
     .rule-box { background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; }
     .rule-label { font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px; }
     .rule-slider { width: 100%; accent-color: #38bdf8; cursor: pointer; }
 
-    /* What-If & Tax Simulator */
+    /* Tables */
     .sim-toggle-row {
       display: flex; align-items: center; justify-content: space-between; padding: 10px 12px;
       background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;
@@ -285,7 +914,7 @@
 
 <div class="print-header">
   <h1 style="font-size: 18pt;">Portfolio Intelligence AI (PIAI) — Executive Briefing</h1>
-  <div style="font-size: 10pt; color: #555;">Detailed Asset Allocation, Health Scores, Risk & Tax Assessment</div>
+  <div style="font-size: 10pt; color: #555;">Detailed Asset Allocation, Health Scores, Tax Harvesting & Wealth Projection</div>
 </div>
 
 <!-- STICKY HEADER -->
@@ -315,7 +944,7 @@
     <div>
       <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Upload Portfolio CSV & Operations</div>
       <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-        Custom Alert Rules · Tax-Loss Harvesting · AI Conversational Copilot
+        Custom Alert Rules · Tax-Loss Harvesting · Multi-Year SIP Wealth Projector
       </div>
     </div>
     <div class="upload-btn-group">
@@ -339,6 +968,7 @@
     <button class="tab-btn" onclick="switchTab('alerts')">🚨 Alerts <span id="tab-alerts-count">(0)</span></button>
     <button class="tab-btn" onclick="switchTab('whatif')">🔮 What-If</button>
     <button class="tab-btn" onclick="switchTab('tax')">🧾 Tax Harvest</button>
+    <button class="tab-btn" onclick="switchTab('wealth')">🚀 Wealth Plan</button>
   </div>
 
   <!-- ════ TAB 1: DASHBOARD ════ -->
@@ -679,7 +1309,7 @@
     </div>
   </div>
 
-  <!-- ════ NEW TAB 8: INDIAN CAPITAL GAINS & TAX-LOSS HARVESTING ════ -->
+  <!-- ════ TAB 8: INDIAN CAPITAL GAINS & TAX-LOSS HARVESTING ════ -->
   <div id="view-tax" class="tab-view" style="display: none;">
     <div class="card" style="border: 2px solid #059669; background: #064e3b; margin-bottom: 14px;">
       <div style="color: #6ee7b7; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">
@@ -690,7 +1320,6 @@
       </div>
     </div>
 
-    <!-- 4 Tax KPIs -->
     <div class="kpi-grid kpi-grid-4" style="margin-bottom: 14px;">
       <div class="kpi-box">
         <div class="kpi-label">Unrealized Profit Pool</div>
@@ -710,7 +1339,6 @@
       </div>
     </div>
 
-    <!-- Interactive Tax Configuration -->
     <div class="card" style="margin-bottom: 14px;">
       <div class="card-title">⚙️ Configure Profit Booking & Loss Offset Strategy</div>
 
@@ -753,7 +1381,6 @@
       </div>
     </div>
 
-    <!-- Step-by-Step Tax Computation Table -->
     <div class="card">
       <div class="card-title">📊 Step-by-Step Indian Capital Gains Tax Ledger</div>
       <table class="sim-matrix-table">
@@ -766,6 +1393,108 @@
           </tr>
         </thead>
         <tbody id="tax-ledger-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════ NEW TAB 9: MULTI-YEAR WEALTH & SIP COMPOUNDING PROJECTOR ════ -->
+  <div id="view-wealth" class="tab-view" style="display: none;">
+    <div class="card" style="border: 2px solid #2563eb; background: #0f1e36; margin-bottom: 14px;">
+      <div style="color: #60a5fa; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">
+        🚀 Multi-Year Wealth & Step-Up SIP Compounding Projector
+      </div>
+      <div style="color: #cbd5e1; font-size: 0.78rem; line-height: 1.45;">
+        Models how your active portfolio corpus compounds alongside your monthly mutual fund & ETF SIPs across Bull, Base, and Conservative market cycles.
+      </div>
+    </div>
+
+    <!-- 4 Wealth KPIs -->
+    <div class="kpi-grid kpi-grid-4" style="margin-bottom: 14px;">
+      <div class="kpi-box">
+        <div class="kpi-label">Projected Base Corpus</div>
+        <div class="kpi-val pos" id="wealth-kpi-corpus">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Total Principal Put In</div>
+        <div class="kpi-val neu" id="wealth-kpi-invested">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Compounding Profit</div>
+        <div class="kpi-val pos" id="wealth-kpi-profit">₹0</div>
+      </div>
+      <div class="kpi-box" style="border-color: #3b82f6; background: #172554;">
+        <div class="kpi-label" style="color: #93c5fd;">Inflation-Adj. Value (6%)</div>
+        <div class="kpi-val" style="color: #60a5fa;" id="wealth-kpi-real">₹0</div>
+      </div>
+    </div>
+
+    <!-- Interactive SIP & Horizon Sliders -->
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-title">🎛️ Customize Your SIP & Compounding Parameters</div>
+      <div class="rule-grid">
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Monthly SIP Addition</span>
+            <strong id="lbl-w-sip" style="color:var(--emerald);">₹25,000 / mo</strong>
+          </div>
+          <input type="range" id="slider-w-sip" class="rule-slider" min="5000" max="200000" step="5000" value="25000" oninput="calculateWealthProjection()">
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Annual SIP Step-Up %</span>
+            <strong id="lbl-w-step" style="color:var(--purple);">10% / yr</strong>
+          </div>
+          <input type="range" id="slider-w-step" class="rule-slider" min="0" max="25" step="5" value="10" oninput="calculateWealthProjection()">
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Expected Annual CAGR</span>
+            <strong id="lbl-w-cagr" style="color:var(--accent);">14%</strong>
+          </div>
+          <input type="range" id="slider-w-cagr" class="rule-slider" min="8" max="22" step="1" value="14" oninput="calculateWealthProjection()">
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Time Horizon (Years)</span>
+            <strong id="lbl-w-years" style="color:var(--amber);">10 Years</strong>
+          </div>
+          <input type="range" id="slider-w-years" class="rule-slider" min="5" max="25" step="1" value="10" oninput="calculateWealthProjection()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-Scenario Growth Curve Canvas -->
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-title">📈 Multi-Scenario Wealth Trajectory (Bull vs. Base vs. Conservative)</div>
+      <div style="padding: 10px 0;">
+        <canvas id="canvas-wealth-curve" width="750" height="220" class="chart-canvas" style="width: 100%; max-height: 230px;"></canvas>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-color" style="background:#34d399;"></span> Bull Case (CAGR +3%)</span>
+        <span class="legend-item"><span class="legend-color" style="background:#38bdf8;"></span> Base Case (Selected CAGR)</span>
+        <span class="legend-item"><span class="legend-color" style="background:#fbbf24;"></span> Conservative (CAGR -3%)</span>
+        <span class="legend-item"><span class="legend-color" style="background:#6b7280;"></span> Total Principal Invested</span>
+      </div>
+    </div>
+
+    <!-- Year-by-Year Milestone Table -->
+    <div class="card">
+      <div class="card-title">🏆 Wealth Milestones & Year-by-Year Compounding Schedule</div>
+      <table class="sim-matrix-table">
+        <thead>
+          <tr>
+            <th>Timeline</th>
+            <th>Monthly SIP Rate</th>
+            <th>Cumulative Invested</th>
+            <th>Base Case Corpus</th>
+            <th>Bull Case (+3% CAGR)</th>
+            <th>Milestone Status</th>
+          </tr>
+        </thead>
+        <tbody id="wealth-table-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -786,17 +1515,17 @@
   </div>
   <div class="chat-messages" id="chat-messages">
     <div class="chat-bubble chat-bubble-ai">
-      Hello! I'm your Portfolio Intelligence Assistant. Ask me anything about your holdings, risks, exit priorities, or Indian capital gains tax harvesting.
+      Hello! I'm your Portfolio Intelligence Assistant. Ask me anything about your holdings, risks, tax-loss harvesting, or when your portfolio will cross ₹1 Crore.
     </div>
   </div>
   <div class="chat-prompts">
+    <span class="prompt-chip" onclick="askQuickPrompt('When will my portfolio cross ₹1 Crore?')">When will I hit ₹1 Cr?</span>
     <span class="prompt-chip" onclick="askQuickPrompt('How much tax can I save with tax-loss harvesting?')">Tax-loss savings?</span>
     <span class="prompt-chip" onclick="askQuickPrompt('Why is RVNL flagged for exit?')">Why is RVNL flagged?</span>
     <span class="prompt-chip" onclick="askQuickPrompt('What is my biggest risk right now?')">Biggest risk?</span>
-    <span class="prompt-chip" onclick="askQuickPrompt('Which watchlist stocks are in Buy Zone?')">Watchlist Buy Zone?</span>
   </div>
   <div class="chat-input-bar">
-    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about any holding or tax rule..." onkeydown="handleChatKey(event)">
+    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about any holding, tax, or wealth target..." onkeydown="handleChatKey(event)">
     <button class="chat-send-btn" onclick="sendChatMessage()">Send</button>
   </div>
 </div>
@@ -891,8 +1620,8 @@
   let ruleProfitBook = 60;
   let ruleStopLossBuffer = 12;
 
-  // Global tax cache for AI chat queries
   let lastTaxSummary = { saved: 0, beforeTax: 0, afterTax: 0, lossesUsed: 0 };
+  let lastWealthSummary = { year1Cr: 5, finalCorpus: 0, horizon: 10, sip: 25000, cagr: 14 };
 
   function initApp() {
     const saved = localStorage.getItem("piai_portfolio_holdings");
@@ -906,6 +1635,7 @@
         runPortfolioIntelligenceEngine();
         runSimulation();
         calculateTaxHarvest();
+        calculateWealthProjection();
         return;
       } catch (e) {
         console.error("Failed to restore saved session", e);
@@ -924,6 +1654,7 @@
     runPortfolioIntelligenceEngine();
     runSimulation();
     calculateTaxHarvest();
+    calculateWealthProjection();
   }
 
   function persistState() {
@@ -955,6 +1686,190 @@
     updateAlertRules();
   }
 
+  // --- Multi-Year Wealth & Step-Up SIP Compounding Projector ---
+  function calculateWealthProjection() {
+    const sipStart = parseInt(document.getElementById("slider-w-sip").value, 10);
+    const stepUpPct = parseInt(document.getElementById("slider-w-step").value, 10);
+    const cagrBase = parseInt(document.getElementById("slider-w-cagr").value, 10);
+    const years = parseInt(document.getElementById("slider-w-years").value, 10);
+
+    document.getElementById("lbl-w-sip").textContent = `₹${sipStart.toLocaleString()} / mo`;
+    document.getElementById("lbl-w-step").textContent = `${stepUpPct}% / yr`;
+    document.getElementById("lbl-w-cagr").textContent = `${cagrBase}%`;
+    document.getElementById("lbl-w-years").textContent = `${years} Years`;
+
+    const eqCur = holdings.reduce((s, h) => s + h.cur, 0);
+    const mfCur = mfs.reduce((s, m) => s + m.cur, 0);
+    const etfCur = etfs.reduce((s, e) => s + e.cur, 0);
+    const bondCur = bonds.reduce((s, b) => s + b.cur, 0);
+    const initialCorpus = eqCur + mfCur + etfCur + bondCur;
+
+    const cagrBull = cagrBase + 3;
+    const cagrCons = Math.max(4, cagrBase - 3);
+
+    const seriesPoints = [];
+    let curBase = initialCorpus;
+    let curBull = initialCorpus;
+    let curCons = initialCorpus;
+    let totalInvested = initialCorpus;
+    let currentMonthlySip = sipStart;
+    let year1Cr = null;
+
+    seriesPoints.push({
+      yr: 0,
+      sip: currentMonthlySip,
+      invested: totalInvested,
+      base: curBase,
+      bull: curBull,
+      cons: curCons
+    });
+
+    for (let y = 1; y <= years; y++) {
+      const rBaseMo = (cagrBase / 100) / 12;
+      const rBullMo = (cagrBull / 100) / 12;
+      const rConsMo = (cagrCons / 100) / 12;
+
+      for (let m = 1; m <= 12; m++) {
+        curBase = (curBase + currentMonthlySip) * (1 + rBaseMo);
+        curBull = (curBull + currentMonthlySip) * (1 + rBullMo);
+        curCons = (curCons + currentMonthlySip) * (1 + rConsMo);
+        totalInvested += currentMonthlySip;
+      }
+
+      if (!year1Cr && curBase >= 10000000) {
+        year1Cr = y;
+      }
+
+      seriesPoints.push({
+        yr: y,
+        sip: currentMonthlySip,
+        invested: totalInvested,
+        base: curBase,
+        bull: curBull,
+        cons: curCons
+      });
+
+      currentMonthlySip = Math.round(currentMonthlySip * (1 + stepUpPct / 100));
+    }
+
+    const finalPt = seriesPoints[seriesPoints.length - 1];
+    const totalProfit = finalPt.base - finalPt.invested;
+    const inflationDiscountFactor = Math.pow(1.06, years);
+    const realPurchasingPower = finalPt.base / inflationDiscountFactor;
+
+    lastWealthSummary = {
+      year1Cr: year1Cr || "> " + years,
+      finalCorpus: finalPt.base,
+      horizon: years,
+      sip: sipStart,
+      cagr: cagrBase
+    };
+
+    document.getElementById("wealth-kpi-corpus").textContent = fmtVal(finalPt.base);
+    document.getElementById("wealth-kpi-invested").textContent = fmtVal(finalPt.invested);
+    document.getElementById("wealth-kpi-profit").textContent = `+${fmtVal(totalProfit)}`;
+    document.getElementById("wealth-kpi-real").textContent = fmtVal(realPurchasingPower);
+
+    // Render Table
+    const tbody = document.getElementById("wealth-table-tbody");
+    const displayYears = seriesPoints.filter(p => p.yr === 1 || p.yr === 3 || p.yr === 5 || p.yr === 8 || p.yr === 10 || p.yr === 15 || p.yr === 20 || p.yr === years);
+    // Deduplicate
+    const uniqueDisplay = Array.from(new Set(displayYears.map(p => p.yr))).map(yr => seriesPoints.find(p => p.yr === yr));
+
+    tbody.innerHTML = uniqueDisplay.map(pt => {
+      let badge = `<span class="badge badge-blue">Building</span>`;
+      if (pt.base >= 50000000) badge = `<span class="badge badge-purple">🏆 ₹5 Cr+ Club</span>`;
+      else if (pt.base >= 10000000) badge = `<span class="badge badge-emerald">🎯 ₹1 Cr+ Milestone</span>`;
+      else if (pt.base >= 5000000) badge = `<span class="badge badge-amber">⚡ ₹50L+ Crossed</span>`;
+
+      return `
+        <tr>
+          <td><strong>Year ${pt.yr} (${2026 + pt.yr})</strong></td>
+          <td>₹${pt.sip.toLocaleString()}/mo</td>
+          <td>${fmtVal(pt.invested)}</td>
+          <td class="pos"><strong>${fmtVal(pt.base)}</strong></td>
+          <td style="color:#a7f3d0;">${fmtVal(pt.bull)}</td>
+          <td>${badge}</td>
+        </tr>
+      `;
+    }).join("");
+
+    drawWealthCurveChart("canvas-wealth-curve", seriesPoints);
+  }
+
+  function drawWealthCurveChart(canvasId, points) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    const w = canvas.parentElement.clientWidth || 700;
+    const h = 210;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+
+    const padLeft = 58;
+    const padRight = 24;
+    const padTop = 20;
+    const padBottom = 30;
+    const chartW = w - padLeft - padRight;
+    const chartH = h - padTop - padBottom;
+
+    const maxVal = Math.max(...points.map(p => p.bull));
+    const minVal = 0;
+
+    // Grid lines
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = padTop + (i / 4) * chartH;
+      ctx.beginPath();
+      ctx.moveTo(padLeft, y);
+      ctx.lineTo(w - padRight, y);
+      ctx.stroke();
+
+      const val = maxVal * (1 - i / 4);
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "10px -apple-system, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(fmtVal(val), padLeft - 6, y + 3);
+    }
+
+    function plotLine(key, color, width, dashed) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.setLineDash(dashed ? [4, 4] : []);
+      ctx.beginPath();
+      points.forEach((pt, idx) => {
+        const x = padLeft + (idx / (points.length - 1)) * chartW;
+        const y = padTop + chartH - ((pt[key] - minVal) / (maxVal - minVal)) * chartH;
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Plot 4 trajectories
+    plotLine("invested", "#6b7280", 1.8, true);
+    plotLine("cons", "#fbbf24", 2, false);
+    plotLine("base", "#38bdf8", 3, false);
+    plotLine("bull", "#34d399", 2.5, false);
+
+    // X-axis year labels
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "10px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    points.forEach((pt, idx) => {
+      if (idx === 0 || idx === points.length - 1 || idx % Math.ceil(points.length / 5) === 0) {
+        const x = padLeft + (idx / (points.length - 1)) * chartW;
+        ctx.fillText(`Yr ${pt.yr}`, x, h - 8);
+      }
+    });
+  }
+
   // --- Indian Capital Gains & Tax-Loss Harvesting Calculator ---
   function calculateTaxHarvest() {
     const gainSharePct = parseInt(document.getElementById("slider-tax-gain-pct").value, 10);
@@ -965,16 +1880,13 @@
     document.getElementById("lbl-tax-gain-pct").textContent = `${gainSharePct}%`;
     document.getElementById("lbl-tax-stcg-mix").textContent = `${stcgMixPct}%`;
 
-    // Total positive unrealized equity gains
     const totalUnrealizedGains = holdings.filter(h => h.pnl > 0).reduce((s, h) => s + h.pnl, 0);
     const totalUnrealizedLosses = Math.abs(holdings.filter(h => h.pnl < 0).reduce((s, h) => s + h.pnl, 0));
 
-    // Realized gains based on slider
     const realizedGains = totalUnrealizedGains * (gainSharePct / 100);
     const grossSTCG = realizedGains * (stcgMixPct / 100);
     const grossLTCG = realizedGains * ((100 - stcgMixPct) / 100);
 
-    // Harvested Losses
     let harvestedLossAmount = 0;
     holdings.forEach(h => {
       if (h.pnl < 0) {
@@ -987,14 +1899,12 @@
       }
     });
 
-    // Tax BEFORE Harvesting
     const ltcgExemption = 125000;
     const taxableLTCGBefore = Math.max(0, grossLTCG - ltcgExemption);
     const taxSTCGBefore = grossSTCG * 0.20;
     const taxLTCGBefore = taxableLTCGBefore * 0.125;
     const totalTaxBefore = Math.round(taxSTCGBefore + taxLTCGBefore);
 
-    // Tax AFTER Harvesting (Offset high-rate 20% STCG first, then 12.5% LTCG)
     let remainingLossToOffset = harvestedLossAmount;
     const netSTCGAfter = Math.max(0, grossSTCG - remainingLossToOffset);
     remainingLossToOffset = Math.max(0, remainingLossToOffset - grossSTCG);
@@ -1015,13 +1925,11 @@
       lossesUsed: Math.round(harvestedLossAmount)
     };
 
-    // Update KPI cards
     document.getElementById("tax-kpi-gains").textContent = fmtVal(totalUnrealizedGains);
     document.getElementById("tax-kpi-losses").textContent = `-${fmtVal(totalUnrealizedLosses)}`;
     document.getElementById("tax-kpi-before").textContent = fmtVal(totalTaxBefore);
     document.getElementById("tax-kpi-saved").textContent = fmtVal(taxSaved);
 
-    // Update Ledger Table
     const ledger = document.getElementById("tax-ledger-tbody");
     ledger.innerHTML = `
       <tr>
@@ -1125,6 +2033,7 @@
     runPortfolioIntelligenceEngine();
     runSimulation();
     calculateTaxHarvest();
+    calculateWealthProjection();
   }
 
   function exportReportPDF() {
@@ -1311,6 +2220,7 @@
       persistState();
       runPortfolioIntelligenceEngine();
       calculateTaxHarvest();
+      calculateWealthProjection();
       switchTab('dashboard');
       alert("✅ Portfolio successfully rebalanced based on your simulation!");
     }
@@ -1802,7 +2712,8 @@
         (tabId === 'mf' && btn.textContent.includes('MF')) ||
         (tabId === 'buy' && btn.textContent.includes('Buy')) ||
         (tabId === 'whatif' && btn.textContent.includes('What-If')) ||
-        (tabId === 'tax' && btn.textContent.includes('Tax')));
+        (tabId === 'tax' && btn.textContent.includes('Tax')) ||
+        (tabId === 'wealth' && btn.textContent.includes('Wealth')));
     });
     if (tabId === 'dashboard') {
       setTimeout(renderVisualCharts, 50);
@@ -1810,6 +2721,8 @@
       runSimulation();
     } else if (tabId === 'tax') {
       calculateTaxHarvest();
+    } else if (tabId === 'wealth') {
+      setTimeout(calculateWealthProjection, 50);
     }
   }
 
@@ -1857,9 +2770,14 @@
   function generateAIResponse(query) {
     const q = query.toLowerCase();
 
+    if (q.includes("crore") || q.includes("1 cr") || q.includes("wealth") || q.includes("when will")) {
+      calculateWealthProjection();
+      return `<strong>₹1 Crore Milestone Forecast:</strong><br>• Starting from your current portfolio and adding <strong>₹${lastWealthSummary.sip.toLocaleString()}/month</strong> (with step-up) at <strong>${lastWealthSummary.cagr}% CAGR</strong>, your portfolio is projected to cross <strong>₹1.00 Crore in Year ${lastWealthSummary.year1Cr} (${2026 + parseInt(lastWealthSummary.year1Cr) || 'future'})</strong>!<br>• By Year ${lastWealthSummary.horizon}, your projected Base Case corpus reaches <strong>${fmtVal(lastWealthSummary.finalCorpus)}</strong>.`;
+    }
+
     if (q.includes("tax") || q.includes("harvest") || q.includes("stcg") || q.includes("ltcg")) {
       calculateTaxHarvest();
-      return `<strong>Indian Tax-Loss Harvesting Breakdown:</strong><br>• By harvesting <strong>₹${lastTaxSummary.lossesUsed.toLocaleString()}</strong> in unrealized losses from your lagging positions, your estimated capital gains tax drops from <strong>₹${lastTaxSummary.beforeTax.toLocaleString()}</strong> to <strong>₹${lastTaxSummary.afterTax.toLocaleString()}</strong>.<br>• <strong>Total Tax Saved: ₹${lastTaxSummary.saved.toLocaleString()} 🎉</strong> (Check the <strong>🧾 Tax Harvest</strong> tab to customize your STCG/LTCG mix).`;
+      return `<strong>Indian Tax-Loss Harvesting Breakdown:</strong><br>• By harvesting <strong>₹${lastTaxSummary.lossesUsed.toLocaleString()}</strong> in unrealized losses from your lagging positions, your estimated capital gains tax drops from <strong>₹${lastTaxSummary.beforeTax.toLocaleString()}</strong> to <strong>₹${lastTaxSummary.afterTax.toLocaleString()}</strong>.<br>• <strong>Total Tax Saved: ₹${lastTaxSummary.saved.toLocaleString()} 🎉</strong>`;
     }
 
     if (q.includes("watchlist") || q.includes("buy zone")) {
@@ -1879,18 +2797,12 @@
       return `<strong>Key Risk Radar:</strong><br>1. <strong>Tata Motors PV concentration:</strong> 478 shares with an unrealized loss of -₹75.8K (-33%).<br>2. <strong>Zero Healthcare Exposure:</strong> 0% pharma allocation.<br>3. <strong>Capital Drag:</strong> ${fmtVal(deadCap)} is tied up in positions breaching your ${ruleExitDrawdown}% exit threshold.`;
     }
 
-    if (q.includes("free") || q.includes("cash") || q.includes("dry powder") || q.includes("exits")) {
-      const exitTotal = holdings.filter(h => h.act.includes("EXIT")).reduce((s,h) => s + h.cur, 0);
-      const exitCount = holdings.filter(h => h.act.includes("EXIT")).length;
-      return `<strong>Capital Recovery Opportunity:</strong> Under your current ${ruleExitDrawdown}% rule, executing your ${exitCount} flagged exits will immediately unlock <strong>${fmtVal(exitTotal)}</strong> in liquid cash.`;
-    }
-
     const matched = holdings.find(h => q.includes(h.n.toLowerCase().split(" ")[0]));
     if (matched) {
       return `<strong>${matched.n}:</strong><br>• Current LTP: ₹${matched.ltp} (${matched.pct >= 0 ? '+' : ''}${matched.pct.toFixed(1)}%)<br>• Total P&L: ${fmt(matched.pnl)}<br>• Health Score: <strong>${matched.h}/100</strong><br>• Recommendation: <code>${matched.act}</code><br>• Trailing Stop-Loss (${ruleStopLossBuffer}%): ₹${matched.sl}`;
     }
 
-    return `Your active portfolio holds ${holdings.length} stocks worth ${document.getElementById("hdr-cur-val").textContent}. Explore the new <strong>🧾 Tax Harvest</strong> tab to calculate your STCG/LTCG tax savings!`;
+    return `Your active portfolio holds ${holdings.length} stocks worth ${document.getElementById("hdr-cur-val").textContent}. Explore the new <strong>🚀 Wealth Plan</strong> tab to model your path to ₹1 Crore and beyond!`;
   }
 
   // --- CSV Parser ---
@@ -1965,11 +2877,13 @@
     runPortfolioIntelligenceEngine();
     runSimulation();
     calculateTaxHarvest();
+    calculateWealthProjection();
     alert(`Successfully loaded and analyzed ${newHoldings.length} holdings from your CSV!`);
   }
 
   window.addEventListener("resize", () => {
     renderVisualCharts();
+    calculateWealthProjection();
   });
 
   initApp();
