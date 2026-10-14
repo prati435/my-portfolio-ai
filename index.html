@@ -33,6 +33,11 @@
     .btn-primary { background: #2563eb; color: #fff; font-weight: 600; font-size: 0.82rem; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none; }
     .btn-secondary { background: transparent; color: var(--text-muted); border: 1px solid var(--card-border); padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
     .btn-emerald { background: #065f46; color: #a7f3d0; border: 1px solid #047857; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+    .btn-emerald:disabled { opacity: 0.5; cursor: not-allowed; }
+    .sync-banner { display: none; background: #172554; border: 1px solid #2563eb; border-radius: 10px; padding: 10px 14px; font-size: 0.8rem; color: #bfdbfe; align-items: center; justify-content: space-between; gap: 10px; }
+    .sync-banner.active { display: flex; }
+    .sync-progress-bar { flex: 1; max-width: 240px; height: 8px; background: #0f172a; border-radius: 999px; overflow: hidden; }
+    .sync-progress-fill { height: 100%; background: #38bdf8; width: 0%; transition: width 0.2s; }
     .tabs-nav { display: flex; background: #111827; border-radius: 10px; padding: 4px; border: 1px solid var(--card-border); overflow-x: auto; gap: 4px; }
     .tab-btn { flex: 1; min-width: 78px; text-align: center; padding: 8px 6px; background: transparent; border: none; color: var(--text-muted); font-size: 0.76rem; font-weight: 600; border-radius: 6px; cursor: pointer; white-space: nowrap; }
     .tab-btn.active { background: #1e3a8a; color: #60a5fa; }
@@ -47,7 +52,6 @@
     .action-item { display: flex; gap: 10px; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; line-height: 1.4; }
     .act-critical { background: #450a0a; border-left: 3px solid #ef4444; }
     .act-book { background: #3b0764; border-left: 3px solid #a855f7; }
-    .act-hold { background: #064e3b; border-left: 3px solid #10b981; }
     .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 14px; }
     .chart-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 220px; }
     .chart-canvas { max-width: 100%; height: auto; }
@@ -111,7 +115,7 @@
 <div class="header">
   <div class="header-top">
     <div>
-      <div class="header-tag">PIAI · LIVE CSV · ACTIVE PORTFOLIO</div>
+      <div class="header-tag" id="hdr-timestamp">PIAI · LIVE CSV · ACTIVE PORTFOLIO</div>
       <div class="header-title">Portfolio Intelligence AI</div>
     </div>
     <div class="header-total">
@@ -130,18 +134,23 @@
 <div class="container">
   <div class="upload-card">
     <div>
-      <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Upload Portfolio CSV & Operations</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Smart Price vs. Value Detection · Auto Asset-Class Split · Tax & SIP Planner</div>
+      <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Upload Portfolio CSV & Live NSE Market Sync</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Fetches Real-Time NSE/BSE Stock Quotes · Auto Asset-Class Split · Tax & SIP Planner</div>
     </div>
     <div class="upload-btn-group">
       <label class="btn-primary">
         <span>📁 Upload CSV</span>
         <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
       </label>
-      <button class="btn-emerald" onclick="simulateLiveRefresh()">🔄 Refresh Prices</button>
+      <button class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices()">⚡ Sync Live NSE Prices</button>
       <button class="btn-secondary" onclick="window.print()">📄 Export Report</button>
       <button class="btn-secondary" onclick="loadSamplePortfolio()">Reset Demo</button>
     </div>
+  </div>
+
+  <div class="sync-banner" id="sync-banner">
+    <span id="sync-status-text">⚡ Connecting to live NSE/BSE market feed...</span>
+    <div class="sync-progress-bar"><div class="sync-progress-fill" id="sync-progress-fill"></div></div>
   </div>
 
   <div class="tabs-nav">
@@ -206,8 +215,8 @@
   <div id="view-market" class="tab-view" style="display: none;">
     <div class="card" style="margin-bottom: 12px;">
       <div class="card-title">🌐 Key Benchmark Levels</div>
-      <div class="data-row"><span>Nifty 50</span><span class="neg">24,132.05 ▼75.70 (-0.31%)</span></div>
-      <div class="data-row"><span>Sensex</span><span class="neg">77,202.81 ▼270.13 (-0.35%)</span></div>
+      <div class="data-row"><span>Nifty 50</span><span id="mkt-row-nifty" class="neg">24,132.05 ▼75.70 (-0.31%)</span></div>
+      <div class="data-row"><span>Sensex</span><span id="mkt-row-sensex" class="neg">77,202.81 ▼270.13 (-0.35%)</span></div>
       <div class="data-row"><span>DII Net Flow</span><span class="pos">+₹6,425 Cr (Strong Support)</span></div>
       <div class="data-row"><span>FII Net Flow</span><span class="pos">+₹502 Cr (Net Buyers)</span></div>
     </div>
@@ -327,7 +336,7 @@
 <button class="chat-toggle-btn" onclick="toggleChatWindow()">💬 Ask PIAI Assistant</button>
 <div class="chat-window" id="chat-window">
   <div class="chat-header"><div class="chat-header-title">🤖 PIAI Intelligence Copilot</div><button class="chat-close-btn" onclick="toggleChatWindow()">✕</button></div>
-  <div class="chat-messages" id="chat-messages"><div class="chat-bubble chat-bubble-ai">Hello! Ask me about your holdings, tax-loss harvesting, or when your portfolio will cross ₹1 Crore.</div></div>
+  <div class="chat-messages" id="chat-messages"><div class="chat-bubble chat-bubble-ai">Hello! Click <strong>⚡ Sync Live NSE Prices</strong> at the top to fetch real-time market LTPs, or ask me about any holding.</div></div>
   <div class="chat-prompts">
     <span class="prompt-chip" onclick="askQuickPrompt('When will my portfolio cross ₹1 Crore?')">When will I hit ₹1 Cr?</span>
     <span class="prompt-chip" onclick="askQuickPrompt('How much tax can I save with tax-loss harvesting?')">Tax-loss savings?</span>
@@ -353,6 +362,29 @@
     if (a >= 1000) return "₹" + (a / 1000).toFixed(1) + "K";
     return "₹" + Math.round(a);
   }
+
+  const NSE_TICKER_MAP = {
+    "reliance": "RELIANCE.NS", "tata motors": "TATAMOTORS.NS", "adani ports": "ADANIPORTS.NS",
+    "quality power": "QUALITY.NS", "welspun corp": "WELCORP.NS", "jindal saw": "JINDALSAW.NS",
+    "netweb": "NETWEB.NS", "cdsl": "CDSL.NS", "jio financial": "JIOFIN.NS", "tata power": "TATAPOWER.NS",
+    "hal": "HAL.NS", "hindustan aeronautics": "HAL.NS", "city union bank": "CUB.NS",
+    "bharat electronics": "BEL.NS", "bel": "BEL.NS", "deepak fertilisers": "DEEPAKFERT.NS",
+    "kotak mahindra": "KOTAKBANK.NS", "bse": "BSE.NS", "indusind bank": "INDUSINDBK.NS",
+    "equitas": "EQUITASBNK.NS", "delhivery": "DELHIVERY.NS", "sona blw": "SONACOMS.NS",
+    "mahindra & mahindra": "M&M.NS", "suzlon": "SUZLON.NS", "vedanta": "VEDL.NS",
+    "jsw infrastructure": "JSWINFRA.NS", "titagarh": "TITAGARH.NS", "deep industries": "DEEPINDS.NS",
+    "cyient": "CYIENT.NS", "saksoft": "SAKSOFT.NS", "hdfc bank": "HDFCBANK.NS",
+    "rail vikas nigam": "RVNL.NS", "rvnl": "RVNL.NS", "indraprastha gas": "IGL.NS", "igl": "IGL.NS",
+    "varun beverages": "VBL.NS", "tcs": "TCS.NS", "power grid": "POWERGRID.NS", "ongc": "ONGC.NS",
+    "indian oil": "IOC.NS", "ioc": "IOC.NS", "nhpc": "NHPC.NS", "irctc": "IRCTC.NS",
+    "ntpc": "NTPC.NS", "irfc": "IRFC.NS", "hindustan copper": "HINDCOPPER.NS",
+    "railtel": "RAILTEL.NS", "sbi cards": "SBICARD.NS", "coal india": "COALINDIA.NS",
+    "power finance": "PFC.NS", "pfc": "PFC.NS", "kpi green": "KPIGREEN.NS",
+    "bandhan bank": "BANDHANBNK.NS", "state bank of india": "SBIN.NS", "sbi": "SBIN.NS",
+    "rites": "RITES.NS", "bharti airtel": "BHARTIARTL.NS", "gail": "GAIL.NS",
+    "samhi hotels": "SAMHI.NS", "swiggy": "SWIGGY.NS", "sun pharma": "SUNPHARMA.NS",
+    "dr reddy": "DRREDDY.NS", "titan": "TITAN.NS", "larsen & toubro": "LT.NS", "l&t": "LT.NS"
+  };
 
   const DEFAULT_EQUITIES = [
     { n: "Reliance Industries", sec: "Refineries", qty: 199, avg: 917.85, ltp: 1290.10, today: -1572 },
@@ -451,6 +483,127 @@
     calculateWealthProjection();
   }
 
+  async function fetchWithCORSFallback(targetUrl) {
+    const proxies = [
+      `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
+    ];
+    for (const proxyUrl of proxies) {
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(tid);
+        if (res.ok) return await res.json();
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  async function resolveNSETicker(stockName) {
+    const clean = stockName.toLowerCase().trim();
+    for (const [k, t] of Object.entries(NSE_TICKER_MAP)) {
+      if (clean.includes(k)) return t;
+    }
+    const cache = JSON.parse(localStorage.getItem("piai_ticker_cache") || "{}");
+    if (cache[clean]) return cache[clean];
+
+    const qName = stockName.replace(/\([^)]*\)/g, "").replace(/Ltd|Limited|Corp|India/gi, "").trim();
+    const sUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(qName)}&quotesCount=6&newsCount=0`;
+    const data = await fetchWithCORSFallback(sUrl);
+    if (data && data.quotes && data.quotes.length > 0) {
+      const m = data.quotes.find(q => q.symbol && (q.symbol.endsWith(".NS") || q.symbol.endsWith(".BO")));
+      if (m) {
+        cache[clean] = m.symbol;
+        localStorage.setItem("piai_ticker_cache", JSON.stringify(cache));
+        return m.symbol;
+      }
+    }
+    return null;
+  }
+
+  async function fetchQuoteForSymbol(symbol) {
+    const cUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`;
+    const data = await fetchWithCORSFallback(cUrl);
+    if (data && data.chart && data.chart.result && data.chart.result[0]) {
+      const meta = data.chart.result[0].meta;
+      if (meta && meta.regularMarketPrice) {
+        return { ltp: meta.regularMarketPrice, prevClose: meta.chartPreviousClose || meta.previousClose || meta.regularMarketPrice };
+      }
+    }
+    return null;
+  }
+
+  async function syncLiveNSEPrices() {
+    const btn = document.getElementById("btn-live-sync");
+    const banner = document.getElementById("sync-banner");
+    const statusText = document.getElementById("sync-status-text");
+    const progressFill = document.getElementById("sync-progress-fill");
+
+    btn.disabled = true;
+    btn.textContent = "⏳ Syncing NSE...";
+    banner.classList.add("active");
+    progressFill.style.width = "5%";
+
+    const [niftyQ, sensexQ] = await Promise.all([fetchQuoteForSymbol("^NSEI"), fetchQuoteForSymbol("^BSESN")]);
+    if (niftyQ) {
+      const chg = niftyQ.ltp - niftyQ.prevClose, pct = (chg / niftyQ.prevClose) * 100;
+      document.getElementById("badge-nifty").textContent = `NIFTY ${niftyQ.ltp.toLocaleString(undefined,{maximumFractionDigits:0})} ${chg >= 0 ? '▲':'▼'}${Math.abs(pct).toFixed(2)}%`;
+      document.getElementById("badge-nifty").className = "badge " + (chg >= 0 ? "badge-emerald":"badge-red");
+    }
+    if (sensexQ) {
+      const chg = sensexQ.ltp - sensexQ.prevClose, pct = (chg / sensexQ.prevClose) * 100;
+      document.getElementById("badge-sensex").textContent = `SENSEX ${sensexQ.ltp.toLocaleString(undefined,{maximumFractionDigits:0})} ${chg >= 0 ? '▲':'▼'}${Math.abs(pct).toFixed(2)}%`;
+      document.getElementById("badge-sensex").className = "badge " + (chg >= 0 ? "badge-emerald":"badge-red");
+    }
+
+    let updated = 0;
+    const total = holdings.length;
+    for (let i = 0; i < total; i += 5) {
+      const batch = holdings.slice(i, i + 5);
+      statusText.textContent = `⚡ Syncing live NSE/BSE prices (${Math.min(i + 5, total)} / ${total} stocks)...`;
+      progressFill.style.width = `${Math.round(((i + 5) / total) * 100)}%`;
+      await Promise.all(batch.map(async (h) => {
+        const ticker = await resolveNSETicker(h.n);
+        if (ticker) {
+          const q = await fetchQuoteForSymbol(ticker);
+          if (q && q.ltp > 0) {
+            h.ltp = q.ltp;
+            h.cur = h.qty * q.ltp;
+            h.today = Math.round((q.ltp - q.prevClose) * h.qty);
+            h.ticker = ticker;
+            updated++;
+          }
+        }
+      }));
+      runPortfolioIntelligenceEngine();
+    }
+
+    persistState();
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+    calculateWealthProjection();
+
+    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById("hdr-timestamp").textContent = `PIAI · LIVE NSE SYNCED AT ${nowStr}`;
+    statusText.textContent = `✅ Live NSE sync complete! Updated ${updated} of ${total} equity positions.`;
+    btn.disabled = false;
+    btn.textContent = "⚡ Sync Live NSE Prices";
+    setTimeout(() => banner.classList.remove("active"), 6000);
+  }
+
+  function promptManualLTP(stockName) {
+    const h = holdings.find(item => item.n === stockName);
+    if (!h) return;
+    const val = parseFloat(prompt(`Enter latest market LTP (₹) for ${h.n}:`, h.ltp.toFixed(2)));
+    if (!isNaN(val) && val > 0) {
+      h.ltp = val; h.cur = h.qty * val;
+      persistState(); runPortfolioIntelligenceEngine(); runSimulation(); calculateTaxHarvest(); calculateWealthProjection();
+    }
+  }
+
   function updateAlertRules() {
     ruleExitDrawdown = parseInt(document.getElementById("slider-rule-exit").value, 10);
     ruleProfitBook = parseInt(document.getElementById("slider-rule-book").value, 10);
@@ -544,16 +697,17 @@
     document.getElementById("stocks-list-container").innerHTML = list.map(h => {
       const isOpen = !!expandedCards[h.n];
       const actBadge = h.act.includes("EXIT") ? "badge-red" : h.act.includes("BOOK") ? "badge-purple" : "badge-emerald";
+      const safe = h.n.replace(/'/g, "\\'");
       return `
         <div class="stock-card ${h.act.includes('EXIT') ? 'critical-border' : 'winner-border'}">
-          <div class="stock-summary" onclick="expandedCards['${h.n.replace(/'/g, "\\'")}']=!expandedCards['${h.n.replace(/'/g, "\\'")}'];renderStocksView()">
+          <div class="stock-summary" onclick="expandedCards['${safe}']=!expandedCards['${safe}'];renderStocksView()">
             <div class="stock-top">
-              <div><div class="stock-name">${h.n}</div><div class="stock-meta">${h.sec || 'Equity'} · ${h.qty} @ ₹${h.avg.toFixed(1)} · Inv ${fmtVal(h.inv)}</div></div>
-              <div class="stock-price"><div class="stock-ltp">₹${h.ltp.toFixed(1)}</div><div class="stock-pct ${h.pct >= 0 ? 'pos':'neg'}">${h.pct >= 0 ? '+':''}${h.pct.toFixed(1)}%</div></div>
+              <div><div class="stock-name">${h.n} ${h.ticker ? `<span style="font-size:0.68rem; color:#60a5fa;">(${h.ticker})</span>` : ''}</div><div class="stock-meta">${h.sec || 'Equity'} · ${h.qty} @ ₹${h.avg.toFixed(1)} · Inv ${fmtVal(h.inv)}</div></div>
+              <div class="stock-price"><div class="stock-ltp">₹${h.ltp.toFixed(2)}</div><div class="stock-pct ${h.pct >= 0 ? 'pos':'neg'}">${h.pct >= 0 ? '+':''}${h.pct.toFixed(1)}%</div></div>
             </div>
-            <div class="stock-bottom"><span><strong class="${h.pnl >= 0 ? 'pos':'neg'}">${fmt(h.pnl)}</strong> <span style="color:var(--text-muted); margin-left:6px;">Cur ${fmtVal(h.cur)}</span></span><span class="badge ${actBadge}">${h.act}</span></div>
+            <div class="stock-bottom"><span><strong class="${h.pnl >= 0 ? 'pos':'neg'}">${fmt(h.pnl)}</strong> <span style="color:var(--text-muted); margin-left:6px;">Cur ${fmtVal(h.cur)}</span> ${h.today ? `<span style="color:${h.today>=0?'var(--emerald)':'var(--red)'}; margin-left:6px;">Today ${fmt(h.today)}</span>`:''}</span><span class="badge ${actBadge}">${h.act}</span></div>
           </div>
-          ${isOpen ? `<div class="stock-expanded"><div style="font-size:0.78rem; color:#e2e8f0;"><strong>Health ${h.h}/100:</strong>${h.note} (SL: ₹${h.sl} · Target: ₹${h.tgt})</div></div>` : ''}
+          ${isOpen ? `<div class="stock-expanded"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.78rem; color:#e2e8f0;"><strong>Health ${h.h}/100:</strong>${h.note} (SL: ₹${h.sl} · Target: ₹${h.tgt})</span><button class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); promptManualLTP('${safe}')">✏️ Edit LTP</button></div></div>` : ''}
         </div>
       `;
     }).join("");
@@ -757,16 +911,6 @@
     }
   }
 
-  function simulateLiveRefresh() {
-    holdings.forEach(h => {
-      const d = (Math.random() * 2.4 - 1.2) / 100;
-      h.ltp = Math.round(h.ltp * (1 + d) * 100) / 100;
-      h.cur = h.qty * h.ltp;
-    });
-    persistState();
-    runPortfolioIntelligenceEngine();
-  }
-
   function handleSearch() { searchQuery = document.getElementById("stock-search").value.toLowerCase().trim(); renderStocksView(); }
   function setStockFilter(f) { activeStockFilter = f; renderStocksView(); }
   function switchTab(id) {
@@ -888,7 +1032,7 @@
         runSimulation();
         calculateTaxHarvest();
         calculateWealthProjection();
-        alert(`✅ Imported ${newEq.length} Stocks, ${newMFs.length} Mutual Funds, ${newETFs.length} ETFs, and ${newBonds.length} Bonds/InvITs!`);
+        syncLiveNSEPrices();
       }
       e.target.value = "";
     };
