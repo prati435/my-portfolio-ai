@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Intelligence AI (PIAI)</title>
+  <style>
+    :root {
+      --bg: #030712;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --sub-card: #1f2937;
+      --accent: #38bdf8;
+      --accent-dark: #0284c7;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --emerald: #34d399;
+      --emerald-bg: #064e3b;
+      --red: #f87171;
+      --red-bg: #7f1d1d;
+      --amber: #fbbf24;
+      --amber-bg: #78350f;
+      --purple: #c084fc;
+      --purple-bg: #581c87;
+      --blue: #60a5fa;
+      --blue-bg: #1e3a8a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 70px; font-size: 14px; }
+
+    /* Sticky Header */
+    .header {
+      position: sticky; top: 0; z-index: 50;
+      background: linear-gradient(135deg, #0b192c, #0f172a, #0b192c);
+      border-bottom: 1px solid #1e3a8a;
+      padding: 12px 18px;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .header-tag { font-size: 0.72rem; color: #60a5fa; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .header-title { font-size: 1.25rem; font-weight: 700; color: #fff; margin-top: 2px; }
+    .header-total { text-align: right; }
+    .header-cur-val { font-size: 1.45rem; font-weight: 800; color: var(--emerald); }
+    .header-pnl { font-size: 0.8rem; color: #a7f3d0; font-weight: 600; margin-top: 2px; }
+    .market-strip { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; font-size: 0.75rem; }
+    .badge { padding: 2px 8px; border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-red { background: #450a0a; color: #fca5a5; border: 1px solid #991b1b; }
+    .badge-emerald { background: #064e3b; color: #6ee7b7; border: 1px solid #065f46; }
+    .badge-amber { background: #451a03; color: #fde68a; border: 1px solid #92400e; }
+    .badge-blue { background: #172554; color: #93c5fd; border: 1px solid #1e40af; }
+    .badge-purple { background: #3b0764; color: #d8b4fe; border: 1px solid #6b21a8; }
+
+    /* Container */
+    .container { max-width: 960px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Operations Card */
+    .upload-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .upload-btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: #2563eb; color: #fff; font-weight: 600; font-size: 0.82rem;
+      padding: 8px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+      background: transparent; color: var(--text-muted); border: 1px solid var(--card-border);
+      padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-secondary:hover { background: #1f2937; color: #fff; }
+    .btn-emerald {
+      background: #065f46; color: #a7f3d0; border: 1px solid #047857;
+      padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-emerald:hover { background: #047857; }
+
+    /* Navigation Tabs */
+    .tabs-nav {
+      display: flex; background: #111827; border-radius: 10px; padding: 4px; border: 1px solid var(--card-border);
+      overflow-x: auto; gap: 4px;
+    }
+    .tab-btn {
+      flex: 1; min-width: 80px; text-align: center; padding: 8px 8px; background: transparent; border: none;
+      color: var(--text-muted); font-size: 0.78rem; font-weight: 600; border-radius: 6px; cursor: pointer;
+      white-space: nowrap; transition: 0.15s;
+    }
+    .tab-btn.active { background: #1e3a8a; color: #60a5fa; }
+    .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.05); }
+
+    /* Cards */
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; }
+    .card-title { font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* KPI Grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 640px) { .kpi-grid-4 { grid-template-columns: repeat(4, 1fr); } }
+    .kpi-box { background: #0b1329; border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; }
+    .kpi-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .kpi-val { font-size: 1.2rem; font-weight: 700; margin-top: 4px; }
+
+    /* Colors */
+    .pos { color: var(--emerald); }
+    .neg { color: var(--red); }
+    .neu { color: var(--text); }
+
+    /* Action List */
+    .action-item {
+      display: flex; gap: 10px; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.8rem; line-height: 1.4;
+    }
+    .act-critical { background: #450a0a; border-left: 3px solid #ef4444; }
+    .act-book { background: #3b0764; border-left: 3px solid #a855f7; }
+    .act-hold { background: #064e3b; border-left: 3px solid #10b981; }
+
+    /* Charts Layout Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .chart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+      position: relative;
+    }
+    .chart-canvas { max-width: 100%; height: auto; }
+    .chart-legend { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; font-size: 0.75rem; }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); }
+    .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* Filters & Search */
+    .filter-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; align-items: center; }
+    .filter-chip {
+      padding: 4px 12px; font-size: 0.75rem; border-radius: 9999px; background: #1f2937; color: var(--text-muted);
+      border: 1px solid transparent; cursor: pointer; font-weight: 600; white-space: nowrap;
+    }
+    .filter-chip.active { background: #2563eb; color: #fff; }
+
+    .search-input {
+      background: #0f172a; border: 1px solid var(--card-border); border-radius: 6px; padding: 6px 12px;
+      color: #fff; font-size: 0.8rem; width: 100%; margin-bottom: 10px;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+
+    /* Stock Item */
+    .stock-card {
+      background: #0f172a; border: 1px solid var(--card-border); border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .stock-card.critical-border { border-color: #dc2626; }
+    .stock-card.high-border { border-color: #ea580c; }
+    .stock-card.winner-border { border-color: #065f46; }
+
+    .stock-summary { padding: 12px; cursor: pointer; }
+    .stock-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .stock-name { font-size: 0.85rem; font-weight: 700; color: #fff; }
+    .stock-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .stock-price { text-align: right; }
+    .stock-ltp { font-size: 0.95rem; font-weight: 700; color: #fff; }
+    .stock-pct { font-size: 0.75rem; font-weight: 600; }
+    .stock-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; flex-wrap: wrap; gap: 6px; }
+
+    .stock-expanded {
+      background: #090e1a; border-top: 1px solid #1e293b; padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .health-pill { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; }
+    .health-high { background: #064e3b; color: #6ee7b7; }
+    .health-mid { background: #78350f; color: #fde68a; }
+    .health-low { background: #7f1d1d; color: #fca5a5; }
+
+    .alert-pill { padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; line-height: 1.4; border: 1px solid transparent; }
+    .alert-critical { background: #450a0a; color: #fca5a5; border-color: #991b1b; }
+    .alert-high { background: #431407; color: #fdba74; border-color: #9a3412; }
+    .alert-medium { background: #422006; color: #fef08a; border-color: #854d0e; }
+    .alert-info { background: #172554; color: #bfdbfe; border-color: #1e40af; }
+
+    /* Rows */
+    .data-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1f2937; font-size: 0.78rem; }
+    .data-row:last-child { border-bottom: none; }
+
+    /* Buy recs & Watchlist */
+    .rec-card { background: #1f2937; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+    .rec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .rec-name { font-weight: 700; font-size: 0.85rem; color: #fff; }
+    .rec-size { font-size: 0.72rem; background: #1e3a8a; color: #93c5fd; padding: 2px 8px; border-radius: 9999px; }
+    .rec-note { font-size: 0.78rem; color: #d1d5db; line-height: 1.4; }
+
+    .watchlist-form {
+      display: grid; grid-template-columns: 2fr 1.2fr 1.2fr auto; gap: 8px; margin-top: 10px; align-items: end;
+    }
+    @media (max-width: 650px) { .watchlist-form { grid-template-columns: 1fr; } }
+    .watchlist-input {
+      background: #0f172a; border: 1px solid var(--card-border); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 0.82rem; width: 100%;
+    }
+
+    /* Alert Rule Sliders */
+    .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 8px; }
+    .rule-box { background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; }
+    .rule-label { font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .rule-slider { width: 100%; accent-color: #38bdf8; cursor: pointer; }
+
+    /* What-If & Tax Simulator */
+    .sim-toggle-row {
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 12px;
+      background: #0f172a; border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;
+    }
+    .sim-checkbox { width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer; }
+    .sim-matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.82rem; }
+    .sim-matrix-table th, .sim-matrix-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--card-border); }
+    .sim-matrix-table th { color: var(--text-muted); font-weight: 600; }
+    .sim-badge-impact { font-size: 0.72rem; padding: 2px 8px; border-radius: 9999px; font-weight: 700; }
+
+    /* FLOATING AI CHAT DRAWER */
+    .chat-toggle-btn {
+      position: fixed; bottom: 20px; right: 20px; z-index: 99;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff; border: none; border-radius: 9999px; padding: 12px 20px;
+      font-weight: 700; font-size: 0.88rem; cursor: pointer; box-shadow: 0 10px 25px rgba(37,99,235,0.4);
+      display: flex; align-items: center; gap: 8px; transition: transform 0.2s;
+    }
+    .chat-toggle-btn:hover { transform: translateY(-2px); }
+
+    .chat-window {
+      position: fixed; bottom: 75px; right: 20px; z-index: 100;
+      width: 380px; max-width: calc(100vw - 32px); height: 520px;
+      background: #0f172a; border: 1px solid #1e3a8a; border-radius: 16px;
+      display: none; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .chat-window.open { display: flex; }
+    .chat-header {
+      background: #1e293b; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+    .chat-header-title { font-weight: 700; font-size: 0.9rem; color: #fff; display: flex; align-items: center; gap: 6px; }
+    .chat-close-btn { background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer; }
+    .chat-messages {
+      flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem;
+    }
+    .chat-bubble { padding: 10px 14px; border-radius: 12px; line-height: 1.45; max-width: 90%; }
+    .chat-bubble-ai { background: #1e293b; color: #e2e8f0; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #334155; }
+    .chat-bubble-user { background: #2563eb; color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+    .chat-prompts { padding: 8px 12px; display: flex; gap: 6px; overflow-x: auto; background: #090e1a; border-top: 1px solid #1e293b; }
+    .prompt-chip {
+      background: #1e293b; color: #93c5fd; border: 1px solid #3b82f6; border-radius: 9999px;
+      padding: 4px 10px; font-size: 0.72rem; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .prompt-chip:hover { background: #2563eb; color: #fff; }
+    .chat-input-bar { padding: 10px 12px; background: #111827; border-top: 1px solid #1f2937; display: flex; gap: 8px; }
+    .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 0.82rem; }
+    .chat-input:focus { outline: none; border-color: #38bdf8; }
+    .chat-send-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 700; cursor: pointer; font-size: 0.82rem; }
+
+    /* PRINT STYLES */
+    @media print {
+      body { background: #fff !important; color: #000 !important; font-size: 11pt; padding: 0; }
+      .header, .upload-card, .tabs-nav, .filter-bar, .search-input, .btn-primary, .btn-secondary, .btn-emerald, .chat-toggle-btn, .chat-window { display: none !important; }
+      .container { max-width: 100% !important; padding: 0 !important; gap: 8px !important; }
+      .card, .kpi-box, .stock-card { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; box-shadow: none !important; }
+      .card-title, .kpi-val, .stock-name, .stock-ltp { color: #000 !important; }
+      .pos { color: #047857 !important; }
+      .neg { color: #b91c1c !important; }
+      .tab-view { display: block !important; page-break-after: always; }
+      .stock-expanded { display: block !important; background: #f9fafb !important; color: #000 !important; }
+      .print-header { display: block !important; padding-bottom: 12px; border-bottom: 2px solid #000; margin-bottom: 12px; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="print-header">
+  <h1 style="font-size: 18pt;">Portfolio Intelligence AI (PIAI) — Executive Briefing</h1>
+  <div style="font-size: 10pt; color: #555;">Detailed Asset Allocation, Health Scores, Risk & Tax Assessment</div>
+</div>
+
+<!-- STICKY HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-tag" id="hdr-timestamp">PIAI · LIVE CSV · ACTIVE PORTFOLIO</div>
+      <div class="header-title">Portfolio Intelligence AI</div>
+    </div>
+    <div class="header-total">
+      <div class="header-cur-val" id="hdr-cur-val">₹0.00</div>
+      <div class="header-pnl" id="hdr-pnl">+₹0 (+0.0%)</div>
+    </div>
+  </div>
+  <div class="market-strip">
+    <span class="badge badge-red" id="badge-nifty">NIFTY 24,132 ▼0.31%</span>
+    <span class="badge badge-red" id="badge-sensex">SENSEX 77,203 ▼0.35%</span>
+    <span class="badge badge-amber" id="badge-mood">Macro: Consolidating</span>
+    <span class="badge badge-emerald" id="badge-dii">DII: +₹6,425 Cr Support</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- OPERATIONS CARD -->
+  <div class="upload-card">
+    <div>
+      <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Upload Portfolio CSV & Operations</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+        Custom Alert Rules · Tax-Loss Harvesting · AI Conversational Copilot
+      </div>
+    </div>
+    <div class="upload-btn-group">
+      <label class="btn-primary">
+        <span>📁 Upload CSV</span>
+        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+      </label>
+      <button class="btn-emerald" onclick="simulateLiveRefresh()">🔄 Refresh Prices</button>
+      <button class="btn-secondary" onclick="exportReportPDF()">📄 Export Report</button>
+      <button class="btn-secondary" onclick="loadSamplePortfolio()">Reset Demo</button>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dash</button>
+    <button class="tab-btn" onclick="switchTab('market')">🌐 Market</button>
+    <button class="tab-btn" onclick="switchTab('stocks')">📈 Stocks <span id="tab-stocks-count">(0)</span></button>
+    <button class="tab-btn" onclick="switchTab('mf')">🏦 MF + ETF</button>
+    <button class="tab-btn" onclick="switchTab('buy')">🛒 Buy & Watch</button>
+    <button class="tab-btn" onclick="switchTab('alerts')">🚨 Alerts <span id="tab-alerts-count">(0)</span></button>
+    <button class="tab-btn" onclick="switchTab('whatif')">🔮 What-If</button>
+    <button class="tab-btn" onclick="switchTab('tax')">🧾 Tax Harvest</button>
+  </div>
+
+  <!-- ════ TAB 1: DASHBOARD ════ -->
+  <div id="view-dashboard" class="tab-view">
+    <div class="card" style="background: #451a03; border-color: #92400e; margin-bottom: 12px;">
+      <div style="color: #fbbf24; font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">
+        📊 Market & Macro Intelligence Briefing
+      </div>
+      <div style="color: #fef3c7; font-size: 0.78rem; line-height: 1.5;" id="dash-macro-text">
+        Equities gave up early morning gains as auto, FMCG, and PSU banks weighed on headline indices. Strong domestic institutional buying (DIIs +₹6,425 Cr) continues to provide a structural safety floor.
+      </div>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom: 12px;">
+      <div class="kpi-box">
+        <div class="kpi-label">Total Invested</div>
+        <div class="kpi-val neu" id="dash-invested">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Current Value</div>
+        <div class="kpi-val pos" id="dash-current">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Total P&L</div>
+        <div class="kpi-val pos" id="dash-pnl">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Overall Return</div>
+        <div class="kpi-val pos" id="dash-pct">+0.0%</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-title">🥧 Asset Class Allocation</div>
+        <div class="chart-container">
+          <canvas id="canvas-asset-donut" width="220" height="220" class="chart-canvas"></canvas>
+          <div class="chart-legend" id="legend-asset-donut"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🏢 Top Sector Concentration</div>
+        <div class="chart-container">
+          <canvas id="canvas-sector-bars" width="300" height="200" class="chart-canvas"></canvas>
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: 8px;">
+            ⚠️ Dashed line marks 25% concentration risk threshold
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title">📊 Return & Risk Distribution Spectrum</div>
+      <div style="padding: 10px 0;">
+        <canvas id="canvas-pnl-distribution" width="600" height="150" class="chart-canvas" style="width: 100%; max-height: 160px;"></canvas>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+        <span style="color: var(--red);">Critical Drawdowns (&lt;-15%)</span>
+        <span style="color: var(--amber);">Mild Losses (0% to -15%)</span>
+        <span style="color: var(--emerald);">Gains (+0% to +50%)</span>
+        <span style="color: var(--purple);">Multibaggers (&gt;+50%)</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px; background: #0f1e36; border-color: #1e3a8a;">
+      <div class="card-title" style="color: #93c5fd;">📝 Portfolio Intelligence Observations</div>
+      <div id="dash-observations" style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.6;"></div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title">💼 Asset Class Breakdown & P&L</div>
+      <div id="dash-asset-classes"></div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px; border-color: #7e22ce;">
+      <div class="card-title" style="color: #c084fc;">⚡ Today's Priority Actions</div>
+      <div id="dash-priority-actions"></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+      <div class="card">
+        <div class="card-title" style="color: var(--emerald);">🏆 Top Gainers</div>
+        <div id="dash-top-gainers"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--red);">⚠️ Top Drawdowns / Losers</div>
+        <div id="dash-top-losers"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ TAB 2: MARKET CONTEXT ════ -->
+  <div id="view-market" class="tab-view" style="display: none;">
+    <div class="card" style="background: #451a03; border-color: #92400e; margin-bottom: 12px;">
+      <div style="font-size: 1.1rem; font-weight: 700; color: #fbbf24;">📊 BENCHMARK & MACRO PULSE</div>
+      <div style="font-size: 0.78rem; color: #fde68a; margin-top: 4px;">
+        Nifty 24,132 (-0.31%) | Sensex 77,203 (-0.35%) | Global cues mixed, domestic institutional buying remains robust.
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title">🌐 Key Benchmark Levels</div>
+      <div class="data-row"><span class="text-muted">Nifty 50</span><span class="neg" style="font-weight:600;">24,132.05 ▼75.70 (-0.31%)</span></div>
+      <div class="data-row"><span class="text-muted">Sensex</span><span class="neg" style="font-weight:600;">77,202.81 ▼270.13 (-0.35%)</span></div>
+      <div class="data-row"><span class="text-muted">DII Net Flow (Domestic Support)</span><span class="pos" style="font-weight:600;">+₹6,425 Cr (Strong Buyers)</span></div>
+      <div class="data-row"><span class="text-muted">FII Net Flow</span><span class="pos" style="font-weight:600;">+₹502 Cr (Net Buyers)</span></div>
+      <div class="data-row"><span class="text-muted">Crude Oil (Brent)</span><span class="pos" style="font-weight:600;">Easing — Improves Indian OMC & macro backdrop</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📰 Key Intelligence Drivers</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem; color: #d1d5db;">
+        <div>🟢 <strong>Crude Easing:</strong> Softening energy prices lowers domestic inflation and boosts refinery & chemical margins.</div>
+        <div>🔴 <strong>Afternoon Drag:</strong> Auto, FMCG, and PSU banks faced profit-taking after morning strength.</div>
+        <div>🟢 <strong>Defence Sector Momentum:</strong> Bharat Electronics (BEL) and HAL sustained positive order-book momentum.</div>
+        <div>🔵 <strong>Global Tech Support:</strong> Nvidia earnings beat stabilized global semiconductor and IT hardware sentiment.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ TAB 3: STOCKS ════ -->
+  <div id="view-stocks" class="tab-view" style="display: none;">
+    <input type="text" class="search-input" id="stock-search" placeholder="🔍 Search stock ticker or company name..." oninput="handleSearch()">
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="setStockFilter('ALL')">ALL</button>
+      <button class="filter-chip" onclick="setStockFilter('WINNERS')">WINNERS 🟢</button>
+      <button class="filter-chip" onclick="setStockFilter('LOSERS')">LOSERS 🔴</button>
+      <button class="filter-chip" onclick="setStockFilter('EXIT')">EXIT PRIORITY 🚨</button>
+      <button class="filter-chip" onclick="setStockFilter('BOOK')">BOOK PROFITS 🟣</button>
+    </div>
+    <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;" id="stocks-count-label">
+      Showing holdings · Tap any card to view Health & AI analysis
+    </div>
+    <div id="stocks-list-container"></div>
+  </div>
+
+  <!-- ════ TAB 4: MUTUAL FUNDS & ETFS ════ -->
+  <div id="view-mf" class="tab-view" style="display: none;">
+    <div class="card" style="background: #064e3b; border-color: #065f46; margin-bottom: 12px; font-size: 0.78rem; color: #a7f3d0;">
+      ✅ <strong>Mutual Funds & ETF Strategy:</strong> Disciplined SIPs into Flexi Cap & Large/Mid Cap funds form your low-volatility core, complemented by international ETFs (S&P 500, FANG+) and gold.
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title">🏦 Mutual Fund Holdings</div>
+      <div id="mf-list-container"></div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title">🌍 ETF & Commodity Holdings</div>
+      <div id="etf-list-container"></div>
+    </div>
+
+    <div class="card" style="border-color: #92400e; background: #451a03;">
+      <div style="font-weight: 700; color: #fbbf24; font-size: 0.85rem; margin-bottom: 4px;">🏅 Sovereign Gold Bonds (SGB)</div>
+      <div style="font-size: 0.78rem; color: #fef3c7;" id="sgb-note">
+        Holding SGB until maturity delivers capital appreciation plus 2.5% annual tax-exempt sovereign interest. Best compounder in portfolio.
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ TAB 5: BUY RECS & BREAKOUT WATCHLIST ════ -->
+  <div id="view-buy" class="tab-view" style="display: none;">
+    <div class="card" style="border: 2px solid #2563eb; background: #0f172a; margin-bottom: 14px;">
+      <div class="card-title" style="color: #60a5fa;">🎯 Interactive Breakout & Entry Watchlist</div>
+      <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 10px;">
+        Track prospective stocks. When Current Price drops within 3% of your Target Entry, PIAI triggers an automatic <strong>BUY ZONE 🟢</strong> signal.
+      </div>
+      <div id="watchlist-container"></div>
+      
+      <form class="watchlist-form" onsubmit="addWatchlistItem(event)">
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-muted);">Stock Name / Ticker</label>
+          <input type="text" id="wl-name" class="watchlist-input" placeholder="e.g. Titan Company" required>
+        </div>
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-muted);">Current Price (₹)</label>
+          <input type="number" id="wl-ltp" class="watchlist-input" step="any" placeholder="3420" required>
+        </div>
+        <div>
+          <label style="font-size:0.72rem; color:var(--text-muted);">Target Buy Entry (₹)</label>
+          <input type="number" id="wl-target" class="watchlist-input" step="any" placeholder="3350" required>
+        </div>
+        <button type="submit" class="btn-primary" style="height: 36px;">+ Add Watch</button>
+      </form>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title" style="color: #60a5fa;">🔵 1. Fill Critical Gaps: Healthcare & Pharma</div>
+      <div class="rec-card">
+        <div class="rec-header"><span class="rec-name">Sun Pharma</span><span class="rec-size">₹15,000 - ₹20,000</span></div>
+        <div class="rec-note">India's leading pharma player, robust US specialty pipeline, highly defensive during broader market chop.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-header"><span class="rec-name">Dr Reddy's Laboratories</span><span class="rec-size">₹15,000 - ₹20,000</span></div>
+        <div class="rec-note">Biosimilars growth story, strong balance sheet, non-correlated hedge against cyclical industrial stocks.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 12px;">
+      <div class="card-title" style="color: var(--emerald);">🟢 2. Add to Proven Winners (Redeploy Exit Proceeds)</div>
+      <div class="rec-card">
+        <div class="rec-header"><span class="rec-name">Kotak Mahindra Bank</span><span class="rec-size">₹10,000 - ₹15,000</span></div>
+        <div class="rec-note">Consistently bucking private banking weakness with solid asset quality and improving NIMs.</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-header"><span class="rec-name">Bharat Electronics (BEL)</span><span class="rec-size">₹8,000 - ₹12,000</span></div>
+        <div class="rec-note">Defence sector order book expansion with 3-year revenue visibility.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ TAB 6: ALERTS & CUSTOM TRIGGERS ════ -->
+  <div id="view-alerts" class="tab-view" style="display: none;">
+    <div class="card" style="border-color: #38bdf8; margin-bottom: 14px;">
+      <div class="card-title" style="color: #38bdf8;">
+        <span>🎛️ Custom Alert Thresholds & Risk Sensitivity</span>
+        <button class="btn-secondary" style="font-size:0.72rem; padding:4px 8px;" onclick="resetAlertRules()">Reset Defaults</button>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+        Adjust your personal risk rules below. The AI engine immediately reclassifies all holdings based on your sliders:
+      </div>
+      <div class="rule-grid">
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Critical Exit Drawdown</span>
+            <strong id="lbl-rule-exit" style="color:var(--red);">-20%</strong>
+          </div>
+          <input type="range" id="slider-rule-exit" class="rule-slider" min="-40" max="-5" step="1" value="-20" oninput="updateAlertRules()">
+        </div>
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Profit Booking Trigger</span>
+            <strong id="lbl-rule-book" style="color:var(--purple);">+60%</strong>
+          </div>
+          <input type="range" id="slider-rule-book" class="rule-slider" min="25" max="150" step="5" value="60" oninput="updateAlertRules()">
+        </div>
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Trailing Stop-Loss Buffer</span>
+            <strong id="lbl-rule-sl" style="color:var(--amber);">12%</strong>
+          </div>
+          <input type="range" id="slider-rule-sl" class="rule-slider" min="5" max="25" step="1" value="12" oninput="updateAlertRules()">
+        </div>
+      </div>
+    </div>
+
+    <div id="alerts-container"></div>
+
+    <div class="card" style="margin-top: 14px;">
+      <div class="card-title" style="color: #fbbf24;">📊 Risk Radar Matrix</div>
+      <div id="risk-radar-items"></div>
+    </div>
+  </div>
+
+  <!-- ════ TAB 7: WHAT-IF SIMULATOR ════ -->
+  <div id="view-whatif" class="tab-view" style="display: none;">
+    <div class="card" style="border: 2px solid #7c3aed; background: #2e1065; margin-bottom: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="color: #c084fc; font-weight: 700; font-size: 0.95rem;">🔮 AI Portfolio Rebalancing & Stress Simulator</div>
+          <div style="color: #e9d5ff; font-size: 0.78rem; margin-top: 2px;">
+            Simulate the impact of proposed tactical actions on portfolio health, capital efficiency, and sector risk.
+          </div>
+        </div>
+        <button class="btn-emerald" onclick="applySimulationToPortfolio()" style="padding: 6px 14px; font-size: 0.8rem;">Apply to Active Portfolio</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-title">⚙️ Select Strategic Actions to Simulate</div>
+      
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #fca5a5; font-size: 0.85rem;">1. Execute Flagged Exits</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Liquidate positions breaching your drawdown trigger. Unlocks tied-up capital.
+          </div>
+        </div>
+        <input type="checkbox" id="sim-chk-exits" class="sim-checkbox" checked onchange="runSimulation()">
+      </div>
+
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #93c5fd; font-size: 0.85rem;">2. Fill Healthcare & Pharma Sector Gap</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Deploy ₹40,000 from exit proceeds into Sun Pharma (₹20K) & Dr Reddy's (₹20K).
+          </div>
+        </div>
+        <input type="checkbox" id="sim-chk-pharma" class="sim-checkbox" checked onchange="runSimulation()">
+      </div>
+
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #6ee7b7; font-size: 0.85rem;">3. Reinvest into High-Conviction Winners</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Deploy ₹35,000 into Kotak Mahindra Bank (+22%) & Bharat Electronics (+41%).
+          </div>
+        </div>
+        <input type="checkbox" id="sim-chk-winners" class="sim-checkbox" checked onchange="runSimulation()">
+      </div>
+
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #d8b4fe; font-size: 0.85rem;">4. Harvest 20% Multibagger Gains into Dry Powder</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Trim Adani Ports, Quality Power, Jio Fin, Welspun. Move ₹30,000 into Liquid ETF (cash reserve).
+          </div>
+        </div>
+        <input type="checkbox" id="sim-chk-harvest" class="sim-checkbox" checked onchange="runSimulation()">
+      </div>
+
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #fde047; font-size: 0.85rem;">5. Market Shock Stress Test (-8% Auto & Energy)</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Simulate a broader drawdown in cyclical heavyweights (Tata Motors PV & Reliance).
+          </div>
+        </div>
+        <input type="checkbox" id="sim-chk-stress" class="sim-checkbox" onchange="runSimulation()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Projected Impact Comparison Matrix</div>
+      <table class="sim-matrix-table">
+        <thead>
+          <tr>
+            <th>Key Health Metric</th>
+            <th>Current Active</th>
+            <th>Simulated Outlook</th>
+            <th>Impact Rating</th>
+          </tr>
+        </thead>
+        <tbody id="sim-matrix-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════ NEW TAB 8: INDIAN CAPITAL GAINS & TAX-LOSS HARVESTING ════ -->
+  <div id="view-tax" class="tab-view" style="display: none;">
+    <div class="card" style="border: 2px solid #059669; background: #064e3b; margin-bottom: 14px;">
+      <div style="color: #6ee7b7; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">
+        🧾 Indian Capital Gains & Tax-Loss Harvesting Planner (FY 2026–27)
+      </div>
+      <div style="color: #d1fae5; font-size: 0.78rem; line-height: 1.45;">
+        Under Indian Union Budget equity rules: <strong>STCG (&lt;12m) is taxed at 20%</strong> and <strong>LTCG (&gt;12m) is taxed at 12.5% above the ₹1.25 Lakh annual exemption</strong>. Realizing losses on lagging holdings legally offsets your taxable gains.
+      </div>
+    </div>
+
+    <!-- 4 Tax KPIs -->
+    <div class="kpi-grid kpi-grid-4" style="margin-bottom: 14px;">
+      <div class="kpi-box">
+        <div class="kpi-label">Unrealized Profit Pool</div>
+        <div class="kpi-val pos" id="tax-kpi-gains">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Harvestable Loss Pool</div>
+        <div class="kpi-val neg" id="tax-kpi-losses">₹0</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Tax Without Harvesting</div>
+        <div class="kpi-val neg" id="tax-kpi-before">₹0</div>
+      </div>
+      <div class="kpi-box" style="border-color: #10b981; background: #064e3b;">
+        <div class="kpi-label" style="color: #a7f3d0;">Tax Saved via Harvesting</div>
+        <div class="kpi-val pos" id="tax-kpi-saved">₹0</div>
+      </div>
+    </div>
+
+    <!-- Interactive Tax Configuration -->
+    <div class="card" style="margin-bottom: 14px;">
+      <div class="card-title">⚙️ Configure Profit Booking & Loss Offset Strategy</div>
+
+      <div class="rule-grid" style="margin-bottom: 12px;">
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>% of Gains Booked This Year</span>
+            <strong id="lbl-tax-gain-pct" style="color:var(--emerald);">50%</strong>
+          </div>
+          <input type="range" id="slider-tax-gain-pct" class="rule-slider" min="10" max="100" step="10" value="50" oninput="calculateTaxHarvest()">
+        </div>
+
+        <div class="rule-box">
+          <div class="rule-label">
+            <span>Share of Gains Held &lt;1 Yr (STCG 20%)</span>
+            <strong id="lbl-tax-stcg-mix" style="color:var(--amber);">30%</strong>
+          </div>
+          <input type="range" id="slider-tax-stcg-mix" class="rule-slider" min="0" max="100" step="10" value="30" oninput="calculateTaxHarvest()">
+        </div>
+      </div>
+
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #fca5a5; font-size: 0.85rem;">Harvest Flagged Exit Losses (RVNL, IGL, Varun Bev, IRFC, etc.)</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Realize losses on flagged exit positions to offset STCG (20%) and LTCG (12.5%) tax liability.
+          </div>
+        </div>
+        <input type="checkbox" id="tax-chk-exits" class="sim-checkbox" checked onchange="calculateTaxHarvest()">
+      </div>
+
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight: 700; color: #fde047; font-size: 0.85rem;">Also Harvest Tata Motors PV Drawdown (-₹75.8K Loss)</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Book the deep unrealized loss on Tata Motors PV to shield an additional ₹75,758 of capital gains from tax.
+          </div>
+        </div>
+        <input type="checkbox" id="tax-chk-tatapv" class="sim-checkbox" checked onchange="calculateTaxHarvest()">
+      </div>
+    </div>
+
+    <!-- Step-by-Step Tax Computation Table -->
+    <div class="card">
+      <div class="card-title">📊 Step-by-Step Indian Capital Gains Tax Ledger</div>
+      <table class="sim-matrix-table">
+        <thead>
+          <tr>
+            <th>Tax Computation Line Item</th>
+            <th>Without Loss Harvesting</th>
+            <th>With PIAI Loss Harvesting</th>
+            <th>Notes / Tax Rule</th>
+          </tr>
+        </thead>
+        <tbody id="tax-ledger-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- FLOATING AI CHAT ASSISTANT -->
+<button class="chat-toggle-btn" onclick="toggleChatWindow()">
+  <span>💬 Ask PIAI Assistant</span>
+</button>
+
+<div class="chat-window" id="chat-window">
+  <div class="chat-header">
+    <div class="chat-header-title">
+      <span>🤖</span> PIAI Intelligence Copilot
+    </div>
+    <button class="chat-close-btn" onclick="toggleChatWindow()">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-bubble chat-bubble-ai">
+      Hello! I'm your Portfolio Intelligence Assistant. Ask me anything about your holdings, risks, exit priorities, or Indian capital gains tax harvesting.
+    </div>
+  </div>
+  <div class="chat-prompts">
+    <span class="prompt-chip" onclick="askQuickPrompt('How much tax can I save with tax-loss harvesting?')">Tax-loss savings?</span>
+    <span class="prompt-chip" onclick="askQuickPrompt('Why is RVNL flagged for exit?')">Why is RVNL flagged?</span>
+    <span class="prompt-chip" onclick="askQuickPrompt('What is my biggest risk right now?')">Biggest risk?</span>
+    <span class="prompt-chip" onclick="askQuickPrompt('Which watchlist stocks are in Buy Zone?')">Watchlist Buy Zone?</span>
+  </div>
+  <div class="chat-input-bar">
+    <input type="text" id="chat-input" class="chat-input" placeholder="Ask about any holding or tax rule..." onkeydown="handleChatKey(event)">
+    <button class="chat-send-btn" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  function fmt(v) {
+    const a = Math.abs(v);
+    const s = v < 0 ? "-₹" : "+₹";
+    if (a >= 10000000) return `${s}${(a / 10000000).toFixed(2)}Cr`;
+    if (a >= 100000) return `${s}${(a / 100000).toFixed(2)}L`;
+    if (a >= 1000) return `${s}${(a / 1000).toFixed(1)}K`;
+    return `${s}${Math.round(a)}`;
+  }
+
+  function fmtVal(a) {
+    if (a >= 10000000) return `₹${(a / 10000000).toFixed(2)}Cr`;
+    if (a >= 100000) return `₹${(a / 100000).toFixed(2)}L`;
+    if (a >= 1000) return `₹${(a / 1000).toFixed(1)}K`;
+    return `₹${Math.round(a)}`;
+  }
+
+  const DEFAULT_EQUITIES = [
+    { n: "Reliance Industries", sec: "Refineries", qty: 199, avg: 917.85, ltp: 1290.10, today: -1572, type: "EQUITY" },
+    { n: "Tata Motors Ltd (CV)", sec: "Auto-CV", qty: 296, avg: 248.83, ltp: 472.45, today: -3345, type: "EQUITY" },
+    { n: "Adani Ports & SEZ", sec: "Infra", qty: 42, avg: 795.79, ltp: 1705.70, today: 596, type: "EQUITY" },
+    { n: "Quality Power Electrical", sec: "Elec Equip", qty: 59, avg: 726.58, ltp: 1363.10, today: 3829, type: "EQUITY" },
+    { n: "Welspun Corp", sec: "Steel", qty: 6, avg: 900.19, ltp: 2403.90, today: 583, type: "EQUITY" },
+    { n: "Jindal Saw", sec: "Steel", qty: 100, avg: 167.29, ltp: 308.75, today: 630, type: "EQUITY" },
+    { n: "Netweb Technologies", sec: "IT Hardware", qty: 8, avg: 3314.88, ltp: 5296.40, today: 196, type: "EQUITY" },
+    { n: "CDSL", sec: "Exchange", qty: 81, avg: 1242.04, ltp: 1413.10, today: -1693, type: "EQUITY" },
+    { n: "Jio Financial Services", sec: "NBFC", qty: 85, avg: 115.73, ltp: 239.35, today: -140, type: "EQUITY" },
+    { n: "Tata Power", sec: "Power", qty: 52, avg: 187.75, ltp: 351.95, today: -627, type: "EQUITY" },
+    { n: "HAL", sec: "Defence", qty: 10, avg: 4355.08, ltp: 4884.50, today: 190, type: "EQUITY" },
+    { n: "City Union Bank", sec: "Pvt Bank", qty: 40, avg: 89.87, ltp: 228.46, today: 66, type: "EQUITY" },
+    { n: "Bharat Electronics", sec: "Defence", qty: 50, avg: 290.74, ltp: 411.00, today: 205, type: "EQUITY" },
+    { n: "Deepak Fertilisers", sec: "Chemicals", qty: 10, avg: 1037.16, ltp: 1456.80, today: -225, type: "EQUITY" },
+    { n: "Kotak Mahindra Bank", sec: "Pvt Bank", qty: 100, avg: 349.26, ltp: 426.00, today: 930, type: "EQUITY" },
+    { n: "BSE Ltd", sec: "Exchange", qty: 5, avg: 2726.93, ltp: 3327.00, today: 7, type: "EQUITY" },
+    { n: "IndusInd Bank", sec: "Pvt Bank", qty: 13, avg: 751.00, ltp: 998.50, today: -72, type: "EQUITY" },
+    { n: "Equitas SFB", sec: "Pvt Bank", qty: 568, avg: 68.56, ltp: 74.21, today: -579, type: "EQUITY" },
+    { n: "Delhivery", sec: "Logistics", qty: 27, avg: 358.81, ltp: 465.60, today: 448, type: "EQUITY" },
+    { n: "Sona BLW Precision", sec: "Auto Anc.", qty: 16, avg: 535.21, ltp: 817.85, today: 366, type: "EQUITY" },
+    { n: "Tata Motors PV", sec: "Auto", qty: 478, avg: 475.29, ltp: 316.80, today: 1769, type: "EQUITY" },
+    { n: "HDFC Bank", sec: "Pvt Bank", qty: 230, avg: 785.66, ltp: 714.60, today: -2898, type: "EQUITY" },
+    { n: "Rail Vikas Nigam (RVNL)", sec: "Infra PSU", qty: 95, avg: 327.68, ltp: 216.48, today: -466, type: "EQUITY" },
+    { n: "Indraprastha Gas (IGL)", sec: "Gas Dist", qty: 157, avg: 200.96, ltp: 147.42, today: -204, type: "EQUITY" },
+    { n: "Varun Beverages", sec: "FMCG", qty: 62, avg: 540.09, ltp: 419.00, today: -140, type: "EQUITY" },
+    { n: "TCS", sec: "IT", qty: 29, avg: 2512.27, ltp: 2254.80, today: -441, type: "EQUITY" },
+    { n: "IRFC", sec: "Finance", qty: 118, avg: 113.81, ltp: 84.79, today: -107, type: "EQUITY" },
+    { n: "Railtel Corp", sec: "Telecom", qty: 42, avg: 326.00, ltp: 279.45, today: -61, type: "EQUITY" },
+    { n: "SBI Cards", sec: "NBFC", qty: 19, avg: 734.65, ltp: 644.90, today: -289, type: "EQUITY" }
+  ];
+
+  const DEFAULT_MFS = [
+    { n: "Quant Flexi Cap Fund", inv: 199990, cur: 232637, act: "SIP CONTINUE 🟢", note: "Best performing core flexi-cap (+16.3%). Never redeem." },
+    { n: "Kotak Large & Midcap Fund", inv: 112394, cur: 119552, act: "HOLD 🟢", note: "Topped up position. Solid long-term multi-cap compounder." },
+    { n: "Nippon India Multi Cap", inv: 49998, cur: 53514, act: "HOLD 🟢", note: "Broad multi-cap diversification." },
+    { n: "ICICI Pru Large & Mid Cap Fund", inv: 49998, cur: 50473, act: "HOLD 🆕", note: "STP destination executed cleanly. Keep Direct Plan." },
+    { n: "DSP Multi Asset Allocation Fund", inv: 5000, cur: 5012, act: "HOLD 🆕", note: "Multi-asset hybrid cushion for downside volatility." }
+  ];
+
+  const DEFAULT_ETFS = [
+    { n: "S&P 500 Top 50 ETF", inv: 13879, cur: 30225, act: "HOLD 🟢 +118%" },
+    { n: "NYSE FANG+ ETF", inv: 6492, cur: 20655, act: "HOLD 🟢 +218%!" },
+    { n: "NASDAQ 100 ETF", inv: 23682, cur: 33675, act: "HOLD 🟢 +42%" },
+    { n: "Gold BEES", inv: 4233, cur: 8458, act: "HOLD 🟢 — Doubled" },
+    { n: "Nifty 50 ETF (Mirae)", inv: 51737, cur: 52618, act: "ACCUMULATE 🟢" },
+    { n: "Liquid ETF (Zerodha)", inv: 8962, cur: 9715, act: "HOLD — Dry Powder" }
+  ];
+
+  const DEFAULT_BONDS = [
+    { n: "SGB CEN LOAN 23016 (2028)", inv: 25925, cur: 78500, act: "HOLD TO MATURITY 🏅", note: "+202.9% gain! Tax-free at maturity." }
+  ];
+
+  const DEFAULT_WATCHLIST = [
+    { id: 1, name: "Sun Pharma", ltp: 1655, target: 1640 },
+    { id: 2, name: "Titan Company", ltp: 3420, target: 3250 },
+    { id: 3, name: "Larsen & Toubro (L&T)", ltp: 3580, target: 3550 }
+  ];
+
+  let holdings = [];
+  let mfs = [];
+  let etfs = [];
+  let bonds = [];
+  let watchlist = [];
+  let activeStockFilter = 'ALL';
+  let searchQuery = '';
+  let expandedCards = {};
+  let simulatedHoldings = [];
+
+  let ruleExitDrawdown = -20;
+  let ruleProfitBook = 60;
+  let ruleStopLossBuffer = 12;
+
+  // Global tax cache for AI chat queries
+  let lastTaxSummary = { saved: 0, beforeTax: 0, afterTax: 0, lossesUsed: 0 };
+
+  function initApp() {
+    const saved = localStorage.getItem("piai_portfolio_holdings");
+    if (saved) {
+      try {
+        holdings = JSON.parse(saved);
+        mfs = JSON.parse(localStorage.getItem("piai_mf_holdings") || JSON.stringify(DEFAULT_MFS));
+        etfs = JSON.parse(localStorage.getItem("piai_etf_holdings") || JSON.stringify(DEFAULT_ETFS));
+        bonds = JSON.parse(localStorage.getItem("piai_bond_holdings") || JSON.stringify(DEFAULT_BONDS));
+        watchlist = JSON.parse(localStorage.getItem("piai_watchlist") || JSON.stringify(DEFAULT_WATCHLIST));
+        runPortfolioIntelligenceEngine();
+        runSimulation();
+        calculateTaxHarvest();
+        return;
+      } catch (e) {
+        console.error("Failed to restore saved session", e);
+      }
+    }
+    loadSamplePortfolio();
+  }
+
+  function loadSamplePortfolio() {
+    holdings = JSON.parse(JSON.stringify(DEFAULT_EQUITIES));
+    mfs = JSON.parse(JSON.stringify(DEFAULT_MFS));
+    etfs = JSON.parse(JSON.stringify(DEFAULT_ETFS));
+    bonds = JSON.parse(JSON.stringify(DEFAULT_BONDS));
+    watchlist = JSON.parse(JSON.stringify(DEFAULT_WATCHLIST));
+    persistState();
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+  }
+
+  function persistState() {
+    localStorage.setItem("piai_portfolio_holdings", JSON.stringify(holdings));
+    localStorage.setItem("piai_mf_holdings", JSON.stringify(mfs));
+    localStorage.setItem("piai_etf_holdings", JSON.stringify(etfs));
+    localStorage.setItem("piai_bond_holdings", JSON.stringify(bonds));
+    localStorage.setItem("piai_watchlist", JSON.stringify(watchlist));
+  }
+
+  function updateAlertRules() {
+    ruleExitDrawdown = parseInt(document.getElementById("slider-rule-exit").value, 10);
+    ruleProfitBook = parseInt(document.getElementById("slider-rule-book").value, 10);
+    ruleStopLossBuffer = parseInt(document.getElementById("slider-rule-sl").value, 10);
+
+    document.getElementById("lbl-rule-exit").textContent = `${ruleExitDrawdown}%`;
+    document.getElementById("lbl-rule-book").textContent = `+${ruleProfitBook}%`;
+    document.getElementById("lbl-rule-sl").textContent = `${ruleStopLossBuffer}%`;
+
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+  }
+
+  function resetAlertRules() {
+    document.getElementById("slider-rule-exit").value = -20;
+    document.getElementById("slider-rule-book").value = 60;
+    document.getElementById("slider-rule-sl").value = 12;
+    updateAlertRules();
+  }
+
+  // --- Indian Capital Gains & Tax-Loss Harvesting Calculator ---
+  function calculateTaxHarvest() {
+    const gainSharePct = parseInt(document.getElementById("slider-tax-gain-pct").value, 10);
+    const stcgMixPct = parseInt(document.getElementById("slider-tax-stcg-mix").value, 10);
+    const harvestExits = document.getElementById("tax-chk-exits").checked;
+    const harvestTataPV = document.getElementById("tax-chk-tatapv").checked;
+
+    document.getElementById("lbl-tax-gain-pct").textContent = `${gainSharePct}%`;
+    document.getElementById("lbl-tax-stcg-mix").textContent = `${stcgMixPct}%`;
+
+    // Total positive unrealized equity gains
+    const totalUnrealizedGains = holdings.filter(h => h.pnl > 0).reduce((s, h) => s + h.pnl, 0);
+    const totalUnrealizedLosses = Math.abs(holdings.filter(h => h.pnl < 0).reduce((s, h) => s + h.pnl, 0));
+
+    // Realized gains based on slider
+    const realizedGains = totalUnrealizedGains * (gainSharePct / 100);
+    const grossSTCG = realizedGains * (stcgMixPct / 100);
+    const grossLTCG = realizedGains * ((100 - stcgMixPct) / 100);
+
+    // Harvested Losses
+    let harvestedLossAmount = 0;
+    holdings.forEach(h => {
+      if (h.pnl < 0) {
+        const isTataPV = h.n.includes("Tata Motors PV");
+        if (isTataPV && harvestTataPV) {
+          harvestedLossAmount += Math.abs(h.pnl);
+        } else if (!isTataPV && harvestExits && h.act.includes("EXIT")) {
+          harvestedLossAmount += Math.abs(h.pnl);
+        }
+      }
+    });
+
+    // Tax BEFORE Harvesting
+    const ltcgExemption = 125000;
+    const taxableLTCGBefore = Math.max(0, grossLTCG - ltcgExemption);
+    const taxSTCGBefore = grossSTCG * 0.20;
+    const taxLTCGBefore = taxableLTCGBefore * 0.125;
+    const totalTaxBefore = Math.round(taxSTCGBefore + taxLTCGBefore);
+
+    // Tax AFTER Harvesting (Offset high-rate 20% STCG first, then 12.5% LTCG)
+    let remainingLossToOffset = harvestedLossAmount;
+    const netSTCGAfter = Math.max(0, grossSTCG - remainingLossToOffset);
+    remainingLossToOffset = Math.max(0, remainingLossToOffset - grossSTCG);
+
+    const netLTCGAfter = Math.max(0, grossLTCG - remainingLossToOffset);
+    const taxableLTCGAfter = Math.max(0, netLTCGAfter - ltcgExemption);
+
+    const taxSTCGAfter = netSTCGAfter * 0.20;
+    const taxLTCGAfter = taxableLTCGAfter * 0.125;
+    const totalTaxAfter = Math.round(taxSTCGAfter + taxLTCGAfter);
+
+    const taxSaved = Math.max(0, totalTaxBefore - totalTaxAfter);
+
+    lastTaxSummary = {
+      saved: taxSaved,
+      beforeTax: totalTaxBefore,
+      afterTax: totalTaxAfter,
+      lossesUsed: Math.round(harvestedLossAmount)
+    };
+
+    // Update KPI cards
+    document.getElementById("tax-kpi-gains").textContent = fmtVal(totalUnrealizedGains);
+    document.getElementById("tax-kpi-losses").textContent = `-${fmtVal(totalUnrealizedLosses)}`;
+    document.getElementById("tax-kpi-before").textContent = fmtVal(totalTaxBefore);
+    document.getElementById("tax-kpi-saved").textContent = fmtVal(taxSaved);
+
+    // Update Ledger Table
+    const ledger = document.getElementById("tax-ledger-tbody");
+    ledger.innerHTML = `
+      <tr>
+        <td><strong>1. Gross Realized Gains (${gainSharePct}% booked)</strong></td>
+        <td>${fmtVal(realizedGains)}</td>
+        <td>${fmtVal(realizedGains)}</td>
+        <td>STCG: ${fmtVal(grossSTCG)} · LTCG: ${fmtVal(grossLTCG)}</td>
+      </tr>
+      <tr>
+        <td><strong>2. Less: Harvested Capital Losses</strong></td>
+        <td>₹0</td>
+        <td class="pos"><strong>-${fmtVal(harvestedLossAmount)}</strong></td>
+        <td>Offsets 20% STCG first, then 12.5% LTCG</td>
+      </tr>
+      <tr>
+        <td><strong>3. Net STCG Taxable @ 20%</strong></td>
+        <td>${fmtVal(grossSTCG)}</td>
+        <td><strong>${fmtVal(netSTCGAfter)}</strong></td>
+        <td>Tax: ${fmtVal(taxSTCGBefore)} → <strong>${fmtVal(taxSTCGAfter)}</strong></td>
+      </tr>
+      <tr>
+        <td><strong>4. Net LTCG After ₹1.25L Exemption @ 12.5%</strong></td>
+        <td>${fmtVal(taxableLTCGBefore)}</td>
+        <td><strong>${fmtVal(taxableLTCGAfter)}</strong></td>
+        <td>First ₹1,25,000 LTCG is tax-exempt</td>
+      </tr>
+      <tr style="background: rgba(16, 185, 129, 0.08);">
+        <td><strong>5. Total Estimated Tax Payable</strong></td>
+        <td class="neg"><strong>${fmtVal(totalTaxBefore)}</strong></td>
+        <td class="pos"><strong>${fmtVal(totalTaxAfter)}</strong></td>
+        <td><span class="sim-badge-impact badge-emerald">You Save ₹${taxSaved.toLocaleString()} 🎉</span></td>
+      </tr>
+    `;
+  }
+
+  function addWatchlistItem(e) {
+    e.preventDefault();
+    const name = document.getElementById("wl-name").value.trim();
+    const ltp = parseFloat(document.getElementById("wl-ltp").value);
+    const target = parseFloat(document.getElementById("wl-target").value);
+    if (!name || isNaN(ltp) || isNaN(target)) return;
+
+    watchlist.push({ id: Date.now(), name, ltp, target });
+    document.getElementById("wl-name").value = "";
+    document.getElementById("wl-ltp").value = "";
+    document.getElementById("wl-target").value = "";
+    persistState();
+    renderWatchlist();
+  }
+
+  function removeWatchlistItem(id) {
+    watchlist = watchlist.filter(w => w.id !== id);
+    persistState();
+    renderWatchlist();
+  }
+
+  function renderWatchlist() {
+    const container = document.getElementById("watchlist-container");
+    if (!container) return;
+    if (watchlist.length === 0) {
+      container.innerHTML = '<div style="font-size:0.78rem; color:var(--text-muted); padding:8px 0;">Watchlist is empty. Add a target stock below.</div>';
+      return;
+    }
+
+    container.innerHTML = watchlist.map(w => {
+      const diffPct = ((w.ltp - w.target) / w.target) * 100;
+      const inBuyZone = diffPct <= 3.0;
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; padding:10px 12px; border-radius:8px; margin-bottom:8px; border-left:3px solid ${inBuyZone ? 'var(--emerald)':'var(--amber)'};">
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:0.85rem;">${w.name}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Current: <strong style="color:#fff;">₹${w.ltp}</strong> · Target Entry: <strong style="color:#93c5fd;">₹${w.target}</strong></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge ${inBuyZone ? 'badge-emerald':'badge-amber'}">
+              ${inBuyZone ? '🟢 IN BUY ZONE' : `⏳ ${diffPct.toFixed(1)}% above entry`}
+            </span>
+            <button class="btn-secondary" style="padding:3px 8px; font-size:0.72rem; color:var(--red);" onclick="removeWatchlistItem(${w.id})">✕</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function simulateLiveRefresh() {
+    holdings.forEach(h => {
+      const deltaPercent = (Math.random() * 2.4 - 1.2) / 100;
+      const oldPrice = h.ltp;
+      h.ltp = Math.round((h.ltp * (1 + deltaPercent)) * 100) / 100;
+      h.today = Math.round((h.ltp - oldPrice) * h.qty);
+    });
+
+    watchlist.forEach(w => {
+      const delta = (Math.random() * 2.0 - 1.0) / 100;
+      w.ltp = Math.round((w.ltp * (1 + delta)) * 100) / 100;
+    });
+
+    const niftyChange = (Math.random() * 0.4 - 0.2).toFixed(2);
+    document.getElementById("badge-nifty").textContent = `NIFTY 24,132 (${niftyChange >= 0 ? '+' : ''}${niftyChange}%)`;
+    persistState();
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+  }
+
+  function exportReportPDF() {
+    window.print();
+  }
+
+  function runPortfolioIntelligenceEngine() {
+    holdings.forEach(h => {
+      const inv = h.qty * h.avg;
+      const cur = h.qty * h.ltp;
+      const pnl = cur - inv;
+      const pct = inv > 0 ? (pnl / inv) * 100 : 0;
+      h.inv = inv;
+      h.cur = cur;
+      h.pnl = pnl;
+      h.pct = pct;
+
+      const referencePrice = pct > 20 ? h.ltp : h.avg;
+      h.sl = Math.round(referencePrice * (1 - ruleStopLossBuffer / 100));
+      h.tgt = Math.round(h.ltp * 1.25);
+
+      if (pct <= ruleExitDrawdown - 5) {
+        h.act = "EXIT NOW 🔴";
+      } else if (pct <= ruleExitDrawdown) {
+        h.act = "EXIT 🔴";
+      } else if (pct >= ruleProfitBook + 25) {
+        h.act = "BOOK 20% 🟣";
+      } else if (pct >= ruleProfitBook) {
+        h.act = "BOOK 15% 🟣";
+      } else if (pct > 15) {
+        h.act = "HOLD ✅";
+      } else {
+        h.act = "HOLD";
+      }
+
+      let health = 50;
+      if (pct >= ruleProfitBook) health += 32;
+      else if (pct > 20) health += 20;
+      else if (pct > 0) health += 10;
+      else if (pct > ruleExitDrawdown) health -= 10;
+      else health -= 32;
+
+      if (h.today && h.today > 500) health += 5;
+      if (h.today && h.today < -1000) health -= 5;
+      h.h = Math.max(15, Math.min(95, health));
+
+      if (pct >= ruleProfitBook) {
+        h.note = `🏆 Exceeds your +${ruleProfitBook}% profit-booking trigger (+${pct.toFixed(1)}%). Consider locking partial profits and trailing SL at ₹${h.sl}.`;
+      } else if (pct <= ruleExitDrawdown) {
+        h.note = `🚨 Breached your ${ruleExitDrawdown}% drawdown limit (${pct.toFixed(1)}%). Priority exit recommended to redeploy capital.`;
+      } else if (pct > 15) {
+        h.note = `Healthy outperformer (+${pct.toFixed(1)}%). Maintain trailing stop-loss at ₹${h.sl} (${ruleStopLossBuffer}% buffer).`;
+      } else {
+        h.note = `Position tracking near cost basis. Key trailing support stands at ₹${h.sl}.`;
+      }
+    });
+
+    renderAllViews();
+    renderVisualCharts();
+    renderWatchlist();
+  }
+
+  function runSimulation() {
+    const doExits = document.getElementById("sim-chk-exits").checked;
+    const doPharma = document.getElementById("sim-chk-pharma").checked;
+    const doWinners = document.getElementById("sim-chk-winners").checked;
+    const doHarvest = document.getElementById("sim-chk-harvest").checked;
+    const doStress = document.getElementById("sim-chk-stress").checked;
+
+    let simEq = JSON.parse(JSON.stringify(holdings));
+    let capitalFreed = 0;
+
+    if (doExits) {
+      simEq = simEq.filter(h => {
+        if (h.act.includes("EXIT")) {
+          capitalFreed += h.cur;
+          return false;
+        }
+        return true;
+      });
+    }
+
+    let harvestedCash = 0;
+    if (doHarvest) {
+      simEq.forEach(h => {
+        if (h.pct >= ruleProfitBook) {
+          const trimAmount = h.cur * 0.20;
+          h.qty = Math.round(h.qty * 0.80);
+          h.cur = h.qty * h.ltp;
+          h.inv = h.qty * h.avg;
+          h.pnl = h.cur - h.inv;
+          harvestedCash += trimAmount;
+        }
+      });
+    }
+
+    if (doPharma) {
+      simEq.push({ n: "Sun Pharma", sec: "Pharma", qty: 12, avg: 1650, ltp: 1650, today: 0, h: 88, act: "BUY/HOLD 🟢", inv: 19800, cur: 19800, pnl: 0, pct: 0, type: "EQUITY" });
+      simEq.push({ n: "Dr Reddy's Labs", sec: "Pharma", qty: 3, avg: 6700, ltp: 6700, today: 0, h: 86, act: "BUY/HOLD 🟢", inv: 20100, cur: 20100, pnl: 0, pct: 0, type: "EQUITY" });
+    }
+
+    if (doWinners) {
+      const kotak = simEq.find(h => h.n.includes("Kotak"));
+      if (kotak) {
+        kotak.qty += 40;
+        kotak.cur = kotak.qty * kotak.ltp;
+        kotak.inv += 40 * kotak.avg;
+        kotak.pnl = kotak.cur - kotak.inv;
+      }
+      const bel = simEq.find(h => h.n.includes("Bharat Electronics"));
+      if (bel) {
+        bel.qty += 45;
+        bel.cur = bel.qty * bel.ltp;
+        bel.inv += 45 * bel.avg;
+        bel.pnl = bel.cur - bel.inv;
+      }
+    }
+
+    if (doStress) {
+      simEq.forEach(h => {
+        if (h.sec && (h.sec.includes("Auto") || h.sec.includes("Refineries") || h.sec.includes("Oil"))) {
+          h.ltp = h.ltp * 0.92;
+          h.cur = h.qty * h.ltp;
+          h.pnl = h.cur - h.inv;
+          h.pct = (h.pnl / h.inv) * 100;
+        }
+      });
+    }
+
+    simulatedHoldings = simEq;
+
+    const curEqCur = holdings.reduce((s, h) => s + h.cur, 0);
+    const simEqCur = simEq.reduce((s, h) => s + h.cur, 0);
+
+    const curHealthAvg = Math.round(holdings.reduce((s, h) => s + h.h, 0) / (holdings.length || 1));
+    const simHealthAvg = Math.round(simEq.reduce((s, h) => s + h.h, 0) / (simEq.length || 1));
+
+    const curDeadCap = holdings.filter(h => h.pct <= ruleExitDrawdown).reduce((s, h) => s + h.cur, 0);
+    const simDeadCap = simEq.filter(h => h.pct <= ruleExitDrawdown).reduce((s, h) => s + h.cur, 0);
+
+    const curPharma = holdings.filter(h => h.sec && h.sec.includes("Pharma")).reduce((s, h) => s + h.cur, 0);
+    const simPharma = simEq.filter(h => h.sec && h.sec.includes("Pharma")).reduce((s, h) => s + h.cur, 0);
+    const curPharmaPct = curEqCur > 0 ? (curPharma / curEqCur) * 100 : 0;
+    const simPharmaPct = simEqCur > 0 ? (simPharma / simEqCur) * 100 : 0;
+
+    const matrixTbody = document.getElementById("sim-matrix-tbody");
+    matrixTbody.innerHTML = `
+      <tr>
+        <td><strong>Portfolio Health Score</strong></td>
+        <td>${curHealthAvg} / 100</td>
+        <td class="pos"><strong>${simHealthAvg} / 100</strong></td>
+        <td><span class="sim-badge-impact ${simHealthAvg >= curHealthAvg ? 'badge-emerald':'badge-red'}">${simHealthAvg >= curHealthAvg ? '+' : ''}${simHealthAvg - curHealthAvg} pts</span></td>
+      </tr>
+      <tr>
+        <td><strong>Capital Breaching Exit Trigger (${ruleExitDrawdown}%)</strong></td>
+        <td class="neg">${fmtVal(curDeadCap)}</td>
+        <td class="pos"><strong>${fmtVal(simDeadCap)}</strong></td>
+        <td><span class="sim-badge-impact badge-emerald">-${fmtVal(curDeadCap - simDeadCap)} de-risked</span></td>
+      </tr>
+      <tr>
+        <td><strong>Healthcare/Pharma Allocation</strong></td>
+        <td>${curPharmaPct.toFixed(1)}%</td>
+        <td class="pos"><strong>${simPharmaPct.toFixed(1)}%</strong></td>
+        <td><span class="sim-badge-impact badge-blue">Gap Resolved ✅</span></td>
+      </tr>
+      <tr>
+        <td><strong>Unlocked Capital / Dry Powder</strong></td>
+        <td>${fmtVal(9715)}</td>
+        <td class="pos"><strong>${fmtVal(capitalFreed + harvestedCash + 9715)}</strong></td>
+        <td><span class="sim-badge-impact badge-purple">+${fmtVal(capitalFreed + harvestedCash)} available</span></td>
+      </tr>
+      <tr>
+        <td><strong>Total Positions Count</strong></td>
+        <td>${holdings.length} stocks</td>
+        <td><strong>${simEq.length} stocks</strong></td>
+        <td><span class="sim-badge-impact badge-blue">Optimized</span></td>
+      </tr>
+    `;
+  }
+
+  function applySimulationToPortfolio() {
+    if (confirm("Apply simulated rebalancing to your active portfolio? This will execute the chosen exits, add pharma, and update all analytics.")) {
+      holdings = JSON.parse(JSON.stringify(simulatedHoldings));
+      persistState();
+      runPortfolioIntelligenceEngine();
+      calculateTaxHarvest();
+      switchTab('dashboard');
+      alert("✅ Portfolio successfully rebalanced based on your simulation!");
+    }
+  }
+
+  // --- Visual Charts ---
+  function renderVisualCharts() {
+    const eqCur = holdings.reduce((s, h) => s + h.cur, 0);
+    const mfCur = mfs.reduce((s, m) => s + m.cur, 0);
+    const etfCur = etfs.reduce((s, e) => s + e.cur, 0);
+    const bondCur = bonds.reduce((s, b) => s + b.cur, 0);
+    const grandCur = eqCur + mfCur + etfCur + bondCur;
+
+    const assetSegments = [
+      { label: "Equities", value: eqCur, color: "#38bdf8" },
+      { label: "Mutual Funds", value: mfCur, color: "#34d399" },
+      { label: "ETFs", value: etfCur, color: "#c084fc" },
+      { label: "Bonds/Gold", value: bondCur, color: "#fbbf24" }
+    ];
+
+    drawDonutChart("canvas-asset-donut", "legend-asset-donut", assetSegments, grandCur);
+
+    const sectorMap = {};
+    holdings.forEach(h => {
+      const sec = h.sec || "Other";
+      sectorMap[sec] = (sectorMap[sec] || 0) + h.cur;
+    });
+
+    const sectorList = Object.keys(sectorMap)
+      .map(k => ({ label: k, value: sectorMap[k], pct: (sectorMap[k] / eqCur) * 100 }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    drawSectorBarChart("canvas-sector-bars", sectorList);
+    drawPnLHistogram("canvas-pnl-distribution", holdings);
+  }
+
+  function drawDonutChart(canvasId, legendId, segments, total) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    
+    canvas.width = 220 * dpr;
+    canvas.height = 220 * dpr;
+    ctx.scale(dpr, dpr);
+
+    const cx = 110;
+    const cy = 110;
+    const outerR = 85;
+    const innerR = 52;
+    let currentAngle = -0.5 * Math.PI;
+
+    ctx.clearRect(0, 0, 220, 220);
+
+    segments.forEach(seg => {
+      const sliceAngle = (seg.value / total) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.arc(cx, cy, outerR, currentAngle, currentAngle + sliceAngle);
+      ctx.arc(cx, cy, innerR, currentAngle + sliceAngle, currentAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = seg.color;
+      ctx.fill();
+      currentAngle += sliceAngle;
+    });
+
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR - 2, 0, 2 * Math.PI);
+    ctx.fill();
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 13px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Total Value", cx, cy - 8);
+
+    ctx.fillStyle = "#34d399";
+    ctx.font = "bold 12px -apple-system, sans-serif";
+    ctx.fillText(fmtVal(total), cx, cy + 10);
+
+    const legendEl = document.getElementById(legendId);
+    if (legendEl) {
+      legendEl.innerHTML = segments.map(s => `
+        <span class="legend-item">
+          <span class="legend-color" style="background:${s.color}"></span>
+          <span>${s.label} (${((s.value/total)*100).toFixed(0)}%)</span>
+        </span>
+      `).join("");
+    }
+  }
+
+  function drawSectorBarChart(canvasId, sectors) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = 300 * dpr;
+    canvas.height = 180 * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, 300, 180);
+
+    const startX = 85;
+    const maxBarW = 180;
+    const barHeight = 16;
+    const gap = 30;
+
+    const threshX = startX + (0.25 * maxBarW / 0.35);
+    ctx.strokeStyle = "#dc2626";
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(threshX, 10);
+    ctx.lineTo(threshX, 160);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    sectors.forEach((sec, idx) => {
+      const y = 15 + idx * gap;
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "11px -apple-system, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(sec.label.substring(0, 11), startX - 8, y + 12);
+
+      const barW = Math.min(maxBarW, (sec.pct / 35) * maxBarW);
+      ctx.fillStyle = sec.pct > 25 ? "#f87171" : "#38bdf8";
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(startX, y, barW, barHeight, 4) : ctx.fillRect(startX, y, barW, barHeight);
+      ctx.fill();
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 10px -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(`${sec.pct.toFixed(1)}%`, startX + barW + 6, y + 12);
+    });
+  }
+
+  function drawPnLHistogram(canvasId, list) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    const w = canvas.parentElement.clientWidth || 600;
+    canvas.width = w * dpr;
+    canvas.height = 130 * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, 130);
+
+    const buckets = [
+      { label: "<-15%", color: "#ef4444", count: list.filter(h => h.pct < -15).length },
+      { label: "-15% to 0%", color: "#f59e0b", count: list.filter(h => h.pct >= -15 && h.pct < 0).length },
+      { label: "0% to 20%", color: "#60a5fa", count: list.filter(h => h.pct >= 0 && h.pct < 20).length },
+      { label: "20% to 50%", color: "#34d399", count: list.filter(h => h.pct >= 20 && h.pct < 50).length },
+      { label: "50% to 100%", color: "#a855f7", count: list.filter(h => h.pct >= 50 && h.pct < 100).length },
+      { label: ">100%", color: "#38bdf8", count: list.filter(h => h.pct >= 100).length }
+    ];
+
+    const maxCount = Math.max(1, ...buckets.map(b => b.count));
+    const barWidth = (w - 60) / buckets.length;
+
+    buckets.forEach((b, i) => {
+      const x = 30 + i * barWidth;
+      const barH = (b.count / maxCount) * 80;
+      const y = 95 - barH;
+
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x + 10, y, barWidth - 20, barH, [4, 4, 0, 0]) : ctx.fillRect(x + 10, y, barWidth - 20, barH);
+      ctx.fill();
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 11px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(b.count, x + barWidth / 2, y - 5);
+
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "10px -apple-system, sans-serif";
+      ctx.fillText(b.label, x + barWidth / 2, 115);
+    });
+  }
+
+  function getAlertsForStock(h) {
+    const alerts = [];
+    const gap = h.sl ? ((h.ltp - h.sl) / h.ltp) * 100 : 999;
+
+    if (h.sl && h.ltp <= h.sl) {
+      alerts.push({ sev: "CRITICAL", t: "STOP LOSS BREACHED", m: `₹${h.ltp} is at/below SL ₹${h.sl}. Execute exit immediately!` });
+    } else if (gap > 0 && gap <= 5) {
+      alerts.push({ sev: "HIGH", t: "STOP LOSS PROXIMITY", m: `Only ${gap.toFixed(1)}% buffer remaining above SL ₹${h.sl}.` });
+    }
+
+    if (h.act.includes("EXIT NOW") || h.act.includes("EXIT/SL")) {
+      alerts.push({ sev: "CRITICAL", t: "EXIT PRIORITY", m: `Breached your ${ruleExitDrawdown}% drawdown limit. Free capital for higher-alpha picks.` });
+    } else if (h.act.includes("EXIT")) {
+      alerts.push({ sev: "HIGH", t: "FLAGGED FOR EXIT", m: `Drawdown reached ${h.pct.toFixed(1)}% vs your ${ruleExitDrawdown}% threshold.` });
+    }
+
+    if (h.act.includes("BOOK")) {
+      alerts.push({ sev: "MEDIUM", t: "PROFIT HARVESTING", m: `Surpassed +${ruleProfitBook}% trigger. Book 15-20% partial profits.` });
+    }
+
+    if (h.pct >= 100) {
+      alerts.push({ sev: "INFO", t: "MULTIBAGGER STATUS", m: `Gained +${h.pct.toFixed(0)}%! Outstanding compounder.` });
+    }
+
+    if (h.today && Math.abs(h.today) >= 1500) {
+      alerts.push({ sev: h.today < 0 ? "HIGH" : "INFO", t: "NOTABLE MOVE TODAY", m: `${h.today >= 0 ? "+" : ""}${fmt(h.today)} today.` });
+    }
+
+    return alerts;
+  }
+
+  function renderAllViews() {
+    const eqInv = holdings.reduce((s, h) => s + h.inv, 0);
+    const eqCur = holdings.reduce((s, h) => s + h.cur, 0);
+    const eqPnL = eqCur - eqInv;
+
+    const mfInv = mfs.reduce((s, m) => s + m.inv, 0);
+    const mfCur = mfs.reduce((s, m) => s + m.cur, 0);
+    const mfPnL = mfCur - mfInv;
+
+    const etfInv = etfs.reduce((s, e) => s + e.inv, 0);
+    const etfCur = etfs.reduce((s, e) => s + e.cur, 0);
+    const etfPnL = etfCur - etfInv;
+
+    const bondInv = bonds.reduce((s, b) => s + b.inv, 0);
+    const bondCur = bonds.reduce((s, b) => s + b.cur, 0);
+    const bondPnL = bondCur - bondInv;
+
+    const grandInv = eqInv + mfInv + etfInv + bondInv;
+    const grandCur = eqCur + mfCur + etfCur + bondCur;
+    const totalPnL = grandCur - grandInv;
+    const totalPct = grandInv > 0 ? (totalPnL / grandInv) * 100 : 0;
+
+    document.getElementById("hdr-cur-val").textContent = fmtVal(grandCur);
+    const hdrPnlEl = document.getElementById("hdr-pnl");
+    hdrPnlEl.textContent = `${fmt(totalPnL)} (${totalPct >= 0 ? '+' : ''}${totalPct.toFixed(1)}%)`;
+    hdrPnlEl.className = "header-pnl " + (totalPnL >= 0 ? "pos" : "neg");
+
+    document.getElementById("dash-invested").textContent = fmtVal(grandInv);
+    document.getElementById("dash-current").textContent = fmtVal(grandCur);
+    const pnlEl = document.getElementById("dash-pnl");
+    pnlEl.textContent = fmt(totalPnL);
+    pnlEl.className = "kpi-val " + (totalPnL >= 0 ? "pos" : "neg");
+
+    const pctEl = document.getElementById("dash-pct");
+    pctEl.textContent = `${totalPct >= 0 ? '+' : ''}${totalPct.toFixed(1)}%`;
+    pctEl.className = "kpi-val " + (totalPct >= 0 ? "pos" : "neg");
+
+    const acEl = document.getElementById("dash-asset-classes");
+    acEl.innerHTML = `
+      <div class="data-row"><span>📈 Direct Equities</span><span class="${eqPnL >= 0 ? 'pos':'neg'}"><strong>${fmt(eqPnL)}</strong> (${(eqPnL/eqInv*100).toFixed(1)}%)</span></div>
+      <div class="data-row"><span>🏦 Mutual Funds</span><span class="${mfPnL >= 0 ? 'pos':'neg'}"><strong>${fmt(mfPnL)}</strong> (${(mfPnL/mfInv*100).toFixed(1)}%)</span></div>
+      <div class="data-row"><span>🌍 ETFs & International</span><span class="${etfPnL >= 0 ? 'pos':'neg'}"><strong>${fmt(etfPnL)}</strong> (${(etfPnL/etfInv*100).toFixed(1)}%)</span></div>
+      <div class="data-row"><span>🏅 Sovereign Gold Bonds</span><span class="${bondPnL >= 0 ? 'pos':'neg'}"><strong>${fmt(bondPnL)}</strong> (${(bondPnL/bondInv*100).toFixed(1)}%)</span></div>
+    `;
+
+    const obsEl = document.getElementById("dash-observations");
+    const severeLosses = holdings.filter(h => h.pct <= ruleExitDrawdown);
+    const bigWinners = holdings.filter(h => h.pct >= ruleProfitBook);
+    obsEl.innerHTML = `
+      <div>✅ <strong>Strong Winning Positions:</strong> ${bigWinners.length} holdings exceed your +${ruleProfitBook}% profit-booking threshold.</div>
+      <div>⚠️ <strong>Lagging Positions:</strong> ${severeLosses.length} equity holdings breach your ${ruleExitDrawdown}% drawdown limit.</div>
+      <div>✅ <strong>Asset Allocation:</strong> Direct equities comprise ${((eqCur/grandCur)*100).toFixed(0)}%, Mutual Funds ${((mfCur/grandCur)*100).toFixed(0)}%, and ETFs/Bonds ${(((etfCur+bondCur)/grandCur)*100).toFixed(0)}% of total net worth.</div>
+    `;
+
+    const actEl = document.getElementById("dash-priority-actions");
+    const exitList = holdings.filter(h => h.act.includes("EXIT")).map(h => h.n).slice(0, 5).join(", ");
+    const bookList = holdings.filter(h => h.act.includes("BOOK")).map(h => h.n).slice(0, 4).join(", ");
+
+    actEl.innerHTML = `
+      <div class="action-item act-critical">
+        <span>🚨</span>
+        <div><strong>Critical Capital Exits (${ruleExitDrawdown}% rule):</strong> Flagged in <code>${exitList || 'None'}</code>. Free up capital and harvest tax losses.</div>
+      </div>
+      <div class="action-item act-book">
+        <span>🟣</span>
+        <div><strong>Harvest Profits (+${ruleProfitBook}% rule):</strong> Book 15-20% partial profits on runners: <code>${bookList || 'Hold'}</code>.</div>
+      </div>
+      <div class="action-item act-hold">
+        <span>🟢</span>
+        <div><strong>Core Anchors:</strong> Hold long-term compounding titans (Quant Flexi Cap, Reliance, BEL, SGB) without disruption.</div>
+      </div>
+    `;
+
+    const sortedG = [...holdings].sort((a,b) => b.pnl - a.pnl).slice(0, 5);
+    const sortedL = [...holdings].sort((a,b) => a.pnl - b.pnl).slice(0, 5);
+
+    document.getElementById("dash-top-gainers").innerHTML = sortedG.map(h => `
+      <div class="data-row"><span style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${h.n}</span><span class="pos"><strong>${fmt(h.pnl)}</strong> (+${h.pct.toFixed(0)}%)</span></div>
+    `).join("");
+
+    document.getElementById("dash-top-losers").innerHTML = sortedL.map(h => `
+      <div class="data-row"><span style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${h.n}</span><span class="neg"><strong>${fmt(h.pnl)}</strong> (${h.pct.toFixed(0)}%)</span></div>
+    `).join("");
+
+    renderStocksView();
+    renderMFView();
+    renderAlertsView();
+  }
+
+  function handleSearch() {
+    searchQuery = document.getElementById("stock-search").value.toLowerCase().trim();
+    renderStocksView();
+  }
+
+  function setStockFilter(fil) {
+    activeStockFilter = fil;
+    document.querySelectorAll(".filter-chip").forEach(btn => {
+      btn.classList.toggle("active", btn.textContent.startsWith(fil));
+    });
+    renderStocksView();
+  }
+
+  function renderStocksView() {
+    let list = [...holdings];
+    if (searchQuery) {
+      list = list.filter(h => h.n.toLowerCase().includes(searchQuery) || (h.sec && h.sec.toLowerCase().includes(searchQuery)));
+    }
+    if (activeStockFilter === 'WINNERS') list = list.filter(h => h.pnl > 0);
+    else if (activeStockFilter === 'LOSERS') list = list.filter(h => h.pnl < 0);
+    else if (activeStockFilter === 'EXIT') list = list.filter(h => h.act.includes("EXIT"));
+    else if (activeStockFilter === 'BOOK') list = list.filter(h => h.act.includes("BOOK"));
+
+    document.getElementById("tab-stocks-count").textContent = `(${holdings.length})`;
+    document.getElementById("stocks-count-label").textContent = `Showing ${list.length} of ${holdings.length} stocks · Tap any card to view Health & AI analysis`;
+
+    const container = document.getElementById("stocks-list-container");
+    if (list.length === 0) {
+      container.innerHTML = '<div class="empty-state">No holdings match your search or filter.</div>';
+      return;
+    }
+
+    container.innerHTML = list.map((h) => {
+      const alerts = getAlertsForStock(h);
+      const isCritical = alerts.some(a => a.sev === "CRITICAL");
+      const isHigh = alerts.some(a => a.sev === "HIGH");
+      const borderClass = isCritical ? "critical-border" : isHigh ? "high-border" : (h.pnl > 0 ? "winner-border" : "");
+      const isOpen = !!expandedCards[h.n];
+
+      const actBadgeClass = h.act.includes("EXIT") ? "badge-red" : h.act.includes("BOOK") ? "badge-purple" : "badge-emerald";
+      const healthClass = h.h >= 75 ? "health-high" : h.h >= 50 ? "health-mid" : "health-low";
+
+      return `
+        <div class="stock-card ${borderClass}">
+          <div class="stock-summary" onclick="toggleCard('${h.n.replace(/'/g, "\\'")}')">
+            <div class="stock-top">
+              <div>
+                <div class="stock-name">${h.n}</div>
+                <div class="stock-meta">${h.sec || 'Equity'} · ${h.qty} shares @ ₹${h.avg.toFixed(2)}</div>
+              </div>
+              <div class="stock-price">
+                <div class="stock-ltp">₹${h.ltp.toFixed(2)}</div>
+                <div class="stock-pct ${h.pct >= 0 ? 'pos':'neg'}">${h.pct >= 0 ? '+':''}${h.pct.toFixed(1)}%</div>
+              </div>
+            </div>
+            <div class="stock-bottom">
+              <div>
+                <span class="${h.pnl >= 0 ? 'pos':'neg'}" style="font-weight:700;">${fmt(h.pnl)}</span>
+                ${h.today ? `<span style="font-size:0.75rem; color:${h.today >= 0 ? 'var(--emerald)':'var(--red)'}; margin-left:6px;">Today ${fmt(h.today)}</span>` : ''}
+              </div>
+              <span class="badge ${actBadgeClass}">${h.act}</span>
+            </div>
+          </div>
+          ${isOpen ? `
+            <div class="stock-expanded">
+              ${alerts.map(a => `
+                <div class="alert-pill alert-${a.sev.toLowerCase()}">
+                  <strong>${a.sev} · ${a.t}:</strong> ${a.m}
+                </div>
+              `).join("")}
+              <div style="background:#111827; border-radius:8px; padding:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">PIAI Intelligence Assessment</span>
+                  <span class="health-pill ${healthClass}">Health ${h.h}/100</span>
+                </div>
+                <div style="font-size:0.78rem; color:#e2e8f0; line-height:1.5;">${h.note}</div>
+                <div style="margin-top:8px; display:flex; gap:16px; font-size:0.75rem; color:var(--text-muted);">
+                  <span>Stop Loss (${ruleStopLossBuffer}%): <strong style="color:#fff;">₹${h.sl}</strong></span>
+                  <span>Target: <strong style="color:#fff;">₹${h.tgt}</strong></span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function toggleCard(name) {
+    expandedCards[name] = !expandedCards[name];
+    renderStocksView();
+  }
+
+  function renderMFView() {
+    const mfContainer = document.getElementById("mf-list-container");
+    mfContainer.innerHTML = mfs.map(m => {
+      const pnl = m.cur - m.inv;
+      const pct = (pnl / m.inv) * 100;
+      return `
+        <div style="background:#0f172a; border:1px solid var(--card-border); border-radius:8px; padding:10px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="font-size:0.85rem; color:#fff;">${m.n}</strong>
+            <span class="badge badge-emerald">${m.act}</span>
+          </div>
+          <div style="display:flex; gap:14px; font-size:0.78rem; color:var(--text-muted); margin-bottom:4px;">
+            <span>Inv: <strong style="color:#fff;">${fmtVal(m.inv)}</strong></span>
+            <span>Cur: <strong style="color:#fff;">${fmtVal(m.cur)}</strong></span>
+            <span>P&L: <strong class="${pnl >= 0 ? 'pos':'neg'}">${fmt(pnl)} (${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</strong></span>
+          </div>
+          <div style="font-size:0.75rem; color:#9ca3af; font-style:italic;">${m.note || ''}</div>
+        </div>
+      `;
+    }).join("");
+
+    const etfContainer = document.getElementById("etf-list-container");
+    etfContainer.innerHTML = etfs.map(e => {
+      const pnl = e.cur - e.inv;
+      const pct = (pnl / e.inv) * 100;
+      return `
+        <div style="background:#0f172a; border:1px solid var(--card-border); border-radius:8px; padding:10px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="font-size:0.85rem; color:#fff;">${e.n}</strong>
+            <span class="badge ${pct > 50 ? 'badge-purple' : 'badge-emerald'}">${pct >= 0 ? '+':''}${pct.toFixed(1)}%</span>
+          </div>
+          <div style="display:flex; gap:14px; font-size:0.78rem; color:var(--text-muted); margin-bottom:4px;">
+            <span>Inv: <strong style="color:#fff;">${fmtVal(e.inv)}</strong></span>
+            <span>Cur: <strong style="color:#fff;">${fmtVal(e.cur)}</strong></span>
+            <span>P&L: <strong class="${pnl >= 0 ? 'pos':'neg'}">${fmt(pnl)}</strong></span>
+          </div>
+          <div style="font-size:0.75rem; color:#38bdf8;">${e.act}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderAlertsView() {
+    const allAlerts = [];
+    holdings.forEach(h => {
+      const als = getAlertsForStock(h);
+      als.forEach(a => allAlerts.push({ ...a, name: h.n }));
+    });
+
+    document.getElementById("tab-alerts-count").textContent = `(${allAlerts.length})`;
+
+    const container = document.getElementById("alerts-container");
+    const levels = ["CRITICAL", "HIGH", "MEDIUM", "INFO"];
+    let html = "";
+
+    levels.forEach(sev => {
+      const matches = allAlerts.filter(a => a.sev === sev);
+      if (matches.length === 0) return;
+      html += `
+        <div style="margin-bottom:12px;">
+          <div style="font-weight:700; font-size:0.8rem; margin-bottom:6px; color:${sev==='CRITICAL'?'#f87171':sev==='HIGH'?'#fb923c':sev==='MEDIUM'?'#fde047':'#93c5fd'};">
+            ${sev==='CRITICAL'?'🔴':sev==='HIGH'?'🟠':sev==='MEDIUM'?'🟡':'🔵'} ${sev} ALERTS (${matches.length})
+          </div>
+          ${matches.map(a => `
+            <div class="alert-pill alert-${sev.toLowerCase()}" style="margin-bottom:6px;">
+              <strong>${a.name} · ${a.t}:</strong> ${a.m}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+    const exitCount = holdings.filter(h => h.act.includes("EXIT")).length;
+    const exitCap = holdings.filter(h => h.act.includes("EXIT")).reduce((s,h) => s + h.cur, 0);
+
+    const radar = document.getElementById("risk-radar-items");
+    radar.innerHTML = `
+      <div class="data-row"><span class="text-muted">Active Exit Rule (${ruleExitDrawdown}%)</span><span class="neg" style="font-weight:600;">${exitCount} stocks flagged (${fmtVal(exitCap)}) 🔴</span></div>
+      <div class="data-row"><span class="text-muted">Top Single-Day Loser</span><span class="neg" style="font-weight:600;">HDFC Bank (-₹2,898 today) 🔴</span></div>
+      <div class="data-row"><span class="text-muted">Top Single-Day Outperformer</span><span class="pos" style="font-weight:600;">Quality Power (+₹3,829 today) ✅</span></div>
+      <div class="data-row"><span class="text-muted">Trailing Stop-Loss Buffer</span><span class="pos" style="font-weight:600;">${ruleStopLossBuffer}% below peak/cost</span></div>
+      <div class="data-row"><span class="text-muted">Multibaggers (>100% gains)</span><span class="pos" style="font-weight:600;">Adani Ports, Welspun, SGB, FANG+ ETF 🏅</span></div>
+    `;
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll(".tab-view").forEach(v => v.style.display = "none");
+    document.getElementById(`view-${tabId}`).style.display = "block";
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.textContent.toLowerCase().includes(tabId) || 
+        (tabId === 'stocks' && btn.textContent.includes('Stocks')) || 
+        (tabId === 'mf' && btn.textContent.includes('MF')) ||
+        (tabId === 'buy' && btn.textContent.includes('Buy')) ||
+        (tabId === 'whatif' && btn.textContent.includes('What-If')) ||
+        (tabId === 'tax' && btn.textContent.includes('Tax')));
+    });
+    if (tabId === 'dashboard') {
+      setTimeout(renderVisualCharts, 50);
+    } else if (tabId === 'whatif') {
+      runSimulation();
+    } else if (tabId === 'tax') {
+      calculateTaxHarvest();
+    }
+  }
+
+  // --- FLOATING AI CHAT LOGIC ---
+  function toggleChatWindow() {
+    const win = document.getElementById("chat-window");
+    win.classList.toggle("open");
+    if (win.classList.contains("open")) {
+      document.getElementById("chat-input").focus();
+    }
+  }
+
+  function handleChatKey(e) {
+    if (e.key === "Enter") sendChatMessage();
+  }
+
+  function askQuickPrompt(text) {
+    document.getElementById("chat-input").value = text;
+    sendChatMessage();
+  }
+
+  function sendChatMessage() {
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendBubble(text, "user");
+    input.value = "";
+
+    setTimeout(() => {
+      const response = generateAIResponse(text);
+      appendBubble(response, "ai");
+    }, 350);
+  }
+
+  function appendBubble(content, sender) {
+    const box = document.getElementById("chat-messages");
+    const bubble = document.createElement("div");
+    bubble.className = `chat-bubble chat-bubble-${sender}`;
+    bubble.innerHTML = content;
+    box.appendChild(bubble);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function generateAIResponse(query) {
+    const q = query.toLowerCase();
+
+    if (q.includes("tax") || q.includes("harvest") || q.includes("stcg") || q.includes("ltcg")) {
+      calculateTaxHarvest();
+      return `<strong>Indian Tax-Loss Harvesting Breakdown:</strong><br>• By harvesting <strong>₹${lastTaxSummary.lossesUsed.toLocaleString()}</strong> in unrealized losses from your lagging positions, your estimated capital gains tax drops from <strong>₹${lastTaxSummary.beforeTax.toLocaleString()}</strong> to <strong>₹${lastTaxSummary.afterTax.toLocaleString()}</strong>.<br>• <strong>Total Tax Saved: ₹${lastTaxSummary.saved.toLocaleString()} 🎉</strong> (Check the <strong>🧾 Tax Harvest</strong> tab to customize your STCG/LTCG mix).`;
+    }
+
+    if (q.includes("watchlist") || q.includes("buy zone")) {
+      const buyZoneItems = watchlist.filter(w => ((w.ltp - w.target) / w.target) * 100 <= 3.0);
+      if (buyZoneItems.length === 0) {
+        return `Currently, none of your watchlist stocks are within 3% of their target entry price. Keep monitoring via the <strong>🛒 Buy & Watch</strong> tab.`;
+      }
+      return `<strong>Watchlist Buy Zone Alert:</strong> ${buyZoneItems.map(w => `<code>${w.name}</code> (LTP ₹${w.ltp} vs Target ₹${w.target})`).join(", ")} ${buyZoneItems.length === 1 ? 'is' : 'are'} currently inside the 3% Buy Zone!`;
+    }
+
+    if (q.includes("rvnl") || q.includes("why is rvnl")) {
+      return `<strong>RVNL Diagnostic:</strong> RVNL is currently down <strong>-33.9%</strong> (-₹10,564), which exceeds your <strong>${ruleExitDrawdown}%</strong> drawdown trigger. Exiting frees ~₹20,500 and realizes a ₹10.5K tax loss to offset your winning trades.`;
+    }
+
+    if (q.includes("risk") || q.includes("biggest risk")) {
+      const deadCap = holdings.filter(h => h.pct <= ruleExitDrawdown).reduce((s,h) => s + h.cur, 0);
+      return `<strong>Key Risk Radar:</strong><br>1. <strong>Tata Motors PV concentration:</strong> 478 shares with an unrealized loss of -₹75.8K (-33%).<br>2. <strong>Zero Healthcare Exposure:</strong> 0% pharma allocation.<br>3. <strong>Capital Drag:</strong> ${fmtVal(deadCap)} is tied up in positions breaching your ${ruleExitDrawdown}% exit threshold.`;
+    }
+
+    if (q.includes("free") || q.includes("cash") || q.includes("dry powder") || q.includes("exits")) {
+      const exitTotal = holdings.filter(h => h.act.includes("EXIT")).reduce((s,h) => s + h.cur, 0);
+      const exitCount = holdings.filter(h => h.act.includes("EXIT")).length;
+      return `<strong>Capital Recovery Opportunity:</strong> Under your current ${ruleExitDrawdown}% rule, executing your ${exitCount} flagged exits will immediately unlock <strong>${fmtVal(exitTotal)}</strong> in liquid cash.`;
+    }
+
+    const matched = holdings.find(h => q.includes(h.n.toLowerCase().split(" ")[0]));
+    if (matched) {
+      return `<strong>${matched.n}:</strong><br>• Current LTP: ₹${matched.ltp} (${matched.pct >= 0 ? '+' : ''}${matched.pct.toFixed(1)}%)<br>• Total P&L: ${fmt(matched.pnl)}<br>• Health Score: <strong>${matched.h}/100</strong><br>• Recommendation: <code>${matched.act}</code><br>• Trailing Stop-Loss (${ruleStopLossBuffer}%): ₹${matched.sl}`;
+    }
+
+    return `Your active portfolio holds ${holdings.length} stocks worth ${document.getElementById("hdr-cur-val").textContent}. Explore the new <strong>🧾 Tax Harvest</strong> tab to calculate your STCG/LTCG tax savings!`;
+  }
+
+  // --- CSV Parser ---
+  document.getElementById("csv-file-input").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      parseCustomCSV(evt.target.result);
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  function parseCustomCSV(text) {
+    const lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(l => l.length > 0);
+    if (lines.length < 2) {
+      alert("Invalid CSV format: requires header row and data rows.");
+      return;
+    }
+
+    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    let nameIdx = headers.findIndex(h => h.includes("name") || h.includes("asset") || h.includes("symbol") || h.includes("stock") || h.includes("instrument"));
+    let qtyIdx = headers.findIndex(h => h.includes("qty") || h.includes("quantity") || h.includes("shares"));
+    let avgIdx = headers.findIndex(h => h.includes("avg") || h.includes("buy") || h.includes("cost") || h.includes("price"));
+    let ltpIdx = headers.findIndex(h => h.includes("ltp") || h.includes("current") || h.includes("last") || h.includes("value") || h.includes("market"));
+    let secIdx = headers.findIndex(h => h.includes("sec") || h.includes("cat") || h.includes("industry"));
+
+    if (nameIdx === -1) nameIdx = 0;
+    if (qtyIdx === -1) qtyIdx = 1;
+    if (avgIdx === -1) avgIdx = 2;
+    if (ltpIdx === -1) ltpIdx = 3;
+
+    const newHoldings = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(",").map(c => c.trim().replace(/^["']|["']$/g, ""));
+      if (cols.length < 3) continue;
+
+      const name = cols[nameIdx];
+      const rawQty = cols[qtyIdx] ? cols[qtyIdx].replace(/[^0-9.-]+/g, "") : "1";
+      const rawAvg = cols[avgIdx] ? cols[avgIdx].replace(/[^0-9.-]+/g, "") : "0";
+      const rawLtp = (cols[ltpIdx] && ltpIdx !== -1) ? cols[ltpIdx].replace(/[^0-9.-]+/g, "") : rawAvg;
+      const sector = (secIdx !== -1 && cols[secIdx]) ? cols[secIdx] : "Equity";
+
+      const qty = parseFloat(rawQty) || 1;
+      const avg = parseFloat(rawAvg) || 0;
+      const ltp = parseFloat(rawLtp) || avg;
+
+      if (name && avg > 0) {
+        newHoldings.push({
+          n: name,
+          sec: sector,
+          qty: qty,
+          avg: avg,
+          ltp: ltp,
+          today: 0,
+          type: "EQUITY"
+        });
+      }
+    }
+
+    if (newHoldings.length === 0) {
+      alert("No valid holdings could be parsed from the CSV. Please verify column headers.");
+      return;
+    }
+
+    holdings = newHoldings;
+    expandedCards = {};
+    persistState();
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+    alert(`Successfully loaded and analyzed ${newHoldings.length} holdings from your CSV!`);
+  }
+
+  window.addEventListener("resize", () => {
+    renderVisualCharts();
+  });
+
+  initApp();
+</script>
+
+</body>
+</html>
