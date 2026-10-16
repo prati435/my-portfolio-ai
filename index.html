@@ -459,19 +459,21 @@
 <div class="top-header">
   <div class="header-top">
     <div>
-      <div class="header-tag" id="hdr-timestamp">PIAI · REAL-TIME MARKET & PORTFOLIO ENGINE</div>
-      <div class="header-title">Portfolio Intelligence AI</div>
+      <div class="header-tag" id="hdr-date-clock">📅 Loading Today's Date & IST Market Clock...</div>
+      <div class="header-title">Portfolio Intelligence AI <span id="hdr-feed-source" class="badge badge-blue" style="font-size:0.68rem; vertical-align:middle; margin-left:6px;">Yahoo Live Feed</span></div>
+      <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;" id="hdr-timestamp">Initializing real-time market sync...</div>
     </div>
     <div class="header-total">
       <div class="header-cur-val" id="hdr-cur-val">₹0</div>
-      <div class="header-pnl" id="hdr-pnl">Upload CSV or Add Holdings</div>
+      <div class="header-pnl" id="hdr-pnl">Upload CSV, Connect Dhan, or Add Holdings</div>
     </div>
   </div>
   <div class="market-strip">
-    <span class="badge badge-blue" id="badge-nifty" onclick="promptManualIndex('^NSEI', 'NIFTY 50')" style="cursor:pointer;" title="Click to refresh or override">NIFTY: Fetching live...</span>
-    <span class="badge badge-blue" id="badge-sensex" onclick="promptManualIndex('^BSESN', 'SENSEX')" style="cursor:pointer;" title="Click to refresh or override">SENSEX: Fetching live...</span>
-    <span class="badge badge-blue" id="badge-banknifty" onclick="promptManualIndex('^NSEBANK', 'BANK NIFTY')" style="cursor:pointer;" title="Click to refresh or override">BANK NIFTY: Fetching live...</span>
-    <span class="badge badge-amber" id="badge-vix" onclick="promptManualIndex('^INDIAVIX', 'INDIA VIX')" style="cursor:pointer;" title="Click to refresh or override">INDIA VIX: Fetching live...</span>
+    <span class="badge badge-blue" id="badge-nifty" onclick="promptManualIndex('^NSEI', 'NIFTY 50')" style="cursor:pointer;" title="Click to refresh or override">NIFTY: Syncing...</span>
+    <span class="badge badge-blue" id="badge-sensex" onclick="promptManualIndex('^BSESN', 'SENSEX')" style="cursor:pointer;" title="Click to refresh or override">SENSEX: Syncing...</span>
+    <span class="badge badge-blue" id="badge-banknifty" onclick="promptManualIndex('^NSEBANK', 'BANK NIFTY')" style="cursor:pointer;" title="Click to refresh or override">BANK NIFTY: Syncing...</span>
+    <span class="badge badge-amber" id="badge-vix" onclick="promptManualIndex('^INDIAVIX', 'INDIA VIX')" style="cursor:pointer;" title="Click to refresh or override">INDIA VIX: Syncing...</span>
+    <span class="badge badge-emerald" id="badge-autosync" onclick="cycleAutoSyncInterval()" style="cursor:pointer; margin-left:auto;" title="Click to change auto-sync frequency">🔄 Auto-Sync: 60s</span>
   </div>
 </div>
 
@@ -490,11 +492,50 @@
         <span>📁 Upload Broker CSV</span>
         <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
       </label>
-      <button class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices()">⚡ Sync Live NSE Prices</button>
+      <button class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices(true)">⚡ Sync Live NSE Prices</button>
+      <button class="btn-primary" style="background:#0284c7;" onclick="toggleDhanModal()">🔗 Connect DhanHQ API</button>
       <button class="btn-secondary" onclick="toggleAddHoldingForm()">➕ Add Position</button>
       <button class="btn-secondary" onclick="window.print()">📄 Export PDF</button>
       <button class="btn-danger" onclick="clearAllPortfolioData()">🗑️ Clear Data</button>
     </div>
+  </div>
+
+  <!-- DHANHQ FREE TIER & LIVE API INTEGRATION DRAWER -->
+  <div class="card" id="dhan-config-card" style="display: none; margin-bottom: 12px; border: 1px solid #0284c7; background: #0c192c;">
+    <div class="card-title" style="color: #38bdf8;">
+      <span>🔗 DhanHQ v2 Integration — Optimized for Free Tier (₹0/mo)</span>
+      <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleDhanModal()">Close</button>
+    </div>
+    <div style="font-size: 0.76rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.5;">
+      <strong>DhanHQ Free Tier Mode</strong> uses Dhan's 100% free Portfolio & Positions endpoints (<code>GET /v2/holdings</code> &amp; <code>GET /v2/positions</code>) to import your demat stocks and open positions with zero monthly subscription, and pairs them with our <strong>Turbo Parallel NSE Quote Engine</strong> for fast live LTP updates.
+    </div>
+    <div class="form-grid">
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Dhan API Tier</label>
+        <select id="dhan-tier-mode" class="watchlist-input" style="margin-bottom:0;">
+          <option value="FREE" selected>🟢 Free Tier (Holdings/Positions API + Turbo Free LTP)</option>
+          <option value="PAID">⚡ Paid Data API Plan (₹499/mo /v2/marketfeed/ohlc)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Dhan Client ID (<code>client-id</code>)</label>
+        <input type="text" id="dhan-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. 1000000001">
+      </div>
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Dhan JWT Access Token (<code>access-token</code>)</label>
+        <input type="password" id="dhan-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste token from web.dhan.co">
+      </div>
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">CORS Relay / Worker (Optional)</label>
+        <input type="text" id="dhan-proxy-url" class="watchlist-input" style="margin-bottom:0;" placeholder="Default: Auto Fast Relay">
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+      <button class="btn-primary" onclick="importDhanHoldings()">📥 1-Click Import Demat Holdings &amp; Positions (Free Tier)</button>
+      <button class="btn-emerald" onclick="saveAndConnectDhan()">💾 Save Dhan Settings</button>
+      <button class="btn-danger" onclick="disconnectDhan()">Disconnect</button>
+    </div>
+    <div id="dhan-status-msg" style="font-size:0.75rem; color:#7dd3fc; margin-top:8px;"></div>
   </div>
 
   <!-- MANUAL ADD HOLDING DRAWER -->
@@ -1123,7 +1164,7 @@
   let lastTaxSummary = { saved: 0, beforeTax: 0, afterTax: 0, lossesUsed: 0 };
   let lastWealthSummary = { year1Cr: "N/A", finalCorpus: 0, horizon: 10, sip: 25000, cagr: 14 };
 
-  // Common Indian company name -> NSE symbol helper for faster resolution (fallback to live search API)
+  // Comprehensive Indian company name -> NSE symbol map (0ms instant local resolution, no search API delay)
   const NSE_SYMBOL_HINTS = {
     "reliance": "RELIANCE.NS", "tcs": "TCS.NS", "tata consultancy": "TCS.NS",
     "hdfc bank": "HDFCBANK.NS", "icici bank": "ICICIBANK.NS", "infosys": "INFY.NS",
@@ -1156,7 +1197,24 @@
     "idfc first": "IDFCFIRSTB.NS", "bandhan bank": "BANDHANBNK.NS", "city union bank": "CUB.NS",
     "equitas": "EQUITASBNK.NS", "rbl bank": "RBLBANK.NS", "yes bank": "YESBANK.NS",
     "pnb": "PNB.NS", "bank of baroda": "BANKBARODA.NS", "canara bank": "CANBK.NS",
-    "union bank": "UNIONBANK.NS", "indian bank": "INDIANB.NS"
+    "union bank": "UNIONBANK.NS", "indian bank": "INDIANB.NS",
+    "quality power": "QUALITY.NS", "welspun corp": "WELCORP.NS", "jindal saw": "JINDALSAW.NS",
+    "netweb": "NETWEB.NS", "deepak fert": "DEEPAKFERT.NS", "delhivery": "DELHIVERY.NS",
+    "sona blw": "SONACOMS.NS", "jsw infra": "JSWINFRA.NS", "titagarh": "TITAGARH.NS",
+    "deep industries": "DEEPINDS.NS", "cyient": "CYIENT.NS", "saksoft": "SAKSOFT.NS",
+    "hindustan copper": "HINDCOPPER.NS", "railtel": "RAILTEL.NS", "kpi green": "KPIGREEN.NS",
+    "rites": "RITES.NS", "samhi": "SAMHI.NS", "swiggy": "SWIGGY.NS", "ireda": "IREDA.NS",
+    "hudco": "HUDCO.NS", "nbcc": "NBCC.NS", "cochin shipyard": "COCHINSHIP.NS",
+    "mazagon": "MAZDOCK.NS", "garden reach": "GRSE.NS", "bdl": "BDL.NS",
+    "bharat dynamics": "BDL.NS", "data patterns": "DATAPATTNS.NS", "paras defence": "PARAS.NS",
+    "astral": "ASTRAL.NS", "polycab": "POLYCAB.NS", "kei": "KEI.NS", "dixon": "DIXON.NS",
+    "kaynes": "KAYNES.NS", "amber": "AMBER.NS", "tata elxsi": "TATAELXSI.NS",
+    "kpit": "KPITTECH.NS", "tata tech": "TATATECH.NS", "coforge": "COFORGE.NS",
+    "persistent": "PERSISTENT.NS", "mphasis": "MPHASIS.NS", "oracle": "OFSS.NS",
+    "pb fintech": "POLICYBZR.NS", "paytm": "PAYTM.NS", "nykaa": "NYKAA.NS",
+    "honasa": "HONASA.NS", "mamaearth": "HONASA.NS", "firstcry": "FIRSTCRY.NS",
+    "ola electric": "OLAELEC.NS", "hyundai": "HYUNDAI.NS", "waaree": "WAAREEENER.NS",
+    "premier energies": "PREMIERENE.NS", "ntpc green": "NTPCGREEN.NS", "afcons": "AFCONS.NS"
   };
 
   function fmt(v) {
@@ -1179,16 +1237,322 @@
   }
 
   /* =========================================================================
+     LIVE TODAY'S DATE, IST MARKET CLOCK & SMART AUTO-SYNC SCHEDULER
+     ========================================================================= */
+  const STORAGE_KEY_DHAN = "piai_dhan_creds_v3";
+  let dhanConfig = { clientId: "", accessToken: "", proxyUrl: "" };
+  let autoSyncIntervalSec = 60; // 60s default, cycles 30s -> 60s -> 120s -> OFF
+  let autoSyncCountdown = 60;
+  let lastSyncTimestamp = 0;
+  let isSyncInProgress = false;
+
+  // DhanHQ Security ID map for major Indian indices (IDX_I) & NSE Equities (NSE_EQ)
+  const DHAN_INDEX_SEC_IDS = {
+    "^NSEI": { seg: "IDX_I", secId: 13 },
+    "^BSESN": { seg: "IDX_I", secId: 51 },
+    "^NSEBANK": { seg: "IDX_I", secId: 25 },
+    "^INDIAVIX": { seg: "IDX_I", secId: 21 }
+  };
+
+  // Standard NSE Equity Token / Security IDs used by DhanHQ (NSE_EQ segment)
+  const DHAN_NSE_EQ_SEC_IDS = {
+    "RELIANCE.NS": 2885, "TCS.NS": 11536, "HDFCBANK.NS": 1333, "ICICIBANK.NS": 4963,
+    "INFY.NS": 1594, "BHARTIARTL.NS": 10604, "SBIN.NS": 3045, "LT.NS": 11483,
+    "ITC.NS": 1660, "HINDUNILVR.NS": 1394, "AXISBANK.NS": 5900, "KOTAKBANK.NS": 1922,
+    "BAJFINANCE.NS": 317, "MARUTI.NS": 10999, "M&M.NS": 2031, "SUNPHARMA.NS": 3351,
+    "TITAN.NS": 3506, "TATAMOTORS.NS": 3456, "NTPC.NS": 11630, "POWERGRID.NS": 14977,
+    "ULTRACEMCO.NS": 11532, "ASIANPAINT.NS": 236, "ADANIPORTS.NS": 15083, "COALINDIA.NS": 20374,
+    "ONGC.NS": 2475, "BAJAJ-AUTO.NS": 16669, "NESTLEIND.NS": 17963, "TATAPOWER.NS": 3426,
+    "HAL.NS": 2303, "BEL.NS": 383, "RVNL.NS": 9552, "IRFC.NS": 2029, "IRCTC.NS": 13611,
+    "JIOFIN.NS": 18143, "ZOMATO.NS": 5097, "DLF.NS": 14732, "VBL.NS": 18921, "TRENT.NS": 1964,
+    "VEDL.NS": 3063, "HINDALCO.NS": 1363, "TATASTEEL.NS": 3499, "JSWSTEEL.NS": 11723,
+    "GRASIM.NS": 1232, "DRREDDY.NS": 881, "CIPLA.NS": 694, "APOLLOHOSP.NS": 157,
+    "WIPRO.NS": 3787, "HCLTECH.NS": 7229, "TECHM.NS": 13538, "LTIM.NS": 17818,
+    "INDUSINDBK.NS": 5258, "SBILIFE.NS": 21808, "HDFCLIFE.NS": 467, "BAJAJFINSV.NS": 16675,
+    "PIDILITIND.NS": 2664, "SIEMENS.NS": 3150, "ABB.NS": 13, "BHEL.NS": 438,
+    "PFC.NS": 14299, "RECLTD.NS": 15355, "IOC.NS": 1624, "BPCL.NS": 526, "GAIL.NS": 4717,
+    "IGL.NS": 11262, "SUZLON.NS": 12018, "NHPC.NS": 17400, "SJVN.NS": 18883,
+    "CDSL.NS": 21174, "BSE.NS": 19585, "MCX.NS": 31181, "ANGELONE.NS": 324,
+    "SBICARD.NS": 17971, "CHOLAFIN.NS": 685, "SHRIRAMFIN.NS": 4306, "MUTHOOTFIN.NS": 23650,
+    "MANAPPURAM.NS": 19061, "FEDERALBNK.NS": 1023, "IDFCFIRSTB.NS": 11184,
+    "BANDHANBNK.NS": 2263, "CUB.NS": 5701, "EQUITASBNK.NS": 20874, "PNB.NS": 10666,
+    "BANKBARODA.NS": 4668, "CANBK.NS": 10794, "UNIONBANK.NS": 10753, "INDIANB.NS": 14309
+  };
+
+  function resolveDhanSecurityId(holding) {
+    if (holding.dhanSecId) return holding.dhanSecId;
+    if (holding.ticker && DHAN_NSE_EQ_SEC_IDS[holding.ticker]) {
+      holding.dhanSecId = DHAN_NSE_EQ_SEC_IDS[holding.ticker];
+      return holding.dhanSecId;
+    }
+    const clean = (holding.n || "").toLowerCase().trim();
+    for (const [k, sym] of Object.entries(NSE_SYMBOL_HINTS)) {
+      if (clean === k || clean.includes(k)) {
+        holding.ticker = holding.ticker || sym;
+        if (DHAN_NSE_EQ_SEC_IDS[sym]) {
+          holding.dhanSecId = DHAN_NSE_EQ_SEC_IDS[sym];
+          return holding.dhanSecId;
+        }
+      }
+    }
+    return null;
+  }
+
+  function getISTDateInfo() {
+    const now = new Date();
+    const istDateStr = now.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+    const istTimeStr = now.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
+    // Determine if NSE/BSE is currently open (Mon-Fri, 09:15 to 15:30 IST)
+    const istParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kolkata",
+      weekday: "short",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: false
+    }).formatToParts(now);
+    const wk = (istParts.find(p => p.type === "weekday") || {}).value || "";
+    const hr = parseInt((istParts.find(p => p.type === "hour") || {}).value || "0", 10);
+    const mn = parseInt((istParts.find(p => p.type === "minute") || {}).value || "0", 10);
+    const minsFromMidnight = hr * 60 + mn;
+    const isWeekday = !["Sat", "Sun"].includes(wk);
+    const isMarketOpen = isWeekday && minsFromMidnight >= (9 * 60 + 15) && minsFromMidnight <= (15 * 60 + 30);
+    return { istDateStr, istTimeStr, isMarketOpen };
+  }
+
+  function updateLiveDateAndClock() {
+    const { istDateStr, istTimeStr, isMarketOpen } = getISTDateInfo();
+    const el = document.getElementById("hdr-date-clock");
+    if (el) {
+      const statusBadge = isMarketOpen
+        ? `<span style="color:#34d399; font-weight:800;">● NSE/BSE MARKET OPEN</span>`
+        : `<span style="color:#fbbf24; font-weight:700;">● MARKET CLOSED (LAST CLOSE)</span>`;
+      el.innerHTML = `📅 ${istDateStr} &nbsp;·&nbsp; 🕒 ${istTimeStr} IST &nbsp;·&nbsp; ${statusBadge}`;
+    }
+
+    // Handle Auto-Sync Countdown
+    const badgeEl = document.getElementById("badge-autosync");
+    if (autoSyncIntervalSec > 0) {
+      autoSyncCountdown = Math.max(0, autoSyncCountdown - 1);
+      if (badgeEl) {
+        badgeEl.textContent = isSyncInProgress
+          ? `⏳ Syncing Market...`
+          : `🔄 Auto-Sync: ${autoSyncCountdown}s`;
+        badgeEl.className = "badge badge-emerald";
+      }
+      if (autoSyncCountdown <= 0 && !isSyncInProgress) {
+        autoSyncCountdown = autoSyncIntervalSec;
+        syncLiveNSEPrices(false);
+      }
+    } else if (badgeEl) {
+      badgeEl.textContent = `⏸️ Auto-Sync: OFF (Click to enable)`;
+      badgeEl.className = "badge badge-amber";
+    }
+  }
+
+  function cycleAutoSyncInterval() {
+    if (autoSyncIntervalSec === 60) autoSyncIntervalSec = 30;
+    else if (autoSyncIntervalSec === 30) autoSyncIntervalSec = 120;
+    else if (autoSyncIntervalSec === 120) autoSyncIntervalSec = 0;
+    else autoSyncIntervalSec = 60;
+    autoSyncCountdown = autoSyncIntervalSec;
+    updateLiveDateAndClock();
+  }
+
+  function triggerSmartDebouncedSync() {
+    // Trigger background sync if >30 seconds since last sync and not currently syncing
+    if (!isSyncInProgress && (Date.now() - lastSyncTimestamp > 30000)) {
+      syncLiveNSEPrices(false);
+    }
+  }
+
+  /* =========================================================================
+     DHANHQ v2 API INTEGRATION (FREE TIER HOLDINGS/POSITIONS + OPTIONAL DATA API)
+     ========================================================================= */
+  function toggleDhanModal() {
+    const el = document.getElementById("dhan-config-card");
+    el.style.display = el.style.display === "none" ? "block" : "none";
+  }
+
+  function updateDhanFeedBadge() {
+    const badge = document.getElementById("hdr-feed-source");
+    if (!badge) return;
+    if (dhanConfig && dhanConfig.accessToken && dhanConfig.clientId) {
+      badge.textContent = dhanConfig.tier === "PAID" ? "⚡ DhanHQ Paid Data API" : "🟢 DhanHQ Free Tier + Turbo NSE";
+      badge.className = "badge badge-emerald";
+    } else {
+      badge.textContent = "⚡ Turbo Parallel NSE Feed";
+      badge.className = "badge badge-blue";
+    }
+  }
+
+  async function dhanApiRequest(endpoint, method = "GET", bodyObj = null) {
+    const targetUrl = `https://api.dhan.co${endpoint}`;
+    const headers = {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "access-token": dhanConfig.accessToken,
+      "client-id": dhanConfig.clientId
+    };
+    const fetchOpts = {
+      method,
+      headers,
+      body: bodyObj ? JSON.stringify(bodyObj) : undefined
+    };
+
+    if (dhanConfig.proxyUrl && dhanConfig.proxyUrl.trim()) {
+      try {
+        const pUrl = dhanConfig.proxyUrl.trim().replace(/\/$/, "") + endpoint;
+        const c = new AbortController(); const t = setTimeout(() => c.abort(), 4000);
+        const res = await fetch(pUrl, { ...fetchOpts, signal: c.signal });
+        clearTimeout(t);
+        if (res.ok) return await res.json();
+      } catch (e) {}
+    }
+
+    // Race direct and CORS relay concurrently with a 4s timeout so it never hangs
+    const attemptFetch = async (url) => {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 4000);
+      const res = await fetch(url, { ...fetchOpts, signal: c.signal });
+      clearTimeout(t);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return await res.json();
+    };
+
+    try {
+      return await Promise.any([
+        attemptFetch(targetUrl),
+        attemptFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`)
+      ]);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function saveAndConnectDhan() {
+    const tier = document.getElementById("dhan-tier-mode").value;
+    const cid = document.getElementById("dhan-client-id").value.trim();
+    const tok = document.getElementById("dhan-access-token").value.trim();
+    const prx = document.getElementById("dhan-proxy-url").value.trim();
+    const msg = document.getElementById("dhan-status-msg");
+
+    if (!cid || !tok) {
+      msg.innerHTML = `<span style="color:var(--red);">⚠️ Please enter your Dhan Client ID and JWT Access Token.</span>`;
+      return;
+    }
+    dhanConfig = { clientId: cid, accessToken: tok, proxyUrl: prx, tier };
+    localStorage.setItem(STORAGE_KEY_DHAN, JSON.stringify(dhanConfig));
+    updateDhanFeedBadge();
+    msg.innerHTML = `<span style="color:var(--emerald);">✅ Saved DhanHQ (${tier === 'FREE' ? 'Free Tier' : 'Paid Data Tier'}) settings! Click '📥 1-Click Import Demat Holdings' to pull your portfolio.</span>`;
+    syncLiveNSEPrices(true);
+  }
+
+  function disconnectDhan() {
+    dhanConfig = { clientId: "", accessToken: "", proxyUrl: "", tier: "FREE" };
+    localStorage.removeItem(STORAGE_KEY_DHAN);
+    document.getElementById("dhan-client-id").value = "";
+    document.getElementById("dhan-access-token").value = "";
+    document.getElementById("dhan-proxy-url").value = "";
+    document.getElementById("dhan-tier-mode").value = "FREE";
+    document.getElementById("dhan-status-msg").textContent = "Disconnected DhanHQ API.";
+    updateDhanFeedBadge();
+  }
+
+  async function importDhanHoldings() {
+    const msg = document.getElementById("dhan-status-msg");
+    const tier = document.getElementById("dhan-tier-mode").value;
+    const cid = document.getElementById("dhan-client-id").value.trim();
+    const tok = document.getElementById("dhan-access-token").value.trim();
+    const prx = document.getElementById("dhan-proxy-url").value.trim();
+
+    if (cid && tok) {
+      dhanConfig = { clientId: cid, accessToken: tok, proxyUrl: prx, tier };
+      localStorage.setItem(STORAGE_KEY_DHAN, JSON.stringify(dhanConfig));
+      updateDhanFeedBadge();
+    }
+    if (!dhanConfig.accessToken) {
+      msg.innerHTML = `<span style="color:var(--red);">⚠️ Please enter your Dhan Access Token first.</span>`;
+      return;
+    }
+
+    msg.innerHTML = `⏳ Calling Free Tier endpoints <code>GET /v2/holdings</code> &amp; <code>GET /v2/positions</code>...`;
+    const [holdingsRes, positionsRes] = await Promise.all([
+      dhanApiRequest("/v2/holdings", "GET"),
+      dhanApiRequest("/v2/positions", "GET")
+    ]);
+
+    const imported = [];
+    if (Array.isArray(holdingsRes)) {
+      holdingsRes.forEach(item => {
+        const qty = parseFloat(item.totalQty) || 0;
+        if (qty <= 0) return;
+        const avg = parseFloat(item.avgCostPrice) || 0;
+        const ltp = parseFloat(item.lastTradedPrice) || avg;
+        imported.push({
+          n: item.tradingSymbol || "Stock",
+          sec: item.exchange || "NSE_EQ",
+          qty,
+          avg,
+          ltp,
+          inv: qty * avg,
+          cur: qty * ltp,
+          today: 0,
+          dhanSecId: item.securityId ? parseInt(item.securityId, 10) : null,
+          dhanSeg: item.exchangeSegment || "NSE_EQ"
+        });
+      });
+    }
+
+    if (Array.isArray(positionsRes)) {
+      positionsRes.forEach(pos => {
+        const netQty = parseFloat(pos.netQty) || 0;
+        if (netQty <= 0 || pos.positionType === "CLOSED") return;
+        // Avoid duplicating if already in holdings
+        if (imported.some(h => h.n === pos.tradingSymbol)) return;
+        const avg = parseFloat(pos.buyAvg) || parseFloat(pos.costPrice) || 0;
+        const ltp = parseFloat(pos.lastTradedPrice) || avg;
+        imported.push({
+          n: pos.tradingSymbol || "Position",
+          sec: pos.productType || "Position",
+          qty: netQty,
+          avg,
+          ltp,
+          inv: netQty * avg,
+          cur: netQty * ltp,
+          today: parseFloat(pos.unrealizedProfit) || 0,
+          dhanSecId: pos.securityId ? parseInt(pos.securityId, 10) : null,
+          dhanSeg: pos.exchangeSegment || "NSE_EQ"
+        });
+      });
+    }
+
+    if (imported.length > 0) {
+      holdings = imported;
+      persistState();
+      runPortfolioIntelligenceEngine();
+      msg.innerHTML = `<span style="color:var(--emerald);">✅ Imported ${holdings.length} positions from Dhan Free Tier! Syncing live market LTPs now...</span>`;
+      await syncLiveNSEPrices(true);
+    } else {
+      msg.innerHTML = `<span style="color:var(--amber);">⚠️ Could not fetch holdings directly from browser (token expired, empty demat, or browser CORS blocked headers). You can also upload your Dhan CSV export directly via '📁 Upload Broker CSV'.</span>`;
+    }
+  }
+
+  /* =========================================================================
      INITIALIZATION & STORAGE
      ========================================================================= */
   function initApp() {
-    // Clean up any legacy hardcoded storage keys from earlier builds
-    localStorage.removeItem("piai_portfolio_holdings");
-    localStorage.removeItem("piai_v2_portfolio_holdings");
-    localStorage.removeItem("piai_v2_mf_holdings");
-    localStorage.removeItem("piai_v2_etf_holdings");
-    localStorage.removeItem("piai_v2_bond_holdings");
-
     try {
       holdings = JSON.parse(localStorage.getItem(STORAGE_KEY_EQ) || "[]");
       mfs = JSON.parse(localStorage.getItem(STORAGE_KEY_MF) || "[]");
@@ -1196,9 +1560,37 @@
       bonds = JSON.parse(localStorage.getItem(STORAGE_KEY_BOND) || "[]");
       watchlist = JSON.parse(localStorage.getItem(STORAGE_KEY_WL) || "[]");
       liveBenchmarks = JSON.parse(localStorage.getItem(STORAGE_KEY_BENCH) || "{}");
+      dhanConfig = JSON.parse(localStorage.getItem(STORAGE_KEY_DHAN) || '{"clientId":"","accessToken":"","proxyUrl":"","tier":"FREE"}');
+      if (!dhanConfig.tier) dhanConfig.tier = "FREE";
+
+      if (holdings.length === 0) {
+        const legacyEq = JSON.parse(localStorage.getItem("piai_v2_portfolio_holdings") || "[]");
+        if (legacyEq.length > 0 && !(legacyEq[0].n === "Reliance Industries" && legacyEq[0].qty === 199)) {
+          holdings = legacyEq;
+          mfs = JSON.parse(localStorage.getItem("piai_v2_mf_holdings") || "[]");
+          etfs = JSON.parse(localStorage.getItem("piai_v2_etf_holdings") || "[]");
+          bonds = JSON.parse(localStorage.getItem("piai_v2_bond_holdings") || "[]");
+          persistState();
+        }
+      }
     } catch (e) {
       holdings = []; mfs = []; etfs = []; bonds = []; watchlist = []; liveBenchmarks = {};
+      dhanConfig = { clientId: "", accessToken: "", proxyUrl: "", tier: "FREE" };
     }
+
+    if (dhanConfig.clientId) document.getElementById("dhan-client-id").value = dhanConfig.clientId;
+    if (dhanConfig.accessToken) document.getElementById("dhan-access-token").value = dhanConfig.accessToken;
+    if (dhanConfig.proxyUrl) document.getElementById("dhan-proxy-url").value = dhanConfig.proxyUrl;
+    if (dhanConfig.tier) document.getElementById("dhan-tier-mode").value = dhanConfig.tier;
+    updateDhanFeedBadge();
+
+    updateLiveDateAndClock();
+    setInterval(updateLiveDateAndClock, 1000);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") triggerSmartDebouncedSync();
+    });
+    window.addEventListener("focus", () => triggerSmartDebouncedSync());
 
     updateBenchmarkUI();
     runPortfolioIntelligenceEngine();
@@ -1206,8 +1598,7 @@
     calculateTaxHarvest();
     calculateWealthProjection();
 
-    // Automatically fetch live market benchmarks from the web on load
-    fetchAllLiveBenchmarks(false);
+    syncLiveNSEPrices(false);
   }
 
   function persistState() {
@@ -1221,11 +1612,7 @@
 
   function clearAllPortfolioData() {
     if (!confirm("Clear all uploaded portfolio positions and reset to empty state?")) return;
-    holdings = [];
-    mfs = [];
-    etfs = [];
-    bonds = [];
-    watchlist = [];
+    holdings = []; mfs = []; etfs = []; bonds = []; watchlist = [];
     persistState();
     runPortfolioIntelligenceEngine();
     runSimulation();
@@ -1251,31 +1638,19 @@
     const inv = qty * avg;
     const cur = qty * ltp;
 
-    if (type === "MF") {
-      mfs.push({ n: name, inv, cur, qty, avg, ltp });
-    } else if (type === "ETF") {
-      etfs.push({ n: name, inv, cur, qty, avg, ltp });
-    } else if (type === "BOND") {
-      bonds.push({ n: name, inv, cur, qty, avg, ltp });
-    } else {
+    if (type === "MF") mfs.push({ n: name, inv, cur, qty, avg, ltp });
+    else if (type === "ETF") etfs.push({ n: name, inv, cur, qty, avg, ltp });
+    else if (type === "BOND") bonds.push({ n: name, inv, cur, qty, avg, ltp });
+    else {
       const newStock = { n: name, sec, qty, avg, ltp, inv, cur, today: 0 };
       holdings.push(newStock);
-      // Try live quote fetch for the newly added stock
-      resolveNSETicker(name).then(sym => {
-        if (sym) {
-          fetchQuoteForSymbol(sym).then(q => {
-            if (q && q.ltp > 0) {
-              newStock.ticker = sym;
-              newStock.ltp = q.ltp;
-              newStock.cur = newStock.qty * q.ltp;
-              newStock.today = (q.ltp - q.prevClose) * newStock.qty;
-              persistState();
-              runPortfolioIntelligenceEngine();
-              runSimulation();
-              calculateTaxHarvest();
-              calculateWealthProjection();
-            }
-          });
+      fetchFastStockQuote(newStock).then(ok => {
+        if (ok) {
+          persistState();
+          runPortfolioIntelligenceEngine();
+          runSimulation();
+          calculateTaxHarvest();
+          calculateWealthProjection();
         }
       });
     }
@@ -1289,81 +1664,141 @@
   }
 
   /* =========================================================================
-     MULTI-PROXY LIVE MARKET FETCH ENGINE (NO HARDCODED FALLBACKS)
+     TURBO PARALLEL LIVE MARKET ENGINE (PROMISE.ANY RACING + ZERO DOUBLE-FETCH)
      ========================================================================= */
-  async function fetchWithCORSFallback(targetUrl) {
-    // 1. AllOrigins JSON wrapper (/get) — most reliable on GitHub Pages (never strips CORS headers)
+  async function fetchOneProxy(proxyUrl, isWrapped, timeoutMs = 3200) {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const c1 = new AbortController();
-      const t1 = setTimeout(() => c1.abort(), 6500);
-      const r1 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`, { signal: c1.signal });
-      clearTimeout(t1);
-      if (r1.ok) {
-        const wrapper = await r1.json();
-        if (wrapper && wrapper.contents) {
-          const parsed = JSON.parse(wrapper.contents);
+      const res = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(tid);
+      if (!res.ok) throw new Error("Status " + res.status);
+      const data = await res.json();
+      if (isWrapped) {
+        if (data && data.contents) {
+          const parsed = JSON.parse(data.contents);
           if (parsed) return parsed;
         }
+        throw new Error("Invalid wrapped JSON");
       }
-    } catch (e) {}
+      if (data) return data;
+      throw new Error("Empty JSON");
+    } catch (e) {
+      clearTimeout(tid);
+      throw e;
+    }
+  }
 
-    // 2. CodeTabs Proxy
+  async function fetchWithCORSFallback(targetUrl) {
+    // Race top CORS proxies in parallel using Promise.any so the fastest proxy wins in ~250ms!
+    const enc = encodeURIComponent(targetUrl);
     try {
-      const c2 = new AbortController();
-      const t2 = setTimeout(() => c2.abort(), 6500);
-      const r2 = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, { signal: c2.signal });
-      clearTimeout(t2);
-      if (r2.ok) return await r2.json();
-    } catch (e) {}
-
-    // 3. CorsProxy.io
-    try {
-      const c3 = new AbortController();
-      const t3 = setTimeout(() => c3.abort(), 6500);
-      const r3 = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, { signal: c3.signal });
-      clearTimeout(t3);
-      if (r3.ok) return await r3.json();
-    } catch (e) {}
-
-    // 4. AllOrigins Raw
-    try {
-      const c4 = new AbortController();
-      const t4 = setTimeout(() => c4.abort(), 6500);
-      const r4 = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`, { signal: c4.signal });
-      clearTimeout(t4);
-      if (r4.ok) return await r4.json();
-    } catch (e) {}
-
-    return null;
+      return await Promise.any([
+        fetchOneProxy(`https://corsproxy.io/?${enc}`, false, 3200),
+        fetchOneProxy(`https://api.allorigins.win/raw?url=${enc}`, false, 3200),
+        fetchOneProxy(`https://api.codetabs.com/v1/proxy?quest=${enc}`, false, 3500)
+      ]);
+    } catch (e) {
+      // Fallback to wrapped allorigins if all 3 fast relays failed
+      try {
+        return await fetchOneProxy(`https://api.allorigins.win/get?url=${enc}&disableCache=true&_=${Date.now()}`, true, 4500);
+      } catch (e2) {
+        return null;
+      }
+    }
   }
 
   async function fetchQuoteForSymbol(symbol) {
-    const urls = [
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`,
-      `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`
-    ];
-    for (const u of urls) {
-      const data = await fetchWithCORSFallback(u);
-      if (data && data.chart && data.chart.result && data.chart.result[0]) {
-        const res = data.chart.result[0];
-        const meta = res.meta || {};
-        const ltp = meta.regularMarketPrice;
-        let prevClose = meta.chartPreviousClose || meta.previousClose || ltp;
-        // Also check quote close array if available for accurate 1-day change
-        try {
-          const closes = res.indicators.quote[0].close.filter(v => v !== null && !isNaN(v));
-          if (closes.length >= 2) {
-            prevClose = closes[closes.length - 2];
-          }
-        } catch (e) {}
-        if (ltp && ltp > 0) {
-          const chg = ltp - prevClose;
-          const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
-          return { ltp, prevClose, chg, pct, currency: meta.currency || "INR" };
+    const cUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`;
+    const data = await fetchWithCORSFallback(cUrl);
+    if (data && data.chart && data.chart.result && data.chart.result[0]) {
+      const res = data.chart.result[0];
+      const meta = res.meta || {};
+      const ltp = meta.regularMarketPrice;
+      let prevClose = meta.chartPreviousClose || meta.previousClose || ltp;
+      try {
+        const closes = res.indicators.quote[0].close.filter(v => v !== null && !isNaN(v));
+        if (closes.length >= 2 && (!prevClose || prevClose === ltp)) {
+          prevClose = closes[closes.length - 2];
         }
+      } catch (e) {}
+      if (ltp && ltp > 0) {
+        const chg = ltp - prevClose;
+        const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
+        return { ltp, prevClose, chg, pct, symbol };
       }
     }
     return null;
+  }
+
+  // Instant local ticker guess (0ms network cost) + single-step quote fetch
+  function guessLocalNSETicker(stockName) {
+    if (!stockName) return null;
+    const raw = stockName.trim();
+    if (raw.toUpperCase().endsWith(".NS") || raw.toUpperCase().endsWith(".BO")) return raw.toUpperCase();
+
+    const clean = raw.toLowerCase();
+    for (const [k, sym] of Object.entries(NSE_SYMBOL_HINTS)) {
+      if (clean === k || clean.includes(k)) return sym;
+    }
+
+    const cache = JSON.parse(localStorage.getItem("piai_ticker_cache_v3") || "{}");
+    if (cache[clean]) return cache[clean];
+
+    // If single token symbol (e.g. RELIANCE, SBIN, INFY, TATAMOTORS), append .NS directly in 0ms
+    const stripped = raw.replace(/\s*-\s*(EQ|BE|BZ)$/i, "").trim();
+    if (/^[A-Z0-9&-]{2,15}$/i.test(stripped) && !stripped.includes(" ")) {
+      return stripped.toUpperCase() + ".NS";
+    }
+    return null;
+  }
+
+  async function resolveNSETicker(stockName) {
+    const localGuess = guessLocalNSETicker(stockName);
+    if (localGuess) return localGuess;
+
+    const clean = (stockName || "").toLowerCase().trim();
+    const cache = JSON.parse(localStorage.getItem("piai_ticker_cache_v3") || "{}");
+    const qName = stockName.replace(/\([^)]*\)/g, "").replace(/Ltd\.?|Limited|Corp\.?|India|Private|Pvt/gi, "").trim();
+    const sUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(qName)}&quotesCount=5&newsCount=0`;
+    const data = await fetchWithCORSFallback(sUrl);
+    if (data && data.quotes && data.quotes.length > 0) {
+      const match = data.quotes.find(q => q.symbol && (q.symbol.endsWith(".NS") || q.symbol.endsWith(".BO")));
+      if (match) {
+        cache[clean] = match.symbol;
+        localStorage.setItem("piai_ticker_cache_v3", JSON.stringify(cache));
+        return match.symbol;
+      }
+    }
+    return null;
+  }
+
+  // Single-pass stock quote updater (never fetches the same stock twice!)
+  async function fetchFastStockQuote(h) {
+    let ticker = h.ticker || guessLocalNSETicker(h.n);
+    if (ticker) {
+      const q = await fetchQuoteForSymbol(ticker);
+      if (q && q.ltp > 0) {
+        h.ticker = ticker;
+        h.ltp = q.ltp;
+        h.cur = h.qty * q.ltp;
+        h.today = Math.round((q.ltp - q.prevClose) * h.qty);
+        return true;
+      }
+    }
+    // Only if direct ticker guess failed, query search API once
+    ticker = await resolveNSETicker(h.n);
+    if (ticker) {
+      const q = await fetchQuoteForSymbol(ticker);
+      if (q && q.ltp > 0) {
+        h.ticker = ticker;
+        h.ltp = q.ltp;
+        h.cur = h.qty * q.ltp;
+        h.today = Math.round((q.ltp - q.prevClose) * h.qty);
+        return true;
+      }
+    }
+    return false;
   }
 
   async function fetchAllLiveBenchmarks(showBanner = false) {
@@ -1371,32 +1806,60 @@
     const statusText = document.getElementById("sync-status-text");
     const progressFill = document.getElementById("sync-progress-fill");
 
-    if (showBanner) {
+    if (showBanner && banner) {
       banner.classList.add("active");
-      statusText.textContent = "⚡ Fetching real-time Indian & global market benchmarks...";
-      progressFill.style.width = "30%";
+      statusText.textContent = "⚡ Turbo-syncing Nifty 50, Sensex, Bank Nifty & VIX...";
+      progressFill.style.width = "35%";
     }
 
-    await Promise.all(BENCHMARK_SYMBOLS.map(async (b) => {
-      const q = await fetchQuoteForSymbol(b.sym);
+    const nowTime = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Only call Dhan /v2/marketfeed/ohlc if user explicitly selected PAID Data API tier (avoids wasted timeout on Free Tier!)
+    if (dhanConfig && dhanConfig.tier === "PAID" && dhanConfig.accessToken && dhanConfig.clientId) {
+      const dhanRes = await dhanApiRequest("/v2/marketfeed/ohlc", "POST", { IDX_I: [13, 51, 25, 21] });
+      if (dhanRes && dhanRes.data && dhanRes.data.IDX_I) {
+        const idxMap = dhanRes.data.IDX_I;
+        for (const [sym, info] of Object.entries(DHAN_INDEX_SEC_IDS)) {
+          const item = idxMap[String(info.secId)];
+          if (item && item.last_price > 0) {
+            const ltp = item.last_price;
+            const prevClose = (item.ohlc && item.ohlc.close) ? item.ohlc.close : ltp;
+            const chg = ltp - prevClose;
+            const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
+            liveBenchmarks[sym] = { ltp, prevClose, chg, pct, updatedAt: nowTime + " (Dhan)" };
+          }
+        }
+        updateBenchmarkUI();
+      }
+    }
+
+    // Fetch all 4 headline Indian indices in parallel (takes ~350ms total with Promise.any proxy racing!)
+    const coreSyms = ["^NSEI", "^BSESN", "^NSEBANK", "^INDIAVIX"];
+    await Promise.all(coreSyms.map(async (sym) => {
+      const q = await fetchQuoteForSymbol(sym);
       if (q && q.ltp > 0) {
-        liveBenchmarks[b.sym] = {
-          ltp: q.ltp,
-          prevClose: q.prevClose,
-          chg: q.chg,
-          pct: q.pct,
-          updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
+        liveBenchmarks[sym] = { ltp: q.ltp, prevClose: q.prevClose, chg: q.chg, pct: q.pct, updatedAt: nowTime };
       }
     }));
-
     persistState();
     updateBenchmarkUI();
 
-    if (showBanner) {
+    // Fetch global macro (USD/INR, Brent, Gold) non-blocking in background
+    Promise.all(["INR=X", "BZ=F", "GC=F"].map(async (sym) => {
+      const q = await fetchQuoteForSymbol(sym);
+      if (q && q.ltp > 0) {
+        liveBenchmarks[sym] = { ltp: q.ltp, prevClose: q.prevClose, chg: q.chg, pct: q.pct, updatedAt: nowTime };
+      }
+    })).then(() => {
+      persistState();
+      updateBenchmarkUI();
+    });
+
+    lastSyncTimestamp = Date.now();
+    if (showBanner && banner) {
       progressFill.style.width = "100%";
-      statusText.textContent = "✅ Live market benchmarks updated!";
-      setTimeout(() => banner.classList.remove("active"), 3000);
+      statusText.textContent = "✅ Live market benchmarks synced!";
+      setTimeout(() => banner.classList.remove("active"), 2500);
     }
   }
 
@@ -1426,7 +1889,6 @@
   }
 
   function updateBenchmarkUI() {
-    // 1. Update Top Strip Badges
     BENCHMARK_SYMBOLS.forEach(b => {
       if (!b.badgeId) return;
       const el = document.getElementById(b.badgeId);
@@ -1437,12 +1899,11 @@
         el.textContent = `${b.short} ${data.ltp.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ${arrow}${Math.abs(data.pct).toFixed(2)}%`;
         el.className = "badge " + (data.chg >= 0 ? "badge-emerald" : "badge-red");
       } else {
-        el.textContent = `${b.short}: Click to Sync / Set`;
+        el.textContent = `${b.short}: Syncing...`;
         el.className = "badge badge-blue";
       }
     });
 
-    // 2. Update Market Pulse Table
     const tbl = document.getElementById("live-benchmarks-table");
     if (tbl) {
       tbl.innerHTML = BENCHMARK_SYMBOLS.map(b => {
@@ -1450,7 +1911,7 @@
         if (!d || !d.ltp) {
           return `<div class="data-row" style="cursor:pointer;" onclick="promptManualIndex('${b.sym}', '${b.label}')">
             <span><strong>${b.label}</strong> <span style="font-size:0.7rem; color:var(--text-muted);">(${b.sym})</span></span>
-            <span style="color:var(--accent);">Fetching / Click to set</span>
+            <span style="color:var(--accent);">Syncing live... (Click to set)</span>
           </div>`;
         }
         const cls = d.chg >= 0 ? "pos" : "neg";
@@ -1462,7 +1923,6 @@
       }).join("");
     }
 
-    // 3. Update Dashboard & Market Briefings Dynamically
     const nData = liveBenchmarks["^NSEI"];
     const sData = liveBenchmarks["^BSESN"];
     const vixData = liveBenchmarks["^INDIAVIX"];
@@ -1476,7 +1936,7 @@
         const vixTxt = vixData ? ` India VIX is at <strong>${vixData.ltp.toFixed(2)}</strong> (${vixData.pct >= 0 ? '+' : ''}${vixData.pct.toFixed(1)}%).` : "";
         macroEl.innerHTML = `Live Market Feed: <strong>Nifty 50</strong> is ${dir} at <strong>${nData.ltp.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</strong> (${nData.pct >= 0 ? '+' : ''}${nData.pct.toFixed(2)}%) and <strong>Sensex</strong> is at <strong>${sData.ltp.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</strong> (${sData.pct >= 0 ? '+' : ''}${sData.pct.toFixed(2)}%).${vixTxt} Your portfolio holds <strong>${holdings.length} stocks</strong>, <strong>${mfs.length} mutual funds</strong>, and <strong>${etfs.length} ETFs</strong>.`;
       } else {
-        macroEl.innerHTML = `Click <strong>⚡ Sync Live NSE Prices</strong> above to fetch live quotes for Nifty, Sensex, and all stocks in your portfolio, or click any header badge to set a custom benchmark level.`;
+        macroEl.innerHTML = `Syncing live market feeds... Click <strong>⚡ Sync Live NSE Prices</strong> above to pull real-time quotes for Nifty, Sensex, and all stocks in your portfolio.`;
       }
     }
 
@@ -1503,103 +1963,100 @@
     }
   }
 
-  /* =========================================================================
-     TICKER RESOLUTION & PORTFOLIO LIVE SYNC
-     ========================================================================= */
-  async function resolveNSETicker(stockName) {
-    if (!stockName) return null;
-    const raw = stockName.trim();
-    if (raw.toUpperCase().endsWith(".NS") || raw.toUpperCase().endsWith(".BO")) return raw.toUpperCase();
+  async function syncLiveNSEPrices(showBanner = true) {
+    if (isSyncInProgress) return;
+    isSyncInProgress = true;
+    autoSyncCountdown = autoSyncIntervalSec || 60;
+    const syncStartMs = Date.now();
 
-    const clean = raw.toLowerCase();
-    for (const [k, sym] of Object.entries(NSE_SYMBOL_HINTS)) {
-      if (clean === k || clean.includes(k)) return sym;
-    }
-
-    const cache = JSON.parse(localStorage.getItem("piai_ticker_cache_v3") || "{}");
-    if (cache[clean]) return cache[clean];
-
-    // If single uppercase word (like INFY, SBIN, ITC), try .NS directly
-    if (/^[A-Z0-9&-]{2,15}$/i.test(raw) && !raw.includes(" ")) {
-      const candidate = raw.toUpperCase() + ".NS";
-      const q = await fetchQuoteForSymbol(candidate);
-      if (q && q.ltp > 0) {
-        cache[clean] = candidate;
-        localStorage.setItem("piai_ticker_cache_v3", JSON.stringify(cache));
-        return candidate;
-      }
-    }
-
-    // Query Yahoo Finance search API
-    const qName = raw.replace(/\([^)]*\)/g, "").replace(/Ltd\.?|Limited|Corp\.?|India/gi, "").trim();
-    const sUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(qName)}&quotesCount=6&newsCount=0`;
-    const data = await fetchWithCORSFallback(sUrl);
-    if (data && data.quotes && data.quotes.length > 0) {
-      const match = data.quotes.find(q => q.symbol && (q.symbol.endsWith(".NS") || q.symbol.endsWith(".BO")));
-      if (match) {
-        cache[clean] = match.symbol;
-        localStorage.setItem("piai_ticker_cache_v3", JSON.stringify(cache));
-        return match.symbol;
-      }
-    }
-    return null;
-  }
-
-  async function syncLiveNSEPrices() {
     const btn = document.getElementById("btn-live-sync");
     const banner = document.getElementById("sync-banner");
     const statusText = document.getElementById("sync-status-text");
     const progressFill = document.getElementById("sync-progress-fill");
 
-    btn.disabled = true;
-    btn.textContent = "⏳ Syncing Live Feed...";
-    banner.classList.add("active");
-    progressFill.style.width = "10%";
-    statusText.textContent = "⚡ Step 1/2: Fetching live Nifty, Sensex, Bank Nifty & VIX benchmarks...";
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "⏳ Turbo Syncing...";
+    }
+    if (showBanner && banner) {
+      banner.classList.add("active");
+      progressFill.style.width = "15%";
+      statusText.textContent = "⚡ Turbo-syncing live indices & portfolio stocks in parallel...";
+    }
 
-    await fetchAllLiveBenchmarks(false);
+    // Fire benchmark fetch concurrently with portfolio stock sync so indices never block stock updates!
+    const benchPromise = fetchAllLiveBenchmarks(false);
 
     let updated = 0;
     const total = holdings.length;
-    if (total > 0) {
-      for (let i = 0; i < total; i += 4) {
-        const batch = holdings.slice(i, i + 4);
-        statusText.textContent = `⚡ Step 2/2: Syncing live NSE/BSE prices (${Math.min(i + 4, total)} / ${total} stocks)...`;
-        progressFill.style.width = `${Math.round(15 + ((i + 4) / total) * 85)}%`;
+
+    // 1. Only call Dhan /v2/marketfeed/ohlc if user selected PAID Data API Tier
+    if (total > 0 && dhanConfig && dhanConfig.tier === "PAID" && dhanConfig.accessToken && dhanConfig.clientId) {
+      holdings.forEach(h => resolveDhanSecurityId(h));
+      const nseIds = [...new Set(holdings.filter(h => h.dhanSecId).map(h => h.dhanSecId))];
+      if (nseIds.length > 0) {
+        const dhanQuoteRes = await dhanApiRequest("/v2/marketfeed/ohlc", "POST", { NSE_EQ: nseIds });
+        if (dhanQuoteRes && dhanQuoteRes.data && dhanQuoteRes.data.NSE_EQ) {
+          const eqMap = dhanQuoteRes.data.NSE_EQ;
+          holdings.forEach(h => {
+            if (h.dhanSecId && eqMap[String(h.dhanSecId)]) {
+              const qItem = eqMap[String(h.dhanSecId)];
+              if (qItem.last_price > 0) {
+                h.ltp = qItem.last_price;
+                h.cur = h.qty * h.ltp;
+                const prev = (qItem.ohlc && qItem.ohlc.close) ? qItem.ohlc.close : h.ltp;
+                h.today = Math.round((h.ltp - prev) * h.qty);
+                updated++;
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // 2. High-Speed Parallel Batch Sync (Batch size = 12 stocks concurrently with Promise.any proxy racing)
+    if (total > 0 && updated < total) {
+      const BATCH_SIZE = 12;
+      for (let i = 0; i < total; i += BATCH_SIZE) {
+        const batch = holdings.slice(i, i + BATCH_SIZE);
+        if (showBanner && statusText) {
+          statusText.textContent = `⚡ Turbo-syncing NSE/BSE quotes (${Math.min(i + BATCH_SIZE, total)} / ${total} stocks)...`;
+          progressFill.style.width = `${Math.round(15 + ((i + BATCH_SIZE) / total) * 85)}%`;
+        }
 
         await Promise.all(batch.map(async (h) => {
-          const ticker = h.ticker || await resolveNSETicker(h.n);
-          if (ticker) {
-            const q = await fetchQuoteForSymbol(ticker);
-            if (q && q.ltp > 0) {
-              h.ticker = ticker;
-              h.ltp = q.ltp;
-              h.cur = h.qty * q.ltp;
-              h.today = Math.round((q.ltp - q.prevClose) * h.qty);
-              updated++;
-            }
-          }
+          const ok = await fetchFastStockQuote(h);
+          if (ok) updated++;
         }));
         runPortfolioIntelligenceEngine();
       }
-    } else {
+    } else if (showBanner && progressFill) {
       progressFill.style.width = "100%";
     }
 
+    await benchPromise;
+
+    const elapsedSec = ((Date.now() - syncStartMs) / 1000).toFixed(1);
+    lastSyncTimestamp = Date.now();
+    isSyncInProgress = false;
     persistState();
     runPortfolioIntelligenceEngine();
     runSimulation();
     calculateTaxHarvest();
     calculateWealthProjection();
 
-    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    document.getElementById("hdr-timestamp").textContent = `PIAI · LIVE SYNCED AT ${nowStr}`;
-    statusText.textContent = total > 0
-      ? `✅ Synced live market benchmarks + ${updated} of ${total} equity positions!`
-      : `✅ Live market benchmarks synced! Upload a CSV or add positions to track stocks.`;
-    btn.disabled = false;
-    btn.textContent = "⚡ Sync Live NSE Prices";
-    setTimeout(() => banner.classList.remove("active"), 5000);
+    const { istDateStr, istTimeStr } = getISTDateInfo();
+    document.getElementById("hdr-timestamp").textContent = `PIAI · SYNCED ON ${istDateStr.toUpperCase()} AT ${istTimeStr} IST IN ${elapsedSec}s (${updated}/${total} STOCKS)`;
+    if (showBanner && statusText) {
+      statusText.textContent = total > 0
+        ? `✅ Turbo sync finished in ${elapsedSec}s! Updated ${updated} of ${total} equity positions.`
+        : `✅ Live market benchmarks synced in ${elapsedSec}s!`;
+      setTimeout(() => banner.classList.remove("active"), 3500);
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "⚡ Sync Live NSE Prices";
+    }
   }
 
   /* =========================================================================
@@ -1726,7 +2183,7 @@
     container.innerHTML = list.map((h, idx) => {
       const isOpen = !!expandedCards[h.n];
       const actBadge = h.act.includes("EXIT") ? "badge-red" : h.act.includes("BOOK") ? "badge-purple" : "badge-emerald";
-      const safe = h.n.replace(/'/g, "\'");
+      const safe = h.n.replace(/'/g, "\\'");
       return `
         <div class="stock-card ${h.act.includes('EXIT') ? 'critical-border' : 'winner-border'}">
           <div class="stock-summary" onclick="expandedCards['${safe}']=!expandedCards['${safe}'];renderStocksView()">
@@ -2310,6 +2767,7 @@
     document.querySelectorAll(".tab-view").forEach(v => v.style.display = "none");
     document.getElementById("view-" + id).style.display = "block";
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.getAttribute("onclick").includes("'" + id + "'")));
+    triggerSmartDebouncedSync();
   }
 
   function toggleChatWindow() { document.getElementById("chat-window").classList.toggle("open"); }
