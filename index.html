@@ -473,7 +473,8 @@
     <span class="badge badge-blue" id="badge-sensex" onclick="promptManualIndex('^BSESN', 'SENSEX')" style="cursor:pointer;" title="Click to refresh or override">SENSEX: Syncing...</span>
     <span class="badge badge-blue" id="badge-banknifty" onclick="promptManualIndex('^NSEBANK', 'BANK NIFTY')" style="cursor:pointer;" title="Click to refresh or override">BANK NIFTY: Syncing...</span>
     <span class="badge badge-amber" id="badge-vix" onclick="promptManualIndex('^INDIAVIX', 'INDIA VIX')" style="cursor:pointer;" title="Click to refresh or override">INDIA VIX: Syncing...</span>
-    <a href="index_algo.html" class="badge badge-purple" style="text-decoration:none; cursor:pointer;" title="Switch between Standard and Algo Edition">🤖 Switch to Algo Edition</a>
+    <a href="index_algo.html" class="badge badge-purple" style="text-decoration:none; cursor:pointer;" title="Switch to Equity Algo Edition">🤖 Equity Algo Edition</a>
+    <a href="index_options.html" class="badge badge-emerald" style="text-decoration:none; cursor:pointer; font-weight:700;" title="Open Standalone F&O Options & GainzAlgo V2 Alpha Hub">🎯 F&amp;O Options &amp; GainzAlgo Hub</a>
     <span class="badge badge-emerald" id="badge-autosync" onclick="cycleAutoSyncInterval()" style="cursor:pointer; margin-left:auto;" title="Click to change auto-sync frequency">🔄 Auto-Sync: 60s</span>
   </div>
 </div>
@@ -496,6 +497,7 @@
       <button class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices(true)">⚡ Sync Live NSE Prices</button>
       <button class="btn-secondary" style="border:1px solid #38bdf8; color:#7dd3fc;" onclick="openReliabilityModal()">🛡️ Feed Diagnostics &amp; Worker</button>
       <button class="btn-primary" style="background:#0284c7;" onclick="toggleDhanModal()">🔗 Connect DhanHQ API</button>
+      <a href="index_options.html" class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#2563eb); text-decoration:none; display:inline-flex; align-items:center; gap:5px;">🎯 F&amp;O Options Algo</a>
       <button class="btn-secondary" onclick="toggleAddHoldingForm()">➕ Add Position</button>
       <button class="btn-secondary" onclick="window.print()">📄 Export PDF</button>
       <button class="btn-danger" onclick="clearAllPortfolioData()">🗑️ Clear Data</button>
