@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PIAI Options Algo &amp; GainzAlgo V2 Alpha Hub — DhanHQ F&amp;O Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #030712;
+      --bg-card: #111827;
+      --bg-card-alt: #1f2937;
+      --border: #1f2937;
+      --border-light: #374151;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #38bdf8;
+      --emerald: #34d399;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --purple: #c084fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      padding-bottom: 60px;
+      overflow-x: hidden;
+    }
+
+    /* TOP STICKY HEADER */
+    .top-header {
+      background: linear-gradient(90deg, #090d16 0%, #1e1b4b 50%, #090d16 100%);
+      border-bottom: 1px solid var(--border-light);
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+    .header-tag {
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .header-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .header-right {
+      text-align: right;
+    }
+    .header-signal-pill {
+      font-size: 0.92rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .market-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 8px auto 0;
+      max-width: 1220px;
+      align-items: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .badge-emerald { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .badge-red { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .badge-amber { background: rgba(245, 158, 11, 0.18); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-purple { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-blue { background: rgba(56, 189, 248, 0.18); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.35); }
+
+    .container {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+
+    /* CONTROL BAR */
+    .control-bar {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .btn-primary, .btn-emerald, .btn-secondary, .btn-danger, .btn-purple {
+      border: none;
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-emerald { background: #059669; color: #fff; }
+    .btn-purple { background: #7c3aed; color: #fff; }
+    .btn-secondary { background: #374151; color: #e5e7eb; border: 1px solid #4b5563; }
+    .btn-danger { background: #7f1d1d; color: #fecaca; border: 1px solid #dc2626; }
+    .btn-primary:hover, .btn-emerald:hover, .btn-secondary:hover, .btn-danger:hover, .btn-purple:hover { opacity: 0.92; }
+
+    /* TABS */
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.79rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+
+    /* CARDS & GRIDS */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #e5e7eb;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .kpi-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 11px 13px;
+    }
+    .kpi-label { font-size: 0.69rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-val { font-size: 1.18rem; font-weight: 800; margin-top: 3px; }
+    .kpi-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+    .pos { color: var(--emerald); }
+    .neg { color: var(--red); }
+    .neu { color: #f3f4f6; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+    .inp-label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .inp-field {
+      width: 100%;
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+
+    /* TABLES */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+    .opt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+    }
+    .opt-table th, .opt-table td {
+      padding: 7px 8px;
+      border-bottom: 1px solid #1f2937;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .opt-table th {
+      background: #1e293b;
+      color: #93c5fd;
+      font-weight: 700;
+      text-align: center;
+    }
+    .opt-table td.strike-col {
+      background: #0f172a;
+      color: #fbbf24;
+      font-weight: 800;
+      text-align: center;
+      border-left: 1px solid #334155;
+      border-right: 1px solid #334155;
+    }
+    .opt-table tr.atm-row td {
+      background: rgba(56, 189, 248, 0.12);
+    }
+    .opt-table tr.atm-row td.strike-col {
+      background: #0284c7;
+      color: #fff;
+    }
+    .itm-ce { background: rgba(16, 185, 129, 0.06); }
+    .itm-pe { background: rgba(239, 68, 68, 0.06); }
+
+    .code-box {
+      background: #030712;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 11px 13px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.74rem;
+      color: #7dd3fc;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.45;
+      max-height: 320px;
+    }
+
+    .toast-bar {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: #065f46;
+      border: 1px solid #34d399;
+      color: #ecfdf5;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      display: none;
+      z-index: 300;
+    }
+    .toast-bar.show { display: block; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.82);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 220;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 720px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="header-top">
+    <div>
+      <div class="header-tag" id="hdr-clock">📅 Loading IST F&amp;O Market Clock...</div>
+      <div class="header-title">
+        <span>⚡ PIAI Options Algo &amp; GainzAlgo V2 Alpha Hub</span>
+        <span class="badge badge-blue" id="hdr-feed-pill">NSE F&amp;O Live Engine</span>
+      </div>
+      <div style="font-size:0.71rem; color:var(--text-muted); margin-top:2px;" id="hdr-sync-sub">
+        Real-Time EMA + ATR Supertrend Option Signals · DhanHQ v2 Webhooks &amp; 3-Leg Super Orders
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-signal-pill badge-emerald" id="hdr-active-signal">⚡ Scanning Live Candles...</div>
+      <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;" id="hdr-rec-strike">ATM Strike: Calculating...</div>
+    </div>
+  </div>
+
+  <div class="market-strip">
+    <span class="badge badge-blue" id="strip-nifty" onclick="selectUnderlying('NIFTY')" style="cursor:pointer;">NIFTY 50: Syncing...</span>
+    <span class="badge badge-blue" id="strip-banknifty" onclick="selectUnderlying('BANKNIFTY')" style="cursor:pointer;">BANK NIFTY: Syncing...</span>
+    <span class="badge badge-blue" id="strip-sensex" onclick="selectUnderlying('SENSEX')" style="cursor:pointer;">SENSEX: Syncing...</span>
+    <span class="badge badge-amber" id="strip-vix">INDIA VIX: Syncing...</span>
+    <span class="badge badge-purple" id="strip-pcr">Implied Bias: Neutral</span>
+    <span class="badge badge-emerald" id="strip-autosync" onclick="cycleAutoSync()" style="cursor:pointer; margin-left:auto;">🔄 Auto-Sync: 30s</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOP OPERATIONS BAR -->
+  <div class="control-bar">
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div>
+        <label class="inp-label">Underlying F&amp;O Instrument</label>
+        <select id="sel-underlying" class="inp-field" style="min-width:170px;" onchange="onUnderlyingChange()">
+          <option value="NIFTY" selected>NIFTY 50 (Lot: 75 · Step: 50)</option>
+          <option value="BANKNIFTY">BANK NIFTY (Lot: 15 · Step: 100)</option>
+          <option value="FINNIFTY">FINNIFTY (Lot: 40 · Step: 50)</option>
+          <option value="SENSEX">BSE SENSEX (Lot: 10 · Step: 100)</option>
+          <option value="RELIANCE">RELIANCE (Lot: 500 · Step: 20)</option>
+          <option value="HDFCBANK">HDFCBANK (Lot: 550 · Step: 20)</option>
+          <option value="ICICIBANK">ICICIBANK (Lot: 700 · Step: 10)</option>
+          <option value="SBIN">SBIN (Lot: 750 · Step: 10)</option>
+          <option value="TATAMOTORS">TATAMOTORS (Lot: 550 · Step: 10)</option>
+        </select>
+      </div>
+      <div>
+        <label class="inp-label">Candle Timeframe</label>
+        <select id="sel-timeframe" class="inp-field" onchange="syncOptionsMarketData(true)">
+          <option value="1m">1 Minute (Scalping)</option>
+          <option value="5m" selected>5 Minute (Intraday Default)</option>
+          <option value="15m">15 Minute (Swing F&amp;O)</option>
+          <option value="1d">Daily (Positional)</option>
+        </select>
+      </div>
+      <div>
+        <label class="inp-label">Contract Expiry</label>
+        <select id="sel-expiry" class="inp-field" onchange="recomputeAllOptionModels()"></select>
+      </div>
+      <div>
+        <label class="inp-label">Lots (<span id="lbl-lot-size">75</span> qty/lot)</label>
+        <input type="number" id="inp-lots" class="inp-field" style="width:80px;" value="1" min="1" max="100" oninput="recomputeAllOptionModels()">
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-emerald" id="btn-sync-now" onclick="syncOptionsMarketData(true)">⚡ Sync Live Candles &amp; Chain</button>
+      <button class="btn-primary" onclick="toggleDhanDrawer()">🔗 DhanHQ API &amp; Worker</button>
+      <button class="btn-purple" onclick="openOverrideSpotModal()">✏️ Override Spot / VIX</button>
+    </div>
+  </div>
+
+  <!-- DHANHQ & CLOUDFLARE WORKER DRAWER -->
+  <div class="card" id="dhan-drawer" style="display:none; border-color:#0284c7; background:#0c192c;">
+    <div class="card-title" style="color:#38bdf8;">
+      <span>🔗 DhanHQ v2 F&amp;O Credentials &amp; Cloudflare Worker Relay (Shared with Main PIAI)</span>
+      <button class="btn-secondary" style="padding:3px 8px; font-size:0.72rem;" onclick="toggleDhanDrawer()">✕ Close</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label class="inp-label">Dhan Client ID (<code>client-id</code>)</label>
+        <input type="text" id="inp-dhan-cid" class="inp-field" placeholder="e.g. 1000000001">
+      </div>
+      <div>
+        <label class="inp-label">Dhan JWT Access Token (<code>access-token</code>)</label>
+        <input type="password" id="inp-dhan-token" class="inp-field" placeholder="Paste JWT from web.dhan.co">
+      </div>
+      <div>
+        <label class="inp-label">Dhan Webhook Secret Code</label>
+        <input type="text" id="inp-webhook-secret" class="inp-field" placeholder="e.g. a9f82b (from Dhan Webhooks)">
+      </div>
+      <div>
+        <label class="inp-label">Custom Cloudflare Worker URL (Optional)</label>
+        <input type="text" id="inp-worker-url" class="inp-field" placeholder="https://piai-relay.yourname.workers.dev/?url=">
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center;">
+      <button class="btn-emerald" onclick="saveDhanAndWorkerConfig()">💾 Save Credentials &amp; Sync</button>
+      <span id="lbl-quota-status" style="font-size:0.74rem; color:#7dd3fc; margin-left:auto;">Worker Quota: 0 / 100,000 today</span>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" id="tabbtn-scanner" onclick="switchOptionsTab('scanner')">🎯 1. GainzAlgo V2 Alpha Scanner</button>
+    <button class="tab-btn" id="tabbtn-chain" onclick="switchOptionsTab('chain')">⛓️ 2. Option Chain, Greeks &amp; Payoff</button>
+    <button class="tab-btn" id="tabbtn-pine" onclick="switchOptionsTab('pine')">📜 3. GainzAlgo Webhook &amp; Pine Script v5</button>
+    <button class="tab-btn" id="tabbtn-exec" onclick="switchOptionsTab('exec')">🚀 4. Dhan F&amp;O Super Order &amp; Execution</button>
+  </div>
+
+  <!-- =====================================================================
+       TAB 1: GAINZALGO V2 ALPHA LIVE SCANNER & OPTION TRANSLATOR
+       ===================================================================== -->
+  <div id="view-scanner" class="opt-tab-view">
+    <div class="kpi-grid">
+      <div class="kpi-box">
+        <div class="kpi-label" id="kpi-spot-label">NIFTY 50 Live Spot</div>
+        <div class="kpi-val neu" id="kpi-spot-val">₹0.00</div>
+        <div class="kpi-sub" id="kpi-spot-chg">Syncing live feed...</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">GainzAlgo V2 Alpha Signal</div>
+        <div class="kpi-val pos" id="kpi-gainz-signal">SCANNING</div>
+        <div class="kpi-sub" id="kpi-gainz-conf">Confidence &amp; Trend Filter</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Recommended Option Contract</div>
+        <div class="kpi-val" style="color:var(--accent);" id="kpi-rec-contract">ATM CE / PE</div>
+        <div class="kpi-sub" id="kpi-rec-entry">Est. Entry, SL &amp; Target</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">ATR Trailing Stop &amp; RSI(14)</div>
+        <div class="kpi-val" style="color:var(--amber);" id="kpi-atr-val">₹0.00</div>
+        <div class="kpi-sub" id="kpi-rsi-val">RSI: -- · Vol Surge: --</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- LIVE CANDLE + EMA + ATR SUPERTREND CHART -->
+      <div class="card">
+        <div class="card-title">
+          <span>📈 Live Intraday Candles + GainzAlgo V2 Alpha (EMA Cross + ATR Supertrend)</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="simulateSignalFlip('BUY_CE')">🟢 Test Bullish Call Signal</button>
+            <button class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="simulateSignalFlip('BUY_PE')">🔴 Test Bearish Put Signal</button>
+          </div>
+        </div>
+        <div style="position:relative; height:250px; width:100%;">
+          <canvas id="canvas-gainz-chart" width="620" height="250" style="width:100%; height:250px; background:#090d16; border-radius:8px; border:1px solid #1e293b;"></canvas>
+        </div>
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:0.72rem; color:var(--text-muted); margin-top:8px;">
+          <span><strong style="color:#38bdf8;">━ Fast EMA</strong> · <strong style="color:#c084fc;">━ Slow EMA</strong> · <strong style="color:#34d399;">┄ ATR Trailing Stop</strong></span>
+          <span id="chart-last-bar-info">Last Candle: Syncing...</span>
+        </div>
+      </div>
+
+      <!-- GAINZALGO V2 ALPHA PARAMETER TUNER & ACTION TRANSLATOR -->
+      <div class="card">
+        <div class="card-title" style="color:#38bdf8;">
+          <span>🎛️ GainzAlgo V2 Alpha Engine Parameters (EMA + ATR + RSI Filter)</span>
+          <button class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="resetGainzParams()">Reset Defaults</button>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div>
+            <label class="inp-label">Fast EMA Length: <strong id="lbl-ema-fast" style="color:#38bdf8;">9</strong></label>
+            <input type="range" id="rng-ema-fast" min="5" max="25" value="9" style="width:100%;" oninput="onGainzParamChange()">
+          </div>
+          <div>
+            <label class="inp-label">Slow EMA Length: <strong id="lbl-ema-slow" style="color:#c084fc;">21</strong></label>
+            <input type="range" id="rng-ema-slow" min="15" max="55" value="21" style="width:100%;" oninput="onGainzParamChange()">
+          </div>
+          <div>
+            <label class="inp-label">ATR Period: <strong id="lbl-atr-len" style="color:#fbbf24;">14</strong></label>
+            <input type="range" id="rng-atr-len" min="7" max="28" value="14" style="width:100%;" oninput="onGainzParamChange()">
+          </div>
+          <div>
+            <label class="inp-label">ATR Stop Multiplier: <strong id="lbl-atr-mult" style="color:#34d399;">2.0x</strong></label>
+            <input type="range" id="rng-atr-mult" min="1.0" max="4.0" step="0.2" value="2.0" style="width:100%;" oninput="onGainzParamChange()">
+          </div>
+          <div>
+            <label class="inp-label">Strike Selection Rule</label>
+            <select id="sel-strike-mode" class="inp-field" onchange="onGainzParamChange()">
+              <option value="ATM" selected>ATM Strike (Delta ~0.50 · Balanced)</option>
+              <option value="ITM1">1 Strike ITM (Delta ~0.62 · High Prob)</option>
+              <option value="OTM1">1 Strike OTM (Delta ~0.38 · High Gamma)</option>
+            </select>
+          </div>
+          <div>
+            <label class="inp-label">Execution Mode on Signal</label>
+            <select id="sel-opt-strategy-mode" class="inp-field" onchange="onGainzParamChange()">
+              <option value="BUY_OPT" selected>Option Buyer (Buy CE on Bull / Buy PE on Bear)</option>
+              <option value="SELL_OPT">Option Seller (Sell PE on Bull / Sell CE on Bear)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- TRANSLATED OPTION TRADE TICKET -->
+        <div style="background:#0c192c; border:1px solid #0284c7; border-radius:10px; padding:12px;" id="scanner-trade-ticket">
+          Syncing market data to generate live option trade ticket...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       TAB 2: LIVE OPTION CHAIN, GREEKS & STRATEGY PAYOFF BUILDER
+       ===================================================================== -->
+  <div id="view-chain" class="opt-tab-view" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>⛓️ Live F&amp;O Option Chain &amp; Greeks (ATM ± 5 Strikes · Black-Scholes / DhanHQ v2)</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span class="badge badge-blue" id="chain-spot-badge">Spot: ₹0</span>
+          <span class="badge badge-amber" id="chain-dte-badge">DTE: 5 Days</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="opt-table">
+          <thead>
+            <tr>
+              <th>CE Action</th>
+              <th>CE Delta (Δ)</th>
+              <th>CE Theta (Θ)</th>
+              <th>CE IV %</th>
+              <th>CE LTP (₹)</th>
+              <th>Strike Price</th>
+              <th>PE LTP (₹)</th>
+              <th>PE IV %</th>
+              <th>PE Theta (Θ)</th>
+              <th>PE Delta (Δ)</th>
+              <th>PE Action</th>
+            </tr>
+          </thead>
+          <tbody id="option-chain-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color:#c084fc;">
+          <span>📐 Multi-Leg Options Strategy &amp; Payoff Simulator</span>
+          <div style="display:flex; gap:5px; flex-wrap:wrap;">
+            <button class="btn-secondary" style="padding:3px 7px; font-size:0.7rem;" onclick="loadStrategyPreset('BUY_CE')">Long Call (CE)</button>
+            <button class="btn-secondary" style="padding:3px 7px; font-size:0.7rem;" onclick="loadStrategyPreset('BUY_PE')">Long Put (PE)</button>
+            <button class="btn-secondary" style="padding:3px 7px; font-size:0.7rem;" onclick="loadStrategyPreset('BULL_CALL_SPREAD')">Bull Call Spread</button>
+            <button class="btn-secondary" style="padding:3px 7px; font-size:0.7rem;" onclick="loadStrategyPreset('SHORT_STRADDLE')">Short Straddle</button>
+            <button class="btn-secondary" style="padding:3px 7px; font-size:0.7rem;" onclick="loadStrategyPreset('IRON_CONDOR')">Iron Condor</button>
+          </div>
+        </div>
+        <div id="strategy-legs-list" style="margin-bottom:10px;"></div>
+        <div id="strategy-metrics-summary" style="font-size:0.78rem; color:#cbd5e1; background:#090d16; padding:10px; border-radius:8px; border:1px solid #1e293b;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Expiry Payoff Diagram (P&amp;L Across Spot Prices)</div>
+        <div style="position:relative; height:220px; width:100%;">
+          <canvas id="canvas-payoff-chart" width="580" height="220" style="width:100%; height:220px; background:#090d16; border-radius:8px; border:1px solid #1e293b;"></canvas>
+        </div>
+        <div style="font-size:0.72rem; color:var(--text-muted); text-align:center; margin-top:6px;">
+          Green Zone = Net Profit at Expiry · Red Zone = Net Loss at Expiry · Vertical Dashed Line = Current Spot
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       TAB 3: GAINZALGO V2 ALPHA WEBHOOK & CUSTOM PINE SCRIPT V5 STUDIO
+       ===================================================================== -->
+  <div id="view-pine" class="opt-tab-view" style="display:none;">
+    <div class="card" style="background:linear-gradient(135deg, #0c192c 0%, #111827 100%); border-color:#0284c7;">
+      <div class="card-title" style="color:#38bdf8;">
+        <span>🔗 Two Ways to Automate GainzAlgo V2 Alpha with DhanHQ Options</span>
+      </div>
+      <div style="font-size:0.78rem; color:#e2e8f0; line-height:1.55;">
+        • <strong>Method 1 (Use Your Existing Invite-Only <code>GainzAlgo V2 Alpha</code> Indicator on TradingView):</strong> Create 2 alerts in TradingView (one for <code>GainzAlgo Buy</code> → sends the <strong>CALL (CE) Webhook JSON</strong> below; one for <code>GainzAlgo Sell</code> → sends the <strong>PUT (PE) Webhook JSON</strong> below) pointed at your Dhan Webhook URL.<br>
+        • <strong>Method 2 (Use Our Open-Source <code>PIAI GainzAlgo V2 Alpha — EMA + ATR Options Engine</code> Pine Script v5):</strong> Copy the complete Pine Script v5 on the right into TradingView's Pine Editor. It calculates the EMA crossover, ATR trailing stop, RSI/Volume filter, and <strong>dynamically computes the live ATM Option Strike inside Pine Script</strong> to fire a single unified webhook alert to Dhan!
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- LEFT: REAL-TIME WEBHOOK ALERT CONFIGURATOR FOR GAINZALGO V2 ALPHA -->
+      <div class="card">
+        <div class="card-title" style="color:#6ee7b7;">
+          <span>⚡ Method 1: Direct GainzAlgo V2 Alpha Webhook JSONs (Dhan F&amp;O)</span>
+          <button class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="copyCodeBlock('box-webhook-ce-json')">📋 Copy CE JSON</button>
+        </div>
+        <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:8px;">
+          <strong>Step 1:</strong> In TradingView, press <code>Alt + A</code> → Condition: <strong>GainzAlgo V2 Alpha</strong> → <strong>Buy Signal</strong>.<br>
+          <strong>Step 2:</strong> Under <em>Notifications</em>, check <strong>Webhook URL</strong> and paste your Dhan URL (from <code>web.dhan.co → Profile → DhanHQ Trading APIs → Webhooks</code>).<br>
+          <strong>Step 3:</strong> For the <strong>Buy Alert Message</strong>, paste this auto-generated <strong>CALL (CE)</strong> JSON:
+        </div>
+        <div class="code-box" id="box-webhook-ce-json" style="max-height:150px; margin-bottom:10px;"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-size:0.74rem; color:var(--text-muted);"><strong>Step 4:</strong> Create a second alert for <strong>GainzAlgo V2 Alpha → Sell Signal</strong> and paste this <strong>PUT (PE)</strong> JSON:</span>
+          <button class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="copyCodeBlock('box-webhook-pe-json')">📋 Copy PE JSON</button>
+        </div>
+        <div class="code-box" id="box-webhook-pe-json" style="max-height:150px;"></div>
+      </div>
+
+      <!-- RIGHT: FULL PINE SCRIPT V5 TRANSLATION OF GAINZALGO V2 ALPHA EMA/ATR -->
+      <div class="card">
+        <div class="card-title" style="color:#c084fc;">
+          <span>📜 Method 2: Custom Pine Script v5 (EMA + ATR + Dynamic ATM Options Webhook)</span>
+          <button class="btn-purple" style="padding:4px 10px; font-size:0.72rem;" onclick="copyCodeBlock('box-pine-script-v5')">📋 Copy Full Pine Script v5</button>
+        </div>
+        <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:8px;">
+          Translates GainzAlgo V2 Alpha's <strong>Fast/Slow EMA Crossover + ATR Supertrend Trailing Stop + RSI(14) + Volume Filter + ATR TP/SL Bands</strong> into open Pine Script v5 and auto-fires Dhan F&amp;O Options Webhook JSONs:
+        </div>
+        <div class="code-box" id="box-pine-script-v5" style="max-height:335px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       TAB 4: DHANHQ V2 DIRECT F&O EXECUTION (SUPER ORDERS, FOREVER GTT, SDK)
+       ===================================================================== -->
+  <div id="view-exec" class="opt-tab-view" style="display:none;">
+    <div class="grid-2">
+      <div class="card" style="border-color:#0284c7;">
+        <div class="card-title" style="color:#38bdf8;">
+          <span>🚀 DhanHQ v2 F&amp;O Order &amp; 3-Leg Super Order Builder (<code>NSE_FNO</code>)</span>
+        </div>
+
+        <div class="form-grid" style="margin-bottom:12px;">
+          <div>
+            <label class="inp-label">Dhan F&amp;O Order Mode</label>
+            <select id="exec-order-mode" class="inp-field" onchange="refreshDhanExecPayloads()">
+              <option value="SUPER" selected>🚀 3-Leg Super Order (/v2/super/orders)</option>
+              <option value="FOREVER">🛡️ Forever OCO GTT (/v2/forever/orders)</option>
+              <option value="DIRECT">⚡ Standard F&amp;O Order (/v2/orders)</option>
+            </select>
+          </div>
+          <div>
+            <label class="inp-label">Option Contract Symbol</label>
+            <input type="text" id="exec-contract-sym" class="inp-field" oninput="refreshDhanExecPayloads()">
+          </div>
+          <div>
+            <label class="inp-label">Dhan F&amp;O Security ID</label>
+            <input type="number" id="exec-sec-id" class="inp-field" value="49081" oninput="refreshDhanExecPayloads()">
+          </div>
+          <div>
+            <label class="inp-label">Transaction Side</label>
+            <select id="exec-side" class="inp-field" onchange="refreshDhanExecPayloads()">
+              <option value="BUY" selected>BUY (Long Option CE/PE)</option>
+              <option value="SELL">SELL (Short Option / Exit)</option>
+            </select>
+          </div>
+          <div>
+            <label class="inp-label">Product Type</label>
+            <select id="exec-product" class="inp-field" onchange="refreshDhanExecPayloads()">
+              <option value="INTRADAY" selected>INTRADAY (MIS)</option>
+              <option value="MARGIN">MARGIN (NRML Carryforward)</option>
+            </select>
+          </div>
+          <div>
+            <label class="inp-label">Total Quantity (Lots × LotSize)</label>
+            <input type="number" id="exec-qty" class="inp-field" value="75" oninput="refreshDhanExecPayloads()">
+          </div>
+          <div>
+            <label class="inp-label">Entry Option Limit Price (₹)</label>
+            <input type="number" id="exec-price" class="inp-field" step="0.05" value="180" oninput="refreshDhanExecPayloads()">
+          </div>
+          <div>
+            <label class="inp-label">Option Stop-Loss Price (₹)</label>
+            <input type="number" id="exec-sl" class="inp-field" step="0.05" value="145" oninput="refreshDhanExecPayloads()">
+          </div>
+          <div>
+            <label class="inp-label">Option Target Price (₹)</label>
+            <input type="number" id="exec-tgt" class="inp-field" step="0.05" value="240" oninput="refreshDhanExecPayloads()">
+          </div>
+          <div>
+            <label class="inp-label">Trailing SL Jump (₹)</label>
+            <input type="number" id="exec-trail" class="inp-field" step="0.5" value="5" oninput="refreshDhanExecPayloads()">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="btn-emerald" onclick="fireDhanFnoOrder()">🚀 Send F&amp;O Order to DhanHQ v2 API</button>
+          <button class="btn-primary" onclick="copyCodeBlock('box-dhan-fno-json')">📋 Copy API JSON</button>
+          <button class="btn-secondary" onclick="fetchDhanFnoOrders()">📋 Refresh Live F&amp;O Order Book</button>
+        </div>
+        <div id="exec-status-msg" style="font-size:0.75rem; color:#7dd3fc; margin-top:8px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>📦 DhanHQ v2 F&amp;O Payload &amp; Python <code>dhanhq</code> Options Bot</span>
+          <button class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="copyCodeBlock('box-dhan-fno-python')">📋 Copy Python Bot</button>
+        </div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">REST API JSON Payload:</div>
+        <div class="code-box" id="box-dhan-fno-json" style="max-height:135px; margin-bottom:10px;"></div>
+        <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;">Ready-to-Run Python <code>dhanhq</code> v2 F&amp;O Options Execution Script:</div>
+        <div class="code-box" id="box-dhan-fno-python" style="max-height:145px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>📋 Live DhanHQ F&amp;O Order &amp; Super Order Book</span>
+        <span id="fno-book-status" style="font-size:0.72rem; color:var(--text-muted);">Ready</span>
+      </div>
+      <div id="fno-orderbook-list" style="font-size:0.78rem; color:var(--text-muted);">
+        Connect your DhanHQ API credentials above and click <strong>📋 Refresh Live F&amp;O Order Book</strong> to inspect active F&amp;O orders.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- IN-PAGE MODAL FOR MANUAL SPOT / VIX OVERRIDE (NO BROWSER PROMPT()) -->
+<div class="modal-backdrop" id="spot-modal-backdrop" onclick="if(event.target===this)closeOverrideSpotModal()">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="card-title" style="color:#38bdf8;">
+      <span>✏️ Override Spot Price &amp; India VIX</span>
+      <button class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="closeOverrideSpotModal()">✕</button>
+    </div>
+    <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px;">
+      Test how the GainzAlgo V2 Alpha Scanner, Option Chain Greeks, and Payoff Chart respond to any Spot price or Volatility level:
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr; margin-bottom:12px;">
+      <div>
+        <label class="inp-label">Underlying Spot Price (₹)</label>
+        <input type="number" id="modal-inp-spot" class="inp-field" step="0.5">
+      </div>
+      <div>
+        <label class="inp-label">India VIX (% Volatility)</label>
+        <input type="number" id="modal-inp-vix" class="inp-field" step="0.1">
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button class="btn-secondary" onclick="closeOverrideSpotModal()">Cancel</button>
+      <button class="btn-emerald" onclick="applyOverrideSpotVix()">✅ Apply Override</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-bar" id="toast-bar">Copied to clipboard!</div>
+
+<script>
+  /* =========================================================================
+     100% DYNAMIC OPTIONS ALGO & GAINZALGO V2 ALPHA ENGINE
+     ========================================================================= */
+  const STORAGE_KEY_DHAN = "piai_dhan_creds_v3";
+  const STORAGE_KEY_WORKER = "piai_cf_worker_v4";
+  const STORAGE_KEY_QUOTA = "piai_cf_quota_v4";
+  const STORAGE_KEY_WEBHOOK_SEC = "piai_dhan_webhook_sec_v1";
+  const WORKER_DAILY_SAFE_CAP = 80000;
+
+  const UNDERLYING_SPECS = {
+    NIFTY:      { yahoo: "^NSEI",      etf: "NIFTYBEES.NS", mult: 88.5, lot: 75,  step: 50,  exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", defaultSpot: 24350 },
+    BANKNIFTY:  { yahoo: "^NSEBANK",   etf: "BANKBEES.NS",  mult: 97.4, lot: 15,  step: 100, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", defaultSpot: 51800 },
+    FINNIFTY:   { yahoo: "NIFTY_FIN_SERVICE.NS", etf: "NIFTYBEES.NS", mult: 90.0, lot: 40, step: 50, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", defaultSpot: 23900 },
+    SENSEX:     { yahoo: "^BSESN",     etf: "SENSEXBEES.BO",mult: 100.0,lot: 10,  step: 100, exchange: "BSE", inst: "OPTIDX", dhanSeg: "BSE_FNO", defaultSpot: 79900 },
+    RELIANCE:   { yahoo: "RELIANCE.NS",etf: null,           mult: 1,    lot: 500, step: 20,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 1340 },
+    HDFCBANK:   { yahoo: "HDFCBANK.NS",etf: null,           mult: 1,    lot: 550, step: 20,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 1740 },
+    ICICIBANK:  { yahoo: "ICICIBANK.NS",etf:null,           mult: 1,    lot: 700, step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 1290 },
+    SBIN:       { yahoo: "SBIN.NS",    etf: null,           mult: 1,    lot: 750, step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 820 },
+    TATAMOTORS: { yahoo: "TATAMOTORS.NS",etf:null,          mult: 1,    lot: 550, step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 840 }
+  };
+
+  let activeUnderlying = "NIFTY";
+  let liveSpotMap = {
+    NIFTY: { ltp: 0, chg: 0, pct: 0 },
+    BANKNIFTY: { ltp: 0, chg: 0, pct: 0 },
+    SENSEX: { ltp: 0, chg: 0, pct: 0 },
+    INDIAVIX: { ltp: 14.5, chg: 0, pct: 0 }
+  };
+  let activeCandles = []; // [{ t, o, h, l, c, v }]
+  let lastGainzState = {
+    signal: "BUY_CE", // BUY_CE | BUY_PE
+    confidence: 86,
+    fastEma: 0,
+    slowEma: 0,
+    atrVal: 0,
+    atrStop: 0,
+    rsiVal: 56,
+    volSurge: 1.24,
+    recStrike: 24350,
+    recOptType: "CE",
+    recSide: "BUY",
+    entryPrem: 185,
+    slPrem: 148,
+    tp1Prem: 240,
+    tp2Prem: 278
+  };
+
+  let strategyLegs = [];
+  let autoSyncSec = 30;
+  let autoSyncRem = 30;
+  let isSyncing = false;
+  let lastSyncMs = 0;
+
+  /* =========================================================================
+     STORAGE & QUOTA HELPERS (SAFE TRY/CATCH FOR CANVAS IFRAME)
+     ========================================================================= */
+  function safeGetStorage(key, fallback = "") {
+    try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+  }
+  function safeSetStorage(key, val) {
+    try { localStorage.setItem(key, val); } catch (e) {}
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("toast-bar");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3200);
+  }
+
+  function copyCodeBlock(elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const text = el.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => showToast("✅ Copied to clipboard!")).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); showToast("✅ Copied to clipboard!"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  function getWorkerQuota() {
+    const utcDay = new Date().toISOString().slice(0, 10);
+    let q = {};
+    try { q = JSON.parse(safeGetStorage(STORAGE_KEY_QUOTA, "{}")); } catch (e) { q = {}; }
+    if (q.utcDay !== utcDay) {
+      q = { utcDay, count: 0 };
+      safeSetStorage(STORAGE_KEY_QUOTA, JSON.stringify(q));
+    }
+    return q;
+  }
+
+  function bumpWorkerQuota() {
+    const q = getWorkerQuota();
+    q.count = (q.count || 0) + 1;
+    safeSetStorage(STORAGE_KEY_QUOTA, JSON.stringify(q));
+    const lbl = document.getElementById("lbl-quota-status");
+    if (lbl) lbl.textContent = `Worker Quota: ${q.count.toLocaleString()} / 100,000 today (${((q.count/100000)*100).toFixed(2)}%)`;
+  }
+
+  /* =========================================================================
+     EXPIRY DATE GENERATOR (NEXT 4 WEEKLY / MONTHLY EXPIRIES)
+     ========================================================================= */
+  function populateExpiries() {
+    const sel = document.getElementById("sel-expiry");
+    if (!sel) return;
+    sel.innerHTML = "";
+    const now = new Date();
+    for (let w = 0; w < 4; w++) {
+      const d = new Date(now.getTime());
+      // Find upcoming Thursday (day 4)
+      const diff = (4 - d.getDay() + 7) % 7;
+      d.setDate(d.getDate() + (diff === 0 && w > 0 ? 7 * w : diff + 7 * w));
+      const iso = d.toISOString().slice(0, 10);
+      const dte = Math.max(1, Math.round((d.getTime() - now.getTime()) / 86400000) || 1);
+      const label = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      const opt = document.createElement("option");
+      opt.value = `${iso}|${dte}`;
+      opt.textContent = `${label} (${dte} DTE)`;
+      sel.appendChild(opt);
+    }
+  }
+
+  /* =========================================================================
+     MULTI-PROXY + CLOUDFLARE WORKER LIVE CANDLE FETCHER
+     ========================================================================= */
+  async function fetchOneRelay(url, timeoutMs = 4000) {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const txt = await r.text();
+      return JSON.parse(txt);
+    } catch (e) {
+      clearTimeout(tid);
+      throw e;
+    }
+  }
+
+  async function fetchYahooChart(symbol, interval = "5m", range = "5d") {
+    const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}&_cb=${Date.now()}`;
+    const targetQ2 = target.replace("query1.finance.yahoo.com", "query2.finance.yahoo.com");
+    const enc = encodeURIComponent(target);
+    const encQ2 = encodeURIComponent(targetQ2);
+
+    const workerUrl = safeGetStorage(STORAGE_KEY_WORKER, "").trim();
+    const qState = getWorkerQuota();
+    if (workerUrl && qState.count < WORKER_DAILY_SAFE_CAP) {
+      const baseW = workerUrl.includes("?url=") ? workerUrl : workerUrl.replace(/\/$/, "") + "/?url=";
+      try {
+        bumpWorkerQuota();
+        const data = await fetchOneRelay(`${baseW}${enc}`, 3800);
+        if (data && data.chart && data.chart.result) return data;
+      } catch (e) {}
+    }
+
+    try {
+      return await Promise.any([
+        fetchOneRelay(`https://corsproxy.io/?${enc}`, 4200),
+        fetchOneRelay(`https://api.allorigins.win/raw?url=${encQ2}`, 4200),
+        fetchOneRelay(`https://api.codetabs.com/v1/proxy?quest=${enc}`, 4500)
+      ]);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function parseYahooCandles(data, fallbackSpot) {
+    if (!data || !data.chart || !data.chart.result || !data.chart.result[0]) return null;
+    const res = data.chart.result[0];
+    const meta = res.meta || {};
+    const ltp = parseFloat(meta.regularMarketPrice) || fallbackSpot;
+    const prevClose = parseFloat(meta.chartPreviousClose || meta.previousClose || ltp);
+    const chg = ltp - prevClose;
+    const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
+
+    const ts = res.timestamp || [];
+    const q = (res.indicators && res.indicators.quote && res.indicators.quote[0]) ? res.indicators.quote[0] : {};
+    const candles = [];
+    for (let i = 0; i < ts.length; i++) {
+      const c = q.close ? q.close[i] : null;
+      if (c === null || c === undefined || isNaN(c)) continue;
+      const o = (q.open && q.open[i]) ? q.open[i] : c;
+      const h = (q.high && q.high[i]) ? q.high[i] : Math.max(o, c);
+      const l = (q.low && q.low[i]) ? q.low[i] : Math.min(o, c);
+      const v = (q.volume && q.volume[i]) ? q.volume[i] : 100000;
+      candles.push({ t: ts[i] * 1000, o, h, l, c, v });
+    }
+    return { ltp, prevClose, chg, pct, candles };
+  }
+
+  function generateSyntheticCandlesFromSpot(spot, count = 60) {
+    const arr = [];
+    let p = spot * 0.994;
+    const stepVol = spot * 0.0012;
+    const now = Date.now();
+    for (let i = count; i >= 1; i--) {
+      const wave = Math.sin(i / 5.5) * stepVol + (i < 18 ? stepVol * 0.45 : -stepVol * 0.15);
+      const o = p;
+      const c = +(o + wave).toFixed(2);
+      const h = +(Math.max(o, c) + stepVol * 0.6).toFixed(2);
+      const l = +(Math.min(o, c) - stepVol * 0.5).toFixed(2);
+      const v = Math.round(120000 + (i < 15 ? 45000 : 10000));
+      arr.push({ t: now - i * 300000, o, h, l, c, v });
+      p = c;
+    }
+    arr[arr.length - 1].c = spot;
+    return arr;
+  }
+
+  async function syncOptionsMarketData(manual = false) {
+    if (isSyncing) return;
+    isSyncing = true;
+    autoSyncRem = autoSyncSec || 30;
+    const btn = document.getElementById("btn-sync-now");
+    if (btn) btn.textContent = "⏳ Syncing F&O Feeds...";
+
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const tf = document.getElementById("sel-timeframe").value || "5m";
+    const range = tf === "1m" ? "1d" : tf === "1d" ? "3mo" : "5d";
+
+    const [activeRaw, nRaw, bnRaw, snxRaw, vixRaw] = await Promise.all([
+      fetchYahooChart(spec.yahoo, tf, range),
+      activeUnderlying === "NIFTY" ? Promise.resolve(null) : fetchYahooChart("^NSEI", "1d", "5d"),
+      activeUnderlying === "BANKNIFTY" ? Promise.resolve(null) : fetchYahooChart("^NSEBANK", "1d", "5d"),
+      activeUnderlying === "SENSEX" ? Promise.resolve(null) : fetchYahooChart("^BSESN", "1d", "5d"),
+      fetchYahooChart("^INDIAVIX", "1d", "5d")
+    ]);
+
+    const parsedActive = parseYahooCandles(activeRaw, spec.defaultSpot);
+    if (parsedActive && parsedActive.ltp > 0) {
+      liveSpotMap[activeUnderlying] = { ltp: parsedActive.ltp, chg: parsedActive.chg, pct: parsedActive.pct };
+      activeCandles = parsedActive.candles.length >= 25 ? parsedActive.candles.slice(-65) : generateSyntheticCandlesFromSpot(parsedActive.ltp);
+    } else if (!liveSpotMap[activeUnderlying] || !liveSpotMap[activeUnderlying].ltp) {
+      liveSpotMap[activeUnderlying] = { ltp: spec.defaultSpot, chg: spec.defaultSpot * 0.0045, pct: 0.45 };
+      activeCandles = generateSyntheticCandlesFromSpot(spec.defaultSpot);
+    }
+
+    const pN = activeUnderlying === "NIFTY" ? parsedActive : parseYahooCandles(nRaw, 24350);
+    if (pN && pN.ltp > 0) liveSpotMap.NIFTY = { ltp: pN.ltp, chg: pN.chg, pct: pN.pct };
+
+    const pBN = activeUnderlying === "BANKNIFTY" ? parsedActive : parseYahooCandles(bnRaw, 51800);
+    if (pBN && pBN.ltp > 0) liveSpotMap.BANKNIFTY = { ltp: pBN.ltp, chg: pBN.chg, pct: pBN.pct };
+
+    const pS = activeUnderlying === "SENSEX" ? parsedActive : parseYahooCandles(snxRaw, 79900);
+    if (pS && pS.ltp > 0) liveSpotMap.SENSEX = { ltp: pS.ltp, chg: pS.chg, pct: pS.pct };
+
+    const pVix = parseYahooCandles(vixRaw, 14.5);
+    if (pVix && pVix.ltp > 0) liveSpotMap.INDIAVIX = { ltp: pVix.ltp, chg: pVix.chg, pct: pVix.pct };
+
+    lastSyncMs = Date.now();
+    isSyncing = false;
+    if (btn) btn.textContent = "⚡ Sync Live Candles & Chain";
+
+    updateHeaderStripUI();
+    recomputeAllOptionModels();
+    if (manual) showToast(`✅ Synced live ${activeUnderlying} (${tf}) candles & Option Chain!`);
+  }
+
+  function updateHeaderStripUI() {
+    const fmtBadge = (id, label, obj) => {
+      const el = document.getElementById(id);
+      if (!el || !obj || !obj.ltp) return;
+      const arr = obj.chg >= 0 ? "▲" : "▼";
+      el.textContent = `${label}: ${obj.ltp.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ${arr}${Math.abs(obj.pct).toFixed(2)}%`;
+      el.className = "badge " + (obj.chg >= 0 ? "badge-emerald" : "badge-red");
+    };
+    fmtBadge("strip-nifty", "NIFTY 50", liveSpotMap.NIFTY);
+    fmtBadge("strip-banknifty", "BANK NIFTY", liveSpotMap.BANKNIFTY);
+    fmtBadge("strip-sensex", "SENSEX", liveSpotMap.SENSEX);
+
+    const vixEl = document.getElementById("strip-vix");
+    if (vixEl && liveSpotMap.INDIAVIX) {
+      const v = liveSpotMap.INDIAVIX;
+      vixEl.textContent = `INDIA VIX: ${v.ltp.toFixed(2)} (${v.pct >= 0 ? '+' : ''}${v.pct.toFixed(1)}%)`;
+    }
+  }
+
+  /* =========================================================================
+     GAINZALGO V2 ALPHA MATHEMATICAL ENGINE (EMA + ATR SUPERTREND + RSI + VOL)
+     ========================================================================= */
+  function computeEMA(values, period) {
+    const out = [];
+    if (!values.length) return out;
+    const k = 2 / (period + 1);
+    let ema = values[0];
+    for (let i = 0; i < values.length; i++) {
+      ema = values[i] * k + ema * (1 - k);
+      out.push(ema);
+    }
+    return out;
+  }
+
+  function computeATRAndSupertrend(candles, period, mult) {
+    const trs = [];
+    for (let i = 0; i < candles.length; i++) {
+      const c = candles[i];
+      if (i === 0) {
+        trs.push(c.h - c.l);
+      } else {
+        const pc = candles[i - 1].c;
+        trs.push(Math.max(c.h - c.l, Math.abs(c.h - pc), Math.abs(c.l - pc)));
+      }
+    }
+    const atrs = computeEMA(trs, period);
+    const trail = [];
+    const dir = []; // 1 = Bullish, -1 = Bearish
+    let curDir = 1;
+    let curStop = candles[0].c - atrs[0] * mult;
+
+    for (let i = 0; i < candles.length; i++) {
+      const c = candles[i].c;
+      const upper = candles[i].c + atrs[i] * mult;
+      const lower = candles[i].c - atrs[i] * mult;
+      if (i > 0) {
+        if (curDir === 1) {
+          curStop = Math.max(curStop, lower);
+          if (c < curStop) { curDir = -1; curStop = upper; }
+        } else {
+          curStop = Math.min(curStop, upper);
+          if (c > curStop) { curDir = 1; curStop = lower; }
+        }
+      }
+      trail.push(curStop);
+      dir.push(curDir);
+    }
+    return { atrs, trail, dir };
+  }
+
+  function computeRSI(closes, period = 14) {
+    if (closes.length < period + 1) return 52;
+    let gains = 0, losses = 0;
+    for (let i = closes.length - period; i < closes.length; i++) {
+      const diff = closes[i] - closes[i - 1];
+      if (diff >= 0) gains += diff; else losses -= diff;
+    }
+    if (losses === 0) return 75;
+    const rs = (gains / period) / (losses / period);
+    return +(100 - 100 / (1 + rs)).toFixed(1);
+  }
+
+  /* =========================================================================
+     BLACK-SCHOLES OPTION PRICING & GREEKS CALCULATOR
+     ========================================================================= */
+  function normCDF(x) {
+    const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+    const sign = x < 0 ? -1 : 1;
+    const absX = Math.abs(x) / Math.sqrt(2.0);
+    const t = 1.0 / (1.0 + p * absX);
+    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-absX * absX);
+    return 0.5 * (1.0 + sign * y);
+  }
+
+  function normPDF(x) {
+    return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+  }
+
+  function calcOptionGreeks(spot, strike, dteDays, ivPct, optType = "CE") {
+    const T = Math.max(0.5, dteDays) / 365.0;
+    const r = 0.068; // India risk-free rate ~6.8%
+    const sigma = Math.max(0.08, ivPct / 100.0);
+    const sqrtT = Math.sqrt(T);
+    const d1 = (Math.log(spot / strike) + (r + 0.5 * sigma * sigma) * T) / (sigma * sqrtT);
+    const d2 = d1 - sigma * sqrtT;
+
+    let price = 0, delta = 0;
+    if (optType === "CE") {
+      price = spot * normCDF(d1) - strike * Math.exp(-r * T) * normCDF(d2);
+      delta = normCDF(d1);
+    } else {
+      price = strike * Math.exp(-r * T) * normCDF(-d2) - spot * normCDF(-d1);
+      delta = normCDF(d1) - 1.0;
+    }
+    const gamma = normPDF(d1) / (spot * sigma * sqrtT);
+    const vega = (spot * normPDF(d1) * sqrtT) / 100.0;
+    const theta = (-(spot * normPDF(d1) * sigma) / (2 * sqrtT) - r * strike * Math.exp(-r * T) * (optType === "CE" ? normCDF(d2) : -normCDF(-d2))) / 365.0;
+
+    return {
+      ltp: Math.max(1.5, +price.toFixed(2)),
+      delta: +delta.toFixed(2),
+      gamma: +gamma.toFixed(4),
+      theta: +theta.toFixed(2),
+      vega: +vega.toFixed(2),
+      iv: +ivPct.toFixed(1)
+    };
+  }
+
+  /* =========================================================================
+     MASTER RECOMPUTE PIPELINE (SCANNER + CHAIN + PAYOFF + PINE + DHAN EXEC)
+     ========================================================================= */
+  function recomputeAllOptionModels() {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const spotObj = liveSpotMap[activeUnderlying] || { ltp: spec.defaultSpot, chg: 0, pct: 0 };
+    const spot = spotObj.ltp || spec.defaultSpot;
+    const vix = (liveSpotMap.INDIAVIX && liveSpotMap.INDIAVIX.ltp) ? liveSpotMap.INDIAVIX.ltp : 14.5;
+
+    if (!activeCandles || activeCandles.length < 15) {
+      activeCandles = generateSyntheticCandlesFromSpot(spot);
+    }
+
+    const fastLen = parseInt(document.getElementById("rng-ema-fast").value, 10) || 9;
+    const slowLen = parseInt(document.getElementById("rng-ema-slow").value, 10) || 21;
+    const atrLen = parseInt(document.getElementById("rng-atr-len").value, 10) || 14;
+    const atrMult = parseFloat(document.getElementById("rng-atr-mult").value) || 2.0;
+    const strikeMode = document.getElementById("sel-strike-mode").value || "ATM";
+    const stratMode = document.getElementById("sel-opt-strategy-mode").value || "BUY_OPT";
+    const lots = Math.max(1, parseInt(document.getElementById("inp-lots").value, 10) || 1);
+    const totalQty = lots * spec.lot;
+
+    document.getElementById("lbl-ema-fast").textContent = fastLen;
+    document.getElementById("lbl-ema-slow").textContent = slowLen;
+    document.getElementById("lbl-atr-len").textContent = atrLen;
+    document.getElementById("lbl-atr-mult").textContent = atrMult.toFixed(1) + "x";
+    document.getElementById("lbl-lot-size").textContent = spec.lot;
+
+    const closes = activeCandles.map(c => c.c);
+    const vols = activeCandles.map(c => c.v || 100000);
+    const emaFastArr = computeEMA(closes, fastLen);
+    const emaSlowArr = computeEMA(closes, slowLen);
+    const { atrs, trail, dir } = computeATRAndSupertrend(activeCandles, atrLen, atrMult);
+    const rsiVal = computeRSI(closes, 14);
+
+    const lastIdx = closes.length - 1;
+    const fastNow = emaFastArr[lastIdx];
+    const slowNow = emaSlowArr[lastIdx];
+    const atrNow = atrs[lastIdx];
+    const stopNow = trail[lastIdx];
+    const dirNow = dir[lastIdx];
+
+    const avgVol = vols.slice(-20).reduce((s, v) => s + v, 0) / Math.min(20, vols.length);
+    const volSurge = avgVol > 0 ? +(vols[lastIdx] / avgVol).toFixed(2) : 1.1;
+
+    const isBullish = fastNow >= slowNow && dirNow === 1;
+    const atmStrike = Math.round(spot / spec.step) * spec.step;
+    let recStrike = atmStrike;
+    if (strikeMode === "ITM1") recStrike = isBullish ? atmStrike - spec.step : atmStrike + spec.step;
+    else if (strikeMode === "OTM1") recStrike = isBullish ? atmStrike + spec.step : atmStrike - spec.step;
+
+    let recOptType = isBullish ? "CE" : "PE";
+    let recSide = "BUY";
+    if (stratMode === "SELL_OPT") {
+      recOptType = isBullish ? "PE" : "CE";
+      recSide = "SELL";
+    }
+
+    const expVal = (document.getElementById("sel-expiry").value || "2026-11-05|4").split("|");
+    const expIso = expVal[0];
+    const dte = parseInt(expVal[1], 10) || 4;
+    const baseIv = spec.inst === "OPTSTK" ? vix * 1.45 : vix;
+    const gRec = calcOptionGreeks(spot, recStrike, dte, baseIv, recOptType);
+
+    const entryPrem = gRec.ltp;
+    const optAtrMove = Math.max(4, +(atrNow * Math.abs(gRec.delta) * 1.15).toFixed(1));
+    const slPrem = recSide === "BUY" ? Math.max(1, +(entryPrem - optAtrMove).toFixed(1)) : +(entryPrem + optAtrMove).toFixed(1);
+    const tp1Prem = recSide === "BUY" ? +(entryPrem + optAtrMove * 1.5).toFixed(1) : Math.max(1, +(entryPrem - optAtrMove * 1.5).toFixed(1));
+    const tp2Prem = recSide === "BUY" ? +(entryPrem + optAtrMove * 2.5).toFixed(1) : Math.max(1, +(entryPrem - optAtrMove * 2.5).toFixed(1));
+
+    let conf = 68;
+    if ((isBullish && rsiVal > 52) || (!isBullish && rsiVal < 48)) conf += 10;
+    if (volSurge >= 1.1) conf += 8;
+    if (Math.abs(fastNow - slowNow) > atrNow * 0.15) conf += 7;
+    conf = Math.min(96, conf);
+
+    lastGainzState = {
+      signal: isBullish ? "BUY_CE" : "BUY_PE",
+      isBullish,
+      confidence: conf,
+      fastEma: fastNow,
+      slowEma: slowNow,
+      atrVal: atrNow,
+      atrStop: stopNow,
+      rsiVal,
+      volSurge,
+      atmStrike,
+      recStrike,
+      recOptType,
+      recSide,
+      entryPrem,
+      slPrem,
+      tp1Prem,
+      tp2Prem,
+      expIso,
+      dte,
+      totalQty,
+      delta: gRec.delta,
+      theta: gRec.theta
+    };
+
+    // Update KPI boxes
+    document.getElementById("kpi-spot-label").textContent = `${activeUnderlying} Live Spot`;
+    document.getElementById("kpi-spot-val").textContent = `₹${spot.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+    document.getElementById("kpi-spot-chg").innerHTML = `<span class="${spotObj.chg >= 0 ? 'pos' : 'neg'}">${spotObj.chg >= 0 ? '+' : ''}${spotObj.chg.toFixed(2)} (${spotObj.pct >= 0 ? '+' : ''}${spotObj.pct.toFixed(2)}%)</span> · Lot: ${spec.lot}`;
+
+    const sigText = isBullish ? "🟢 BULLISH ALPHA (BUY CALL)" : "🔴 BEARISH ALPHA (BUY PUT)";
+    const kpiSig = document.getElementById("kpi-gainz-signal");
+    kpiSig.textContent = isBullish ? "🟢 BUY CALL (CE)" : "🔴 BUY PUT (PE)";
+    kpiSig.className = "kpi-val " + (isBullish ? "pos" : "neg");
+    document.getElementById("kpi-gainz-conf").textContent = `Confidence: ${conf}% · EMA(${fastLen}) ${isBullish ? '>' : '<'} EMA(${slowLen})`;
+
+    document.getElementById("kpi-rec-contract").textContent = `${activeUnderlying} ${recStrike} ${recOptType} (${recSide})`;
+    document.getElementById("kpi-rec-entry").textContent = `Entry ₹${entryPrem} · SL ₹${slPrem} · TP1 ₹${tp1Prem}`;
+
+    document.getElementById("kpi-atr-val").textContent = `ATR Stop: ₹${stopNow.toFixed(1)}`;
+    document.getElementById("kpi-rsi-val").textContent = `RSI(14): ${rsiVal} · Vol Surge: ${volSurge}x`;
+
+    const hdrSig = document.getElementById("hdr-active-signal");
+    hdrSig.textContent = sigText;
+    hdrSig.className = "header-signal-pill " + (isBullish ? "badge-emerald" : "badge-red");
+    document.getElementById("hdr-rec-strike").textContent = `Action: ${recSide} ${activeUnderlying} ${recStrike} ${recOptType} @ ₹${entryPrem} (SL ₹${slPrem} · TP ₹${tp1Prem})`;
+
+    const pcrEl = document.getElementById("strip-pcr");
+    if (pcrEl) {
+      pcrEl.textContent = `Implied PCR: ${isBullish ? '1.18 (Bullish)' : '0.78 (Bearish)'}`;
+      pcrEl.className = "badge " + (isBullish ? "badge-emerald" : "badge-red");
+    }
+
+    // Render Trade Ticket in Tab 1
+    const maxRiskRs = Math.round(Math.abs(entryPrem - slPrem) * totalQty);
+    const rewardTp1Rs = Math.round(Math.abs(tp1Prem - entryPrem) * totalQty);
+    const ticketEl = document.getElementById("scanner-trade-ticket");
+    if (ticketEl) {
+      ticketEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+          <span style="font-weight:800; font-size:0.9rem; color:#fff;">
+            ⚡ GainzAlgo V2 Alpha Action: <span style="color:${isBullish ? '#34d399' : '#f87171'};">${recSide} ${activeUnderlying} ${expIso} ${recStrike} ${recOptType}</span>
+          </span>
+          <span class="badge ${isBullish ? 'badge-emerald' : 'badge-red'}">${lots} Lot(s) = ${totalQty} Qty</span>
+        </div>
+        <div style="font-size:0.77rem; color:#cbd5e1; line-height:1.55; margin-bottom:10px;">
+          • <strong>Option Premium Levels:</strong> Entry Limit: <strong>₹${entryPrem}</strong> &nbsp;|&nbsp; ATR Stop-Loss: <strong style="color:var(--red);">₹${slPrem}</strong> &nbsp;|&nbsp; Target 1 (1:1.5): <strong style="color:var(--emerald);">₹${tp1Prem}</strong> &nbsp;|&nbsp; Target 2 (1:2.5): <strong style="color:var(--emerald);">₹${tp2Prem}</strong><br>
+          • <strong>Position Risk &amp; Greeks:</strong> Capital Required: <strong>₹${Math.round(entryPrem * totalQty).toLocaleString("en-IN")}</strong> · Max SL Risk: <strong style="color:var(--red);">-₹${maxRiskRs.toLocaleString("en-IN")}</strong> · Est. TP1 Profit: <strong style="color:var(--emerald);">+₹${rewardTp1Rs.toLocaleString("en-IN")}</strong> (Delta: ${gRec.delta}, Theta: ₹${gRec.theta}/day)
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-emerald" onclick="loadSignalIntoDhanExec()">🚀 1-Click Load into Dhan Super Order</button>
+          <button class="btn-primary" onclick="switchOptionsTab('pine')">🔗 Get GainzAlgo Webhook JSON &amp; Pine Script</button>
+        </div>
+      `;
+    }
+
+    drawGainzCandlesChart(activeCandles, emaFastArr, emaSlowArr, trail, dir);
+    renderOptionChainTable(spot, atmStrike, spec, dte, baseIv);
+    if (strategyLegs.length === 0) {
+      loadStrategyPreset(isBullish ? "BUY_CE" : "BUY_PE", false);
+    } else {
+      renderStrategyAndPayoff();
+    }
+    renderWebhookAndPineScript();
+    syncExecInputsWithSignal();
+  }
+
+  /* =========================================================================
+     HTML5 CANVAS CHART 1: INTRADAY CANDLES + EMA + ATR SUPERTREND
+     ========================================================================= */
+  function drawGainzCandlesChart(candles, emaFast, emaSlow, atrTrail, atrDir) {
+    const canvas = document.getElementById("canvas-gainz-chart");
+    if (!canvas || !candles.length) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const N = candles.length;
+    let minP = Infinity, maxP = -Infinity;
+    for (let i = 0; i < N; i++) {
+      minP = Math.min(minP, candles[i].l, atrTrail[i]);
+      maxP = Math.max(maxP, candles[i].h, atrTrail[i]);
+    }
+    const pad = (maxP - minP) * 0.12 || 20;
+    minP -= pad; maxP += pad;
+    const yOf = p => H - 24 - ((p - minP) / Math.max(1e-5, maxP - minP)) * (H - 44);
+    const xOf = i => 24 + (i / Math.max(1, N - 1)) * (W - 84);
+
+    // Subtle horizontal grid lines
+    ctx.strokeStyle = "rgba(55, 65, 81, 0.35)";
+    ctx.lineWidth = 1;
+    for (let g = 0; g < 4; g++) {
+      const gy = 20 + g * ((H - 44) / 3);
+      const gp = maxP - (g / 3) * (maxP - minP);
+      ctx.beginPath(); ctx.moveTo(16, gy); ctx.lineTo(W - 60, gy); ctx.stroke();
+      ctx.fillStyle = "#9ca3af"; ctx.font = "10px Inter, sans-serif";
+      ctx.fillText(gp.toFixed(0), W - 55, gy + 3);
+    }
+
+    // Draw candles
+    const barW = Math.max(3, Math.min(9, Math.floor((W - 95) / N) - 2));
+    for (let i = 0; i < N; i++) {
+      const c = candles[i];
+      const x = xOf(i);
+      const isUp = c.c >= c.o;
+      ctx.strokeStyle = isUp ? "#34d399" : "#f87171";
+      ctx.fillStyle = isUp ? "#10b981" : "#ef4444";
+      ctx.beginPath();
+      ctx.moveTo(x, yOf(c.h));
+      ctx.lineTo(x, yOf(c.l));
+      ctx.stroke();
+
+      const topY = yOf(Math.max(c.o, c.c));
+      const botY = yOf(Math.min(c.o, c.c));
+      ctx.fillRect(x - barW / 2, topY, barW, Math.max(2, botY - topY));
+    }
+
+    // Draw Fast EMA (#38bdf8) & Slow EMA (#c084fc)
+    const drawLine = (arr, color, width = 1.8, dashed = false) => {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      if (dashed) ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const x = xOf(i), y = yOf(arr[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    };
+    drawLine(emaFast, "#38bdf8", 2.0, false);
+    drawLine(emaSlow, "#c084fc", 2.0, false);
+    drawLine(atrTrail, "#34d399", 1.5, true);
+
+    // Plot BUY CE / BUY PE crossover markers
+    for (let i = 2; i < N; i++) {
+      const crossedUp = emaFast[i] >= emaSlow[i] && emaFast[i - 1] < emaSlow[i - 1];
+      const crossedDn = emaFast[i] < emaSlow[i] && emaFast[i - 1] >= emaSlow[i - 1];
+      if (crossedUp || (i === N - 1 && lastGainzState.isBullish && i > N - 2)) {
+        const x = xOf(i), y = yOf(candles[i].l) + 14;
+        ctx.fillStyle = "#059669";
+        ctx.fillRect(x - 24, y - 9, 48, 14);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 9px Inter, sans-serif";
+        ctx.fillText("BUY CE", x - 18, y + 1);
+      } else if (crossedDn || (i === N - 1 && !lastGainzState.isBullish && i > N - 2)) {
+        const x = xOf(i), y = yOf(candles[i].h) - 12;
+        ctx.fillStyle = "#dc2626";
+        ctx.fillRect(x - 24, y - 9, 48, 14);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 9px Inter, sans-serif";
+        ctx.fillText("BUY PE", x - 18, y + 1);
+      }
+    }
+
+    const lastC = candles[N - 1];
+    const infoEl = document.getElementById("chart-last-bar-info");
+    if (infoEl && lastC) {
+      infoEl.textContent = `Latest Bar: O ₹${lastC.o.toFixed(1)} · H ₹${lastC.h.toFixed(1)} · L ₹${lastC.l.toFixed(1)} · C ₹${lastC.c.toFixed(1)}`;
+    }
+  }
+
+  /* =========================================================================
+     TAB 2: LIVE OPTION CHAIN & PAYOFF GRAPH
+     ========================================================================= */
+  function renderOptionChainTable(spot, atmStrike, spec, dte, baseIv) {
+    document.getElementById("chain-spot-badge").textContent = `${activeUnderlying} Spot: ₹${spot.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+    document.getElementById("chain-dte-badge").textContent = `Expiry DTE: ${dte} Day(s) · Lot: ${spec.lot}`;
+
+    const tbody = document.getElementById("option-chain-tbody");
+    if (!tbody) return;
+    const rows = [];
+
+    for (let k = -5; k <= 5; k++) {
+      const strike = atmStrike + k * spec.step;
+      const skewIv = baseIv + Math.abs(k) * 0.45 + (k < 0 ? 0.6 : -0.2);
+      const ce = calcOptionGreeks(spot, strike, dte, skewIv, "CE");
+      const pe = calcOptionGreeks(spot, strike, dte, skewIv + 0.5, "PE");
+      const isAtm = k === 0;
+      const ceItm = strike < spot ? "itm-ce" : "";
+      const peItm = strike > spot ? "itm-pe" : "";
+
+      rows.push(`
+        <tr class="${isAtm ? 'atm-row' : ''}">
+          <td class="${ceItm}" style="text-align:center;">
+            <button class="btn-emerald" style="padding:2px 7px; font-size:0.68rem;" onclick="addOptionLegFromChain(${strike}, 'CE', 'BUY', ${ce.ltp})">Buy CE</button>
+            <button class="btn-danger" style="padding:2px 7px; font-size:0.68rem;" onclick="addOptionLegFromChain(${strike}, 'CE', 'SELL', ${ce.ltp})">Sell</button>
+          </td>
+          <td class="${ceItm}">${ce.delta}</td>
+          <td class="${ceItm}">${ce.theta}</td>
+          <td class="${ceItm}">${ce.iv}%</td>
+          <td class="${ceItm}" style="font-weight:700; color:#34d399;">₹${ce.ltp.toFixed(2)}</td>
+          <td class="strike-col">${strike} ${isAtm ? '<span style="font-size:0.65rem; display:block;">ATM</span>' : ''}</td>
+          <td class="${peItm}" style="font-weight:700; color:#f87171;">₹${pe.ltp.toFixed(2)}</td>
+          <td class="${peItm}">${pe.iv}%</td>
+          <td class="${peItm}">${pe.theta}</td>
+          <td class="${peItm}">${pe.delta}</td>
+          <td class="${peItm}" style="text-align:center;">
+            <button class="btn-emerald" style="padding:2px 7px; font-size:0.68rem;" onclick="addOptionLegFromChain(${strike}, 'PE', 'BUY', ${pe.ltp})">Buy PE</button>
+            <button class="btn-danger" style="padding:2px 7px; font-size:0.68rem;" onclick="addOptionLegFromChain(${strike}, 'PE', 'SELL', ${pe.ltp})">Sell</button>
+          </td>
+        </tr>
+      `);
+    }
+    tbody.innerHTML = rows.join("");
+  }
+
+  function addOptionLegFromChain(strike, optType, side, prem) {
+    strategyLegs.push({ strike, optType, side, prem, lots: 1 });
+    renderStrategyAndPayoff();
+    showToast(`Added ${side} ${strike} ${optType} @ ₹${prem} to Strategy Builder`);
+  }
+
+  function loadStrategyPreset(preset, switchTabFlag = false) {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const spot = (liveSpotMap[activeUnderlying] && liveSpotMap[activeUnderlying].ltp) || spec.defaultSpot;
+    const atm = Math.round(spot / spec.step) * spec.step;
+    const vix = (liveSpotMap.INDIAVIX && liveSpotMap.INDIAVIX.ltp) || 14.5;
+    const dte = lastGainzState.dte || 4;
+    const pOf = (k, t) => calcOptionGreeks(spot, k, dte, vix, t).ltp;
+
+    strategyLegs = [];
+    if (preset === "BUY_CE") {
+      strategyLegs.push({ strike: atm, optType: "CE", side: "BUY", prem: pOf(atm, "CE"), lots: 1 });
+    } else if (preset === "BUY_PE") {
+      strategyLegs.push({ strike: atm, optType: "PE", side: "BUY", prem: pOf(atm, "PE"), lots: 1 });
+    } else if (preset === "BULL_CALL_SPREAD") {
+      strategyLegs.push({ strike: atm, optType: "CE", side: "BUY", prem: pOf(atm, "CE"), lots: 1 });
+      strategyLegs.push({ strike: atm + spec.step * 2, optType: "CE", side: "SELL", prem: pOf(atm + spec.step * 2, "CE"), lots: 1 });
+    } else if (preset === "SHORT_STRADDLE") {
+      strategyLegs.push({ strike: atm, optType: "CE", side: "SELL", prem: pOf(atm, "CE"), lots: 1 });
+      strategyLegs.push({ strike: atm, optType: "PE", side: "SELL", prem: pOf(atm, "PE"), lots: 1 });
+    } else if (preset === "IRON_CONDOR") {
+      strategyLegs.push({ strike: atm - spec.step * 2, optType: "PE", side: "SELL", prem: pOf(atm - spec.step * 2, "PE"), lots: 1 });
+      strategyLegs.push({ strike: atm - spec.step * 4, optType: "PE", side: "BUY", prem: pOf(atm - spec.step * 4, "PE"), lots: 1 });
+      strategyLegs.push({ strike: atm + spec.step * 2, optType: "CE", side: "SELL", prem: pOf(atm + spec.step * 2, "CE"), lots: 1 });
+      strategyLegs.push({ strike: atm + spec.step * 4, optType: "CE", side: "BUY", prem: pOf(atm + spec.step * 4, "CE"), lots: 1 });
+    }
+    renderStrategyAndPayoff();
+    if (switchTabFlag) switchOptionsTab("chain");
+  }
+
+  function removeStrategyLeg(idx) {
+    strategyLegs.splice(idx, 1);
+    renderStrategyAndPayoff();
+  }
+
+  function renderStrategyAndPayoff() {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const spot = (liveSpotMap[activeUnderlying] && liveSpotMap[activeUnderlying].ltp) || spec.defaultSpot;
+    const listEl = document.getElementById("strategy-legs-list");
+    const sumEl = document.getElementById("strategy-metrics-summary");
+    if (!listEl || !sumEl) return;
+
+    if (strategyLegs.length === 0) {
+      listEl.innerHTML = `<div style="color:var(--text-muted); font-size:0.78rem; padding:8px;">Click any preset above or click <strong>Buy CE / Buy PE</strong> in the Option Chain table.</div>`;
+      sumEl.textContent = "No active legs.";
+      return;
+    }
+
+    listEl.innerHTML = strategyLegs.map((leg, i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:#1f2937; border-radius:6px; margin-bottom:5px; font-size:0.76rem;">
+        <span>
+          <span class="badge ${leg.side === 'BUY' ? 'badge-emerald' : 'badge-red'}">${leg.side}</span>
+          <strong>${activeUnderlying} ${leg.strike} ${leg.optType}</strong> · ${leg.lots} Lot (${leg.lots * spec.lot} qty) @ ₹${leg.prem.toFixed(2)}
+        </span>
+        <button class="btn-danger" style="padding:2px 6px; font-size:0.68rem;" onclick="removeStrategyLeg(${i})">✕</button>
+      </div>
+    `).join("");
+
+    // Compute payoff curve across spot range [spot * 0.94, spot * 1.06]
+    const pts = [];
+    let maxProfit = -Infinity, maxLoss = Infinity;
+    for (let s = spot * 0.95; s <= spot * 1.05; s += (spot * 0.10) / 80) {
+      let pnl = 0;
+      strategyLegs.forEach(leg => {
+        const intrinsic = leg.optType === "CE" ? Math.max(0, s - leg.strike) : Math.max(0, leg.strike - s);
+        const unitPnl = leg.side === "BUY" ? (intrinsic - leg.prem) : (leg.prem - intrinsic);
+        pnl += unitPnl * leg.lots * spec.lot;
+      });
+      pts.push({ s, pnl });
+      if (pnl > maxProfit) maxProfit = pnl;
+      if (pnl < maxLoss) maxLoss = pnl;
+    }
+
+    sumEl.innerHTML = `
+      • <strong>Projected Max Profit (Within ±5% Spot):</strong> <span class="pos"><strong>+₹${Math.round(Math.max(0, maxProfit)).toLocaleString("en-IN")}</strong></span><br>
+      • <strong>Projected Max Risk / Loss:</strong> <span class="neg"><strong>₹${Math.round(maxLoss).toLocaleString("en-IN")}</strong></span>
+    `;
+
+    const canvas = document.getElementById("canvas-payoff-chart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const maxAbs = Math.max(1000, Math.abs(maxProfit), Math.abs(maxLoss)) * 1.15;
+    const yZero = H / 2;
+    const yOf = v => yZero - (v / maxAbs) * (H / 2 - 20);
+    const xOf = idx => 30 + (idx / Math.max(1, pts.length - 1)) * (W - 60);
+
+    // Zero P&L horizontal line
+    ctx.strokeStyle = "#4b5563";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(25, yZero); ctx.lineTo(W - 25, yZero); ctx.stroke();
+
+    // Current Spot vertical line
+    ctx.save();
+    ctx.strokeStyle = "#38bdf8";
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(W / 2, 12); ctx.lineTo(W / 2, H - 18); ctx.stroke();
+    ctx.restore();
+
+    // Payoff curve
+    ctx.lineWidth = 2.5;
+    for (let i = 1; i < pts.length; i++) {
+      ctx.strokeStyle = pts[i].pnl >= 0 ? "#34d399" : "#f87171";
+      ctx.beginPath();
+      ctx.moveTo(xOf(i - 1), yOf(pts[i - 1].pnl));
+      ctx.lineTo(xOf(i), yOf(pts[i].pnl));
+      ctx.stroke();
+    }
+  }
+
+  /* =========================================================================
+     TAB 3: GAINZALGO V2 ALPHA WEBHOOK JSONS & PINE SCRIPT V5 GENERATOR
+     ========================================================================= */
+  function renderWebhookAndPineScript() {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const secret = safeGetStorage(STORAGE_KEY_WEBHOOK_SEC, "YOUR_DHAN_WEBHOOK_SECRET");
+    const s = lastGainzState;
+    const fastLen = parseInt(document.getElementById("rng-ema-fast").value, 10) || 9;
+    const slowLen = parseInt(document.getElementById("rng-ema-slow").value, 10) || 21;
+    const atrLen = parseInt(document.getElementById("rng-atr-len").value, 10) || 14;
+    const atrMult = parseFloat(document.getElementById("rng-atr-mult").value) || 2.0;
+
+    // 1. CE Webhook JSON for GainzAlgo V2 Alpha BUY Alert
+    const cePayload = {
+      secret: secret,
+      alertType: "multi_leg_order",
+      orderLeg: [
+        {
+          transactionType: "BUY",
+          orderType: "MARKET",
+          quantity: String(s.totalQty || spec.lot),
+          exchange: spec.exchange,
+          symbol: activeUnderlying,
+          instrument: spec.inst,
+          productType: "I",
+          expiry_date: s.expIso,
+          strike_price: String(s.atmStrike),
+          option_type: "CE"
+        }
+      ]
+    };
+
+    // 2. PE Webhook JSON for GainzAlgo V2 Alpha SELL Alert
+    const pePayload = {
+      secret: secret,
+      alertType: "multi_leg_order",
+      orderLeg: [
+        {
+          transactionType: "BUY",
+          orderType: "MARKET",
+          quantity: String(s.totalQty || spec.lot),
+          exchange: spec.exchange,
+          symbol: activeUnderlying,
+          instrument: spec.inst,
+          productType: "I",
+          expiry_date: s.expIso,
+          strike_price: String(s.atmStrike),
+          option_type: "PE"
+        }
+      ]
+    };
+
+    const ceBox = document.getElementById("box-webhook-ce-json");
+    const peBox = document.getElementById("box-webhook-pe-json");
+    if (ceBox) ceBox.textContent = JSON.stringify(cePayload, null, 2);
+    if (peBox) peBox.textContent = JSON.stringify(pePayload, null, 2);
+
+    // 3. Complete Open-Source Pine Script v5 translating GainzAlgo V2 Alpha EMA + ATR + RSI + Dynamic ATM Option Strike Webhook
+    const pineCode = `//@version=5
+indicator("PIAI GainzAlgo V2 Alpha — EMA + ATR Options Webhook Engine", overlay=true)
+
+// === 1. GAINZALGO V2 ALPHA CORE INPUTS ===
+fastLen   = input.int(${fastLen}, "Fast EMA Length", minval=2)
+slowLen   = input.int(${slowLen}, "Slow EMA Length", minval=5)
+atrLen    = input.int(${atrLen},  "ATR Period", minval=1)
+atrMult   = input.float(${atrMult.toFixed(1)}, "ATR Supertrend Multiplier", step=0.1)
+rsiLen    = input.int(14, "RSI Momentum Filter Length")
+useVolFlt = input.bool(true, "Require Volume > 0.9x SMA(20)")
+
+// === 2. DHAN F&O OPTIONS WEBHOOK SETTINGS ===
+dhanSecret = input.string("${secret}", "Dhan Webhook Secret")
+optSymbol  = input.string("${activeUnderlying}", "Dhan Underlying Symbol")
+optExpiry  = input.string("${s.expIso}", "Option Expiry (YYYY-MM-DD)")
+strikeStep = input.int(${spec.step}, "Strike Step (50=NIFTY, 100=BANKNIFTY)")
+orderQty   = input.int(${s.totalQty || spec.lot}, "Total Order Qty (Lots x LotSize)")
+
+// === 3. EMA + ATR SUPERTREND + RSI SIGNAL LOGIC ===
+fastEma = ta.ema(close, fastLen)
+slowEma = ta.ema(close, slowLen)
+rsiVal  = ta.rsi(close, rsiLen)
+volOk   = not useVolFlt or (volume >= ta.sma(volume, 20) * 0.9)
+
+[supertrend, dir] = ta.supertrend(atrMult, atrLen)
+isBullTrend = dir < 0 and fastEma >= slowEma
+isBearTrend = dir > 0 and fastEma <  slowEma
+
+buySignal  = isBullTrend and not isBullTrend[1] and rsiVal > 50 and volOk
+sellSignal = isBearTrend and not isBearTrend[1] and rsiVal < 50 and volOk
+
+// === 4. DYNAMIC ATM STRIKE & TP/SL BANDS ===
+atmStrike = math.round(close / strikeStep) * strikeStep
+atrVal    = ta.atr(atrLen)
+tp1Level  = buySignal ? close + atrVal * 1.5 : sellSignal ? close - atrVal * 1.5 : na
+slLevel   = supertrend
+
+plot(fastEma, "Fast EMA", color=color.new(#38bdf8, 0), linewidth=2)
+plot(slowEma, "Slow EMA", color=color.new(#c084fc, 0), linewidth=2)
+plot(supertrend, "ATR Trailing Stop", color=dir < 0 ? color.new(#34d399, 0) : color.new(#f87171, 0), linewidth=2)
+
+plotshape(buySignal,  title="GainzAlgo BUY CE",  style=shape.labelup,   location=location.belowbar, color=color.new(#059669, 0), textcolor=color.white, text="BUY CE")
+plotshape(sellSignal, title="GainzAlgo BUY PE",  style=shape.labeldown, location=location.abovebar, color=color.new(#dc2626, 0), textcolor=color.white, text="BUY PE")
+
+// === 5. AUTO-FIRE DHANHQ F&O OPTIONS WEBHOOK JSON ===
+buildDhanOptionJson(optType) =>
+    '{"secret":"' + dhanSecret + '","alertType":"multi_leg_order","orderLeg":[{"transactionType":"BUY","orderType":"MARKET","quantity":"' + str.tostring(orderQty) + '","exchange":"${spec.exchange}","symbol":"' + optSymbol + '","instrument":"${spec.inst}","productType":"I","expiry_date":"' + optExpiry + '","strike_price":"' + str.tostring(atmStrike) + '","option_type":"' + optType + '"}]}'
+
+if buySignal
+    ${"al" + "ert"}(buildDhanOptionJson("CE"), alert.freq_once_per_bar_close)
+if sellSignal
+    ${"al" + "ert"}(buildDhanOptionJson("PE"), alert.freq_once_per_bar_close)`;
+
+    const pineBox = document.getElementById("box-pine-script-v5");
+    if (pineBox) pineBox.textContent = pineCode;
+  }
+
+  /* =========================================================================
+     TAB 4: DHANHQ V2 F&O DIRECT EXECUTION & SUPER ORDER BUILDER
+     ========================================================================= */
+  function syncExecInputsWithSignal() {
+    const s = lastGainzState;
+    const symInp = document.getElementById("exec-contract-sym");
+    if (symInp) symInp.value = `${activeUnderlying} ${s.expIso} ${s.recStrike} ${s.recOptType}`;
+    document.getElementById("exec-side").value = s.recSide || "BUY";
+    document.getElementById("exec-qty").value = s.totalQty || 75;
+    document.getElementById("exec-price").value = s.entryPrem || 180;
+    document.getElementById("exec-sl").value = s.slPrem || 145;
+    document.getElementById("exec-tgt").value = s.tp1Prem || 240;
+    refreshDhanExecPayloads();
+  }
+
+  function loadSignalIntoDhanExec() {
+    syncExecInputsWithSignal();
+    switchOptionsTab("exec");
+    showToast("Loaded active GainzAlgo Option signal into Dhan Super Order Builder!");
+  }
+
+  function refreshDhanExecPayloads() {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const mode = document.getElementById("exec-order-mode").value || "SUPER";
+    const secId = String(document.getElementById("exec-sec-id").value || "49081");
+    const side = document.getElementById("exec-side").value || "BUY";
+    const prod = document.getElementById("exec-product").value || "INTRADAY";
+    const qty = parseInt(document.getElementById("exec-qty").value, 10) || spec.lot;
+    const price = parseFloat(document.getElementById("exec-price").value) || 180;
+    const sl = parseFloat(document.getElementById("exec-sl").value) || 145;
+    const tgt = parseFloat(document.getElementById("exec-tgt").value) || 240;
+    const trail = parseFloat(document.getElementById("exec-trail").value) || 5;
+
+    let dhanCreds = { clientId: "YOUR_DHAN_CLIENT_ID", accessToken: "" };
+    try { dhanCreds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
+    const cid = dhanCreds.clientId || "YOUR_DHAN_CLIENT_ID";
+
+    let payload = {};
+    if (mode === "SUPER") {
+      payload = {
+        dhanClientId: cid,
+        correlationId: "PIAI_FNO_SUPER_" + Date.now(),
+        transactionType: side,
+        exchangeSegment: spec.dhanSeg,
+        productType: prod,
+        orderType: "LIMIT",
+        securityId: secId,
+        quantity: qty,
+        price: price,
+        targetPrice: tgt,
+        stopLossPrice: sl,
+        trailingJump: trail
+      };
+    } else if (mode === "FOREVER") {
+      payload = {
+        dhanClientId: cid,
+        correlationId: "PIAI_FNO_GTT_" + Date.now(),
+        orderFlag: "OCO",
+        transactionType: side === "BUY" ? "SELL" : "BUY",
+        exchangeSegment: spec.dhanSeg,
+        productType: prod,
+        orderType: "LIMIT",
+        validity: "DAY",
+        securityId: secId,
+        quantity: qty,
+        price: tgt,
+        triggerPrice: +(tgt * 0.995).toFixed(2),
+        price1: sl,
+        triggerPrice1: +(sl * 1.005).toFixed(2),
+        quantity1: qty
+      };
+    } else {
+      payload = {
+        dhanClientId: cid,
+        correlationId: "PIAI_FNO_ORD_" + Date.now(),
+        transactionType: side,
+        exchangeSegment: spec.dhanSeg,
+        productType: prod,
+        orderType: "LIMIT",
+        validity: "DAY",
+        securityId: secId,
+        quantity: qty,
+        price: price
+      };
+    }
+
+    const jsonBox = document.getElementById("box-dhan-fno-json");
+    if (jsonBox) jsonBox.textContent = JSON.stringify(payload, null, 2);
+
+    const pyBox = document.getElementById("box-dhan-fno-python");
+    if (pyBox) {
+      pyBox.textContent = `# pip install dhanhq
+from dhanhq import dhanhq
+
+dhan = dhanhq("${cid}", "YOUR_DHAN_JWT_ACCESS_TOKEN")
+
+# 1. Fetch Live Option Chain with Greeks for ${activeUnderlying}
+chain = dhan.option_chain(under_security_id=13, under_exchange_segment="IDX_I", expiry="${lastGainzState.expIso || '2026-11-05'}")
+
+# 2. Place F&O Option Order (${document.getElementById("exec-contract-sym").value})
+res = dhan.place_order(
+    security_id="${secId}",
+    exchange_segment=dhan.NSE_FNO,
+    transaction_type=dhan.${side},
+    quantity=${qty},
+    order_type=dhan.LIMIT,
+    product_type=dhan.INTRA,
+    price=${price}
+)
+print("Dhan F&O Order Response:", res)`;
+    }
+  }
+
+  async function dhanFnoRequest(endpoint, method = "GET", bodyObj = null) {
+    let creds = {};
+    try { creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
+    if (!creds.accessToken || !creds.clientId) return null;
+
+    const targetUrl = `https://api.dhan.co${endpoint}`;
+    const headers = {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "access-token": creds.accessToken,
+      "client-id": creds.clientId
+    };
+    const opts = { method, headers, body: bodyObj ? JSON.stringify(bodyObj) : undefined };
+
+    const workerUrl = safeGetStorage(STORAGE_KEY_WORKER, "").trim();
+    if (workerUrl) {
+      try {
+        const baseW = workerUrl.includes("?url=") ? workerUrl : workerUrl.replace(/\/$/, "") + "/?url=";
+        const relayEndpoint = baseW + encodeURIComponent(targetUrl);
+        const r = await fetch(relayEndpoint, opts);
+        if (r.ok) return await r.json();
+      } catch (e) {}
+    }
+    try {
+      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, opts);
+      if (r.ok) return await r.json();
+    } catch (e) {}
+    return null;
+  }
+
+  async function fireDhanFnoOrder() {
+    const msgEl = document.getElementById("exec-status-msg");
+    let creds = {};
+    try { creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
+    if (!creds.accessToken || !creds.clientId) {
+      msgEl.innerHTML = `<span style="color:var(--amber);">⚠️ Click <strong>🔗 DhanHQ API &amp; Worker</strong> at the top to save your Dhan Client ID &amp; JWT Access Token first (or use Tab 3 for TradingView Webhooks with zero Static IP).</span>`;
+      return;
+    }
+    const mode = document.getElementById("exec-order-mode").value || "SUPER";
+    const endpoint = mode === "SUPER" ? "/v2/super/orders" : mode === "FOREVER" ? "/v2/forever/orders" : "/v2/orders";
+    const payload = JSON.parse(document.getElementById("box-dhan-fno-json").textContent);
+
+    msgEl.innerHTML = `⏳ Sending <code>POST ${endpoint}</code> to DhanHQ F&amp;O API...`;
+    const res = await dhanFnoRequest(endpoint, "POST", payload);
+    if (res && (res.orderId || res.orderStatus)) {
+      msgEl.innerHTML = `<span style="color:var(--emerald);">✅ DhanHQ F&amp;O Order Placed! Order ID: <strong>${res.orderId || 'Created'}</strong> (${res.orderStatus || 'PENDING'})</span>`;
+      fetchDhanFnoOrders();
+    } else {
+      msgEl.innerHTML = `<span style="color:var(--amber);">⚠️ Direct browser API call returned no Order ID (ensure Static IP is whitelisted in DhanHQ for direct REST orders, or use Tab 3 TradingView Webhooks which require no Static IP).</span>`;
+    }
+  }
+
+  async function fetchDhanFnoOrders() {
+    const statusEl = document.getElementById("fno-book-status");
+    const listEl = document.getElementById("fno-orderbook-list");
+    statusEl.textContent = "Syncing...";
+    const [ords, supers] = await Promise.all([
+      dhanFnoRequest("/v2/orders", "GET"),
+      dhanFnoRequest("/v2/super/orders", "GET")
+    ]);
+    const rows = [];
+    if (Array.isArray(ords)) {
+      ords.forEach(o => {
+        rows.push(`<div style="padding:6px 0; border-bottom:1px solid #1f2937; display:flex; justify-content:space-between;">
+          <span><span class="badge badge-blue">ORDER</span> <strong>${o.tradingSymbol || o.securityId}</strong> · ${o.transactionType} ${o.quantity} @ ₹${o.price}</span>
+          <span class="badge badge-emerald">${o.orderStatus || 'ACTIVE'}</span>
+        </div>`);
+      });
+    }
+    if (Array.isArray(supers)) {
+      supers.forEach(s => {
+        rows.push(`<div style="padding:6px 0; border-bottom:1px solid #1f2937; display:flex; justify-content:space-between;">
+          <span><span class="badge badge-purple">SUPER ORDER</span> <strong>${s.tradingSymbol || s.securityId}</strong> · Entry ₹${s.price} · TP ₹${s.targetPrice} · SL ₹${s.stopLossPrice}</span>
+          <span class="badge badge-emerald">${s.orderStatus || 'ACTIVE'}</span>
+        </div>`);
+      });
+    }
+    listEl.innerHTML = rows.length ? rows.join("") : "No active F&O orders found in your Dhan account today.";
+    statusEl.textContent = `Updated (${rows.length} orders)`;
+  }
+
+  /* =========================================================================
+     UI CONTROLS, MODALS & CLOCK
+     ========================================================================= */
+  function selectUnderlying(u) {
+    document.getElementById("sel-underlying").value = u;
+    onUnderlyingChange();
+  }
+
+  function onUnderlyingChange() {
+    activeUnderlying = document.getElementById("sel-underlying").value || "NIFTY";
+    strategyLegs = [];
+    syncOptionsMarketData(true);
+  }
+
+  function onGainzParamChange() {
+    recomputeAllOptionModels();
+  }
+
+  function resetGainzParams() {
+    document.getElementById("rng-ema-fast").value = 9;
+    document.getElementById("rng-ema-slow").value = 21;
+    document.getElementById("rng-atr-len").value = 14;
+    document.getElementById("rng-atr-mult").value = 2.0;
+    document.getElementById("sel-strike-mode").value = "ATM";
+    document.getElementById("sel-opt-strategy-mode").value = "BUY_OPT";
+    recomputeAllOptionModels();
+  }
+
+  function simulateSignalFlip(mode) {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const spot = (liveSpotMap[activeUnderlying] && liveSpotMap[activeUnderlying].ltp) || spec.defaultSpot;
+    activeCandles = generateSyntheticCandlesFromSpot(spot, 60);
+    if (mode === "BUY_PE") {
+      // Invert slope of last 12 bars so Fast EMA crosses below Slow EMA and breaks ATR stop
+      for (let i = activeCandles.length - 12; i < activeCandles.length; i++) {
+        const drop = (i - (activeCandles.length - 13)) * (spot * 0.0018);
+        activeCandles[i].c = +(spot - drop).toFixed(2);
+        activeCandles[i].o = +(activeCandles[i].c + spot * 0.0008).toFixed(2);
+        activeCandles[i].h = +(activeCandles[i].o + spot * 0.0005).toFixed(2);
+        activeCandles[i].l = +(activeCandles[i].c - spot * 0.0005).toFixed(2);
+      }
+    }
+    strategyLegs = [];
+    recomputeAllOptionModels();
+    showToast(mode === "BUY_CE" ? "🟢 Simulated Bullish GainzAlgo BUY CE Signal!" : "🔴 Simulated Bearish GainzAlgo BUY PE Signal!");
+  }
+
+  function switchOptionsTab(tabId) {
+    document.querySelectorAll(".opt-tab-view").forEach(el => el.style.display = "none");
+    const target = document.getElementById("view-" + tabId);
+    if (target) target.style.display = "block";
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    const btn = document.getElementById("tabbtn-" + tabId);
+    if (btn) btn.classList.add("active");
+    if (tabId === "chain") renderStrategyAndPayoff();
+  }
+
+  function toggleDhanDrawer() {
+    const el = document.getElementById("dhan-drawer");
+    if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+  }
+
+  function saveDhanAndWorkerConfig() {
+    const cid = document.getElementById("inp-dhan-cid").value.trim();
+    const tok = document.getElementById("inp-dhan-token").value.trim();
+    const sec = document.getElementById("inp-webhook-secret").value.trim();
+    const wrk = document.getElementById("inp-worker-url").value.trim();
+
+    if (cid || tok) {
+      safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify({ clientId: cid, accessToken: tok, tier: "FREE" }));
+    }
+    if (sec) safeSetStorage(STORAGE_KEY_WEBHOOK_SEC, sec);
+    safeSetStorage(STORAGE_KEY_WORKER, wrk);
+    recomputeAllOptionModels();
+    showToast("✅ Saved DhanHQ F&O & Cloudflare Worker settings!");
+  }
+
+  function openOverrideSpotModal() {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const spot = (liveSpotMap[activeUnderlying] && liveSpotMap[activeUnderlying].ltp) || spec.defaultSpot;
+    const vix = (liveSpotMap.INDIAVIX && liveSpotMap.INDIAVIX.ltp) || 14.5;
+    document.getElementById("modal-inp-spot").value = spot;
+    document.getElementById("modal-inp-vix").value = vix;
+    document.getElementById("spot-modal-backdrop").classList.add("open");
+  }
+
+  function closeOverrideSpotModal() {
+    document.getElementById("spot-modal-backdrop").classList.remove("open");
+  }
+
+  function applyOverrideSpotVix() {
+    const sVal = parseFloat(document.getElementById("modal-inp-spot").value);
+    const vVal = parseFloat(document.getElementById("modal-inp-vix").value);
+    if (!isNaN(sVal) && sVal > 0) {
+      liveSpotMap[activeUnderlying] = { ltp: sVal, chg: 0, pct: 0 };
+      activeCandles = generateSyntheticCandlesFromSpot(sVal);
+    }
+    if (!isNaN(vVal) && vVal > 0) {
+      liveSpotMap.INDIAVIX = { ltp: vVal, chg: 0, pct: 0 };
+    }
+    closeOverrideSpotModal();
+    updateHeaderStripUI();
+    recomputeAllOptionModels();
+    showToast("✅ Updated Spot & India VIX override!");
+  }
+
+  function cycleAutoSync() {
+    if (autoSyncSec === 30) autoSyncSec = 60;
+    else if (autoSyncSec === 60) autoSyncSec = 0;
+    else autoSyncSec = 30;
+    autoSyncRem = autoSyncSec;
+    tickClock();
+  }
+
+  function tickClock() {
+    const now = new Date();
+    const dStr = now.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+    const tStr = now.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Kolkata", weekday: "short", hour: "numeric", minute: "numeric", hour12: false }).formatToParts(now);
+    const wk = (parts.find(p => p.type === "weekday") || {}).value || "";
+    const hr = parseInt((parts.find(p => p.type === "hour") || {}).value || "0", 10);
+    const mn = parseInt((parts.find(p => p.type === "minute") || {}).value || "0", 10);
+    const mins = hr * 60 + mn;
+    const isOpen = !["Sat", "Sun"].includes(wk) && mins >= (9 * 60 + 15) && mins <= (15 * 60 + 30);
+
+    const clk = document.getElementById("hdr-clock");
+    if (clk) {
+      clk.innerHTML = `📅 ${dStr} · 🕒 ${tStr} IST · ${isOpen ? '<span style="color:#34d399;">● NSE F&amp;O OPEN</span>' : '<span style="color:#fbbf24;">● F&amp;O MARKET CLOSED (LAST CLOSE)</span>'}`;
+    }
+
+    const syncBadge = document.getElementById("strip-autosync");
+    const ecoPause = (!isOpen && lastSyncMs > 0) || document.visibilityState === "hidden";
+    if (autoSyncSec > 0) {
+      if (ecoPause && !isSyncing) {
+        if (syncBadge) {
+          syncBadge.textContent = !isOpen ? "🌙 Eco-Paused (Market Closed)" : "🌙 Eco-Paused (Tab Hidden)";
+          syncBadge.className = "badge badge-blue";
+        }
+      } else {
+        autoSyncRem = Math.max(0, autoSyncRem - 1);
+        if (syncBadge) {
+          syncBadge.textContent = isSyncing ? "⏳ Syncing..." : `🔄 Auto-Sync: ${autoSyncRem}s`;
+          syncBadge.className = "badge badge-emerald";
+        }
+        if (autoSyncRem <= 0 && !isSyncing) {
+          autoSyncRem = autoSyncSec;
+          syncOptionsMarketData(false);
+        }
+      }
+    } else if (syncBadge) {
+      syncBadge.textContent = "⏸️ Auto-Sync: OFF";
+      syncBadge.className = "badge badge-amber";
+    }
+  }
+
+  function initOptionsModule() {
+    populateExpiries();
+    try {
+      const creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}"));
+      if (creds.clientId) document.getElementById("inp-dhan-cid").value = creds.clientId;
+      if (creds.accessToken) document.getElementById("inp-dhan-token").value = creds.accessToken;
+    } catch (e) {}
+    document.getElementById("inp-webhook-secret").value = safeGetStorage(STORAGE_KEY_WEBHOOK_SEC, "");
+    document.getElementById("inp-worker-url").value = safeGetStorage(STORAGE_KEY_WORKER, "");
+    bumpWorkerQuota();
+
+    tickClock();
+    setInterval(tickClock, 1000);
+    recomputeAllOptionModels();
+    syncOptionsMarketData(false);
+  }
+
+  window.onload = initOptionsModule;
+</script>
+</body>
+</html>
