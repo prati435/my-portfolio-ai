@@ -371,15 +371,18 @@
       <div>
         <label class="inp-label">Underlying F&amp;O Instrument</label>
         <select id="sel-underlying" class="inp-field" style="min-width:170px;" onchange="onUnderlyingChange()">
-          <option value="NIFTY" selected>NIFTY 50 (Lot: 75 · Step: 50)</option>
-          <option value="BANKNIFTY">BANK NIFTY (Lot: 15 · Step: 100)</option>
-          <option value="FINNIFTY">FINNIFTY (Lot: 40 · Step: 50)</option>
-          <option value="SENSEX">BSE SENSEX (Lot: 10 · Step: 100)</option>
-          <option value="RELIANCE">RELIANCE (Lot: 500 · Step: 20)</option>
-          <option value="HDFCBANK">HDFCBANK (Lot: 550 · Step: 20)</option>
-          <option value="ICICIBANK">ICICIBANK (Lot: 700 · Step: 10)</option>
-          <option value="SBIN">SBIN (Lot: 750 · Step: 10)</option>
-          <option value="TATAMOTORS">TATAMOTORS (Lot: 550 · Step: 10)</option>
+          <option value="NIFTY" selected>NIFTY 50 (Lot: 65 · Step: 50 · Weekly Tue)</option>
+          <option value="BANKNIFTY">BANK NIFTY (Lot: 30 · Step: 100 · Monthly Last Tue)</option>
+          <option value="FINNIFTY">FINNIFTY (Lot: 60 · Step: 50 · Monthly Last Tue)</option>
+          <option value="MIDCPNIFTY">MIDCPNIFTY (Lot: 120 · Step: 25 · Monthly Last Tue)</option>
+          <option value="SENSEX">BSE SENSEX (Lot: 20 · Step: 100 · Weekly Thu)</option>
+          <option value="RELIANCE">RELIANCE (Lot: 500 · Step: 10 · Monthly Tue)</option>
+          <option value="HDFCBANK">HDFCBANK (Lot: 650 · Step: 10 · Monthly Tue)</option>
+          <option value="ICICIBANK">ICICIBANK (Lot: 700 · Step: 10 · Monthly Tue)</option>
+          <option value="SBIN">SBIN (Lot: 750 · Step: 10 · Monthly Tue)</option>
+          <option value="INFY">INFY (Lot: 400 · Step: 20 · Monthly Tue)</option>
+          <option value="BAJFINANCE">BAJFINANCE (Lot: 750 · Step: 20 · Monthly Tue)</option>
+          <option value="TMPV">TMPV - Tata Motors PV (Lot: 1600 · Step: 5 · Monthly Tue)</option>
         </select>
       </div>
       <div>
@@ -396,8 +399,16 @@
         <select id="sel-expiry" class="inp-field" onchange="recomputeAllOptionModels()"></select>
       </div>
       <div>
-        <label class="inp-label">Lots (<span id="lbl-lot-size">75</span> qty/lot)</label>
-        <input type="number" id="inp-lots" class="inp-field" style="width:80px;" value="1" min="1" max="100" oninput="recomputeAllOptionModels()">
+        <label class="inp-label">Lots</label>
+        <input type="number" id="inp-lots" class="inp-field" style="width:68px;" value="1" min="1" max="100" oninput="recomputeAllOptionModels()">
+      </div>
+      <div>
+        <label class="inp-label">Lot Size (<span id="lbl-lot-size">65</span>/lot)</label>
+        <input type="number" id="inp-lot-size" class="inp-field" style="width:74px;" value="65" min="1" max="5000" oninput="onCustomLotSizeChange()" title="SEBI/NSE Jan 2026 Lot Size (Editable)">
+      </div>
+      <div>
+        <label class="inp-label">G-Sec Yield r%</label>
+        <input type="number" id="inp-rfr" class="inp-field" style="width:68px;" value="7.16" step="0.05" min="1" max="15" oninput="recomputeAllOptionModels()" title="India 10Y G-Sec / Risk-Free Rate (Nov 2026: 7.16%)">
       </div>
     </div>
 
@@ -676,8 +687,8 @@
             <input type="text" id="exec-contract-sym" class="inp-field" oninput="refreshDhanExecPayloads()">
           </div>
           <div>
-            <label class="inp-label">Dhan F&amp;O Security ID</label>
-            <input type="number" id="exec-sec-id" class="inp-field" value="49081" oninput="refreshDhanExecPayloads()">
+            <label class="inp-label">Dhan Scrip Master Security ID (REST Only)</label>
+            <input type="text" id="exec-sec-id" class="inp-field" value="" placeholder="Enter strike securityId (Not needed for Webhooks)" oninput="refreshDhanExecPayloads()">
           </div>
           <div>
             <label class="inp-label">Transaction Side</label>
@@ -695,7 +706,7 @@
           </div>
           <div>
             <label class="inp-label">Total Quantity (Lots × LotSize)</label>
-            <input type="number" id="exec-qty" class="inp-field" value="75" oninput="refreshDhanExecPayloads()">
+            <input type="number" id="exec-qty" class="inp-field" value="65" oninput="refreshDhanExecPayloads()">
           </div>
           <div>
             <label class="inp-label">Entry Option Limit Price (₹)</label>
@@ -788,16 +799,21 @@
   const WORKER_DAILY_SAFE_CAP = 80000;
 
   const UNDERLYING_SPECS = {
-    NIFTY:      { yahoo: "^NSEI",      etf: "NIFTYBEES.NS", mult: 88.5, lot: 75,  step: 50,  exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", defaultSpot: 24350 },
-    BANKNIFTY:  { yahoo: "^NSEBANK",   etf: "BANKBEES.NS",  mult: 97.4, lot: 15,  step: 100, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", defaultSpot: 51800 },
-    FINNIFTY:   { yahoo: "NIFTY_FIN_SERVICE.NS", etf: "NIFTYBEES.NS", mult: 90.0, lot: 40, step: 50, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", defaultSpot: 23900 },
-    SENSEX:     { yahoo: "^BSESN",     etf: "SENSEXBEES.BO",mult: 100.0,lot: 10,  step: 100, exchange: "BSE", inst: "OPTIDX", dhanSeg: "BSE_FNO", defaultSpot: 79900 },
-    RELIANCE:   { yahoo: "RELIANCE.NS",etf: null,           mult: 1,    lot: 500, step: 20,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 1340 },
-    HDFCBANK:   { yahoo: "HDFCBANK.NS",etf: null,           mult: 1,    lot: 550, step: 20,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 1740 },
-    ICICIBANK:  { yahoo: "ICICIBANK.NS",etf:null,           mult: 1,    lot: 700, step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 1290 },
-    SBIN:       { yahoo: "SBIN.NS",    etf: null,           mult: 1,    lot: 750, step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 820 },
-    TATAMOTORS: { yahoo: "TATAMOTORS.NS",etf:null,          mult: 1,    lot: 550, step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", defaultSpot: 840 }
+    NIFTY:      { yahoo: "^NSEI",      yahooAlt: [], minSpot: 15000, maxSpot: 38000, lot: 65,   step: 50,  exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", dhanUnderId: 13, expRule: "WEEKLY_TUE",  defaultSpot: 23810 },
+    BANKNIFTY:  { yahoo: "^NSEBANK",   yahooAlt: [], minSpot: 35000, maxSpot: 80000, lot: 30,   step: 100, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", dhanUnderId: 25, expRule: "MONTHLY_TUE", defaultSpot: 51800 },
+    FINNIFTY:   { yahoo: "NIFTY_FIN_SERVICE.NS", yahooAlt: ["NIFTY_FIN_SERVICES.NS", "^CNXFIN"], minSpot: 16000, maxSpot: 40000, lot: 60, step: 50, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", dhanUnderId: 27, expRule: "MONTHLY_TUE", defaultSpot: 26270 },
+    MIDCPNIFTY: { yahoo: "NIFTY_MID_SELECT.NS",  yahooAlt: ["^NSEMDCP50"], minSpot: 8000, maxSpot: 25000, lot: 120, step: 25, exchange: "NSE", inst: "OPTIDX", dhanSeg: "NSE_FNO", dhanUnderId: 442, expRule: "MONTHLY_TUE", defaultSpot: 12600 },
+    SENSEX:     { yahoo: "^BSESN",     yahooAlt: [], minSpot: 55000, maxSpot: 115000, lot: 20,  step: 100, exchange: "BSE", inst: "OPTIDX", dhanSeg: "BSE_FNO", dhanUnderId: 51, expRule: "WEEKLY_THU",  defaultSpot: 79400 },
+    RELIANCE:   { yahoo: "RELIANCE.NS",yahooAlt: ["RELIANCE.BO"],  minSpot: 500, maxSpot: 4000, lot: 500,  step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 2885, expRule: "MONTHLY_TUE", defaultSpot: 1340 },
+    HDFCBANK:   { yahoo: "HDFCBANK.NS",yahooAlt: ["HDFCBANK.BO"],  minSpot: 400, maxSpot: 2500, lot: 650,  step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 1333, expRule: "MONTHLY_TUE", defaultSpot: 780 },
+    ICICIBANK:  { yahoo: "ICICIBANK.NS",yahooAlt:["ICICIBANK.BO"], minSpot: 500, maxSpot: 3000, lot: 700,  step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 4963, expRule: "MONTHLY_TUE", defaultSpot: 1265 },
+    SBIN:       { yahoo: "SBIN.NS",    yahooAlt: ["SBIN.BO"],      minSpot: 300, maxSpot: 2000, lot: 750,  step: 10,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 3045, expRule: "MONTHLY_TUE", defaultSpot: 820 },
+    INFY:       { yahoo: "INFY.NS",    yahooAlt: ["INFY.BO"],      minSpot: 800, maxSpot: 3500, lot: 400,  step: 20,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 1594, expRule: "MONTHLY_TUE", defaultSpot: 1840 },
+    BAJFINANCE: { yahoo: "BAJFINANCE.NS",yahooAlt:["BAJFINANCE.BO"],minSpot: 400, maxSpot: 12000,lot: 750, step: 20,  exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 317,  expRule: "MONTHLY_TUE", defaultSpot: 1060 },
+    TMPV:       { yahoo: "TMPV.NS",    yahooAlt: ["TATAMOTORS.BO"],minSpot: 100, maxSpot: 1500, lot: 1600, step: 5,   exchange: "NSE", inst: "OPTSTK", dhanSeg: "NSE_FNO", dhanUnderId: 3456, expRule: "MONTHLY_TUE", defaultSpot: 291 }
   };
+
+  let isSimulatedFeed = false;
 
   let activeUnderlying = "NIFTY";
   let liveSpotMap = {
@@ -893,24 +909,98 @@
   /* =========================================================================
      EXPIRY DATE GENERATOR (NEXT 4 WEEKLY / MONTHLY EXPIRIES)
      ========================================================================= */
+  // Official 2026-2027 NSE/BSE Market Holidays (when expiry falls on a holiday, exchange shifts expiry to preceding trading day)
+  const NSE_BSE_HOLIDAYS_2026_2027 = new Set([
+    "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
+    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14",
+    "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
+    "2027-01-26", "2027-03-22", "2027-03-26", "2027-04-14", "2027-08-15", "2027-10-02"
+  ]);
+
+  function toIsoDateLocal(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function adjustForExchangeHoliday(d) {
+    const adj = new Date(d.getTime());
+    let rolled = false;
+    while (adj.getDay() === 0 || adj.getDay() === 6 || NSE_BSE_HOLIDAYS_2026_2027.has(toIsoDateLocal(adj))) {
+      adj.setDate(adj.setDate ? adj.getDate() - 1 : d.getDate() - 1);
+      rolled = true;
+    }
+    return { date: adj, rolled };
+  }
+
+  function getLastWeekdayOfMonth(year, monthIndex, targetDay) {
+    // targetDay: 2 = Tuesday (NSE), 4 = Thursday (BSE)
+    const lastDay = new Date(year, monthIndex + 1, 0);
+    const diff = (lastDay.getDay() - targetDay + 7) % 7;
+    lastDay.setDate(lastDay.getDate() - diff);
+    return lastDay;
+  }
+
   function populateExpiries() {
     const sel = document.getElementById("sel-expiry");
     if (!sel) return;
     sel.innerHTML = "";
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const rule = spec.expRule || "WEEKLY_TUE";
     const now = new Date();
-    for (let w = 0; w < 4; w++) {
-      const d = new Date(now.getTime());
-      // Find upcoming Thursday (day 4)
-      const diff = (4 - d.getDay() + 7) % 7;
-      d.setDate(d.getDate() + (diff === 0 && w > 0 ? 7 * w : diff + 7 * w));
-      const iso = d.toISOString().slice(0, 10);
-      const dte = Math.max(1, Math.round((d.getTime() - now.getTime()) / 86400000) || 1);
-      const label = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    const istParts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kolkata", hour12: false, hour: "2-digit", minute: "2-digit"
+    }).formatToParts(now);
+    const istH = parseInt((istParts.find(p => p.type === "hour") || {}).value || "12", 10);
+    const istM = parseInt((istParts.find(p => p.type === "minute") || {}).value || "0", 10);
+    const afterMarketClose = (istH > 15) || (istH === 15 && istM >= 31);
+
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const expDates = [];
+
+    if (rule === "WEEKLY_TUE" || rule === "WEEKLY_THU") {
+      const targetDay = rule === "WEEKLY_TUE" ? 2 : 4; // 2 = Tuesday (NIFTY), 4 = Thursday (SENSEX)
+      const baseTag = rule === "WEEKLY_TUE" ? "Tue Weekly" : "Thu Weekly";
+      let w = 0;
+      while (expDates.length < 4 && w < 8) {
+        const rawD = new Date(todayMidnight.getTime());
+        const diff = (targetDay - rawD.getDay() + 7) % 7;
+        rawD.setDate(rawD.getDate() + diff + 7 * w);
+        const { date: adjD, rolled } = adjustForExchangeHoliday(rawD);
+        const isToday = toIsoDateLocal(adjD) === toIsoDateLocal(todayMidnight);
+        if (adjD > todayMidnight || (isToday && !afterMarketClose)) {
+          expDates.push({ date: adjD, tag: rolled ? `${baseTag} · Holiday Rollback` : baseTag });
+        }
+        w++;
+      }
+    } else {
+      // SEBI/NSE 2026 Rule: BANKNIFTY, FINNIFTY, MIDCPNIFTY & all F&O Stocks expire Monthly on Last Tuesday
+      let mOffset = 0;
+      while (expDates.length < 3 && mOffset < 6) {
+        const y = todayMidnight.getFullYear();
+        const m = todayMidnight.getMonth() + mOffset;
+        const rawLastTue = getLastWeekdayOfMonth(y, m, 2);
+        const { date: adjLastTue, rolled } = adjustForExchangeHoliday(rawLastTue);
+        const isToday = toIsoDateLocal(adjLastTue) === toIsoDateLocal(todayMidnight);
+        if (adjLastTue > todayMidnight || (isToday && !afterMarketClose)) {
+          expDates.push({ date: adjLastTue, tag: rolled ? "Monthly · Holiday Rollback" : "Monthly Last Tue" });
+        }
+        mOffset++;
+      }
+    }
+
+    expDates.forEach(item => {
+      const d = item.date;
+      const iso = toIsoDateLocal(d);
+      const rawDays = (d.getTime() - todayMidnight.getTime()) / 86400000;
+      const dte = rawDays <= 0 ? 0.5 : Math.round(rawDays);
+      const label = d.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
       const opt = document.createElement("option");
       opt.value = `${iso}|${dte}`;
-      opt.textContent = `${label} (${dte} DTE)`;
+      opt.textContent = `${label} · ${item.tag} (${dte === 0.5 ? '0 DTE Expiry Today' : dte + ' DTE'})`;
       sel.appendChild(opt);
-    }
+    });
   }
 
   /* =========================================================================
@@ -963,84 +1053,207 @@
     if (!data || !data.chart || !data.chart.result || !data.chart.result[0]) return null;
     const res = data.chart.result[0];
     const meta = res.meta || {};
-    const ltp = parseFloat(meta.regularMarketPrice) || fallbackSpot;
-    const prevClose = parseFloat(meta.chartPreviousClose || meta.previousClose || ltp);
-    const chg = ltp - prevClose;
-    const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
+    let ltp = parseFloat(meta.regularMarketPrice) || fallbackSpot;
+    let prevClose = parseFloat(meta.previousClose || meta.regularMarketPreviousClose || meta.chartPreviousClose || ltp);
 
     const ts = res.timestamp || [];
     const q = (res.indicators && res.indicators.quote && res.indicators.quote[0]) ? res.indicators.quote[0] : {};
     const candles = [];
     for (let i = 0; i < ts.length; i++) {
-      const c = q.close ? q.close[i] : null;
-      if (c === null || c === undefined || isNaN(c)) continue;
-      const o = (q.open && q.open[i]) ? q.open[i] : c;
-      const h = (q.high && q.high[i]) ? q.high[i] : Math.max(o, c);
-      const l = (q.low && q.low[i]) ? q.low[i] : Math.min(o, c);
-      const v = (q.volume && q.volume[i]) ? q.volume[i] : 100000;
+      const rawC = q.close ? q.close[i] : null;
+      if (rawC === null || rawC === undefined || isNaN(rawC) || rawC <= 0) continue;
+      const c = +Number(rawC).toFixed(2);
+      // Guard against corrupt outlier ticks (>20% away from reference ltp)
+      if (ltp > 0 && Math.abs(c - ltp) / ltp > 0.20) continue;
+
+      const rawO = (q.open && q.open[i] != null && !isNaN(q.open[i]) && q.open[i] > 0) ? +Number(q.open[i]).toFixed(2) : (candles.length > 0 ? candles[candles.length - 1].c : c);
+      const o = (Math.abs(rawO - c) / c <= 0.04) ? rawO : c;
+      const bodyMax = Math.max(o, c);
+      const bodyMin = Math.min(o, c);
+
+      let rawH = (q.high && q.high[i] != null && !isNaN(q.high[i]) && q.high[i] > 0) ? +Number(q.high[i]).toFixed(2) : bodyMax;
+      let rawL = (q.low && q.low[i] != null && !isNaN(q.low[i]) && q.low[i] > 0) ? +Number(q.low[i]).toFixed(2) : bodyMin;
+
+      // Clamp anomalous wick spikes (>2.5% beyond body on a single bar) and enforce strict H >= max(O,C) and L <= min(O,C)
+      if (rawH > bodyMax * 1.025) rawH = +(bodyMax * 1.004).toFixed(2);
+      if (rawL < bodyMin * 0.975) rawL = +(bodyMin * 0.996).toFixed(2);
+
+      const h = +Math.max(bodyMax, rawH).toFixed(2);
+      const l = +Math.min(bodyMin, rawL).toFixed(2);
+      const v = (q.volume && q.volume[i] != null && !isNaN(q.volume[i]) && q.volume[i] > 0) ? Math.round(q.volume[i]) : 110000;
       candles.push({ t: ts[i] * 1000, o, h, l, c, v });
     }
+
+    if (candles.length > 0) {
+      if (!ltp || ltp <= 0) ltp = candles[candles.length - 1].c;
+      // Ensure last candle's close matches live LTP without violating H >= max(O,C) or L <= min(O,C)
+      const last = candles[candles.length - 1];
+      if (Math.abs(last.c - ltp) / ltp < 0.015) {
+        last.c = +ltp.toFixed(2);
+        last.h = +Math.max(last.o, last.c, last.h).toFixed(2);
+        last.l = +Math.min(last.o, last.c, last.l).toFixed(2);
+      }
+      if (meta.dataGranularity === "1d" && candles.length >= 2 && (!meta.previousClose && !meta.regularMarketPreviousClose)) {
+        prevClose = candles[candles.length - 2].c;
+      }
+    }
+    const chg = ltp - prevClose;
+    const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
     return { ltp, prevClose, chg, pct, candles };
   }
 
-  function generateSyntheticCandlesFromSpot(spot, count = 60) {
-    const arr = [];
-    let p = spot * 0.994;
-    const stepVol = spot * 0.0012;
-    const now = Date.now();
-    for (let i = count; i >= 1; i--) {
-      const wave = Math.sin(i / 5.5) * stepVol + (i < 18 ? stepVol * 0.45 : -stepVol * 0.15);
-      const o = p;
-      const c = +(o + wave).toFixed(2);
-      const h = +(Math.max(o, c) + stepVol * 0.6).toFixed(2);
-      const l = +(Math.min(o, c) - stepVol * 0.5).toFixed(2);
-      const v = Math.round(120000 + (i < 15 ? 45000 : 10000));
-      arr.push({ t: now - i * 300000, o, h, l, c, v });
-      p = c;
+  // Backwards-anchored synthetic candle generator:
+  // Terminates naturally at closes[count-1] === spot with ZERO final-bar jump and 100% valid OHLC math (L <= min(O,C) <= max(O,C) <= H)
+  function generateSyntheticCandlesFromSpot(spot, count = 60, mode = "BUY_CE") {
+    const cleanSpot = +Number(spot || 23810).toFixed(2);
+    const stepVol = cleanSpot * 0.00085;
+    const deltas = [];
+    for (let idx = 0; idx < count; idx++) {
+      const progress = idx / Math.max(1, count - 1);
+      const cycle = Math.sin(idx / 4.2) * stepVol * 0.55 + Math.cos(idx / 2.7) * stepVol * 0.25;
+      const trend = mode === "BUY_PE"
+        ? (progress < 0.45 ? (stepVol * 0.22) : (-stepVol * 0.48))
+        : (progress < 0.45 ? (-stepVol * 0.22) : (stepVol * 0.48));
+      deltas.push(trend + cycle);
     }
-    arr[arr.length - 1].c = spot;
+
+    const closes = new Array(count);
+    closes[count - 1] = cleanSpot;
+    for (let idx = count - 2; idx >= 0; idx--) {
+      closes[idx] = +(closes[idx + 1] - deltas[idx + 1]).toFixed(2);
+    }
+
+    const now = Date.now();
+    const arr = [];
+    for (let idx = 0; idx < count; idx++) {
+      const c = closes[idx];
+      const o = idx === 0 ? +(c - deltas[0] * 0.6).toFixed(2) : closes[idx - 1];
+      const bodyMax = Math.max(o, c);
+      const bodyMin = Math.min(o, c);
+      const wickUp = stepVol * (0.35 + ((idx * 7) % 5) * 0.08);
+      const wickDn = stepVol * (0.32 + ((idx * 11) % 5) * 0.08);
+      const h = +(bodyMax + wickUp).toFixed(2);
+      const l = +(bodyMin - wickDn).toFixed(2);
+      const v = Math.round(115000 + (idx > count - 15 ? 42000 : 12000) + ((idx * 19) % 15000));
+      arr.push({ t: now - (count - 1 - idx) * 300000, o, h, l, c, v });
+    }
     return arr;
   }
 
+  let activeCandlesUnderlying = "";
+  let latestSyncReqId = 0;
+
+  function isSpotWithinValidBounds(spec, ltp) {
+    if (!ltp || isNaN(ltp) || ltp <= 0) return false;
+    if (spec.minSpot && ltp < spec.minSpot) return false;
+    if (spec.maxSpot && ltp > spec.maxSpot) return false;
+    return true;
+  }
+
+  async function fetchActiveUnderlyingChart(spec, tf, range) {
+    let raw = await fetchYahooChart(spec.yahoo, tf, range);
+    let parsed = parseYahooCandles(raw, 0);
+    if (parsed && isSpotWithinValidBounds(spec, parsed.ltp) && parsed.candles.length >= 15) return parsed;
+
+    // Fallback to 15m/5d or 1d/3mo on primary symbol if 1m/5m returned sparse bars
+    if (tf !== "1d") {
+      raw = await fetchYahooChart(spec.yahoo, "15m", "5d");
+      parsed = parseYahooCandles(raw, 0);
+      if (parsed && isSpotWithinValidBounds(spec, parsed.ltp) && parsed.candles.length >= 15) return parsed;
+    }
+
+    raw = await fetchYahooChart(spec.yahoo, "1d", "3mo");
+    parsed = parseYahooCandles(raw, 0);
+    if (parsed && isSpotWithinValidBounds(spec, parsed.ltp) && parsed.candles.length >= 15) return parsed;
+
+    // Try alternate Yahoo tickers (e.g. NIFTY_FIN_SERVICES.NS or .BO)
+    if (Array.isArray(spec.yahooAlt)) {
+      for (const altSym of spec.yahooAlt) {
+        const altRaw = await fetchYahooChart(altSym, tf === "1d" ? "1d" : "5m", tf === "1d" ? "3mo" : "5d");
+        const altParsed = parseYahooCandles(altRaw, 0);
+        if (altParsed && isSpotWithinValidBounds(spec, altParsed.ltp) && altParsed.candles.length >= 15) return altParsed;
+      }
+    }
+    return null;
+  }
+
   async function syncOptionsMarketData(manual = false) {
-    if (isSyncing) return;
+    // Never drop a manual sync or underlying-switch sync! Only skip background timer ticks if already syncing.
+    if (isSyncing && !manual) return;
+    const reqId = ++latestSyncReqId;
+    const reqUnderlying = activeUnderlying;
+    const spec = UNDERLYING_SPECS[reqUnderlying] || UNDERLYING_SPECS.NIFTY;
+
     isSyncing = true;
     autoSyncRem = autoSyncSec || 30;
     const btn = document.getElementById("btn-sync-now");
-    if (btn) btn.textContent = "⏳ Syncing F&O Feeds...";
+    if (btn) btn.textContent = `⏳ Syncing ${reqUnderlying}...`;
 
-    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
     const tf = document.getElementById("sel-timeframe").value || "5m";
-    const range = tf === "1m" ? "1d" : tf === "1d" ? "3mo" : "5d";
+    const range = tf === "1d" ? "6mo" : "5d";
 
-    const [activeRaw, nRaw, bnRaw, snxRaw, vixRaw] = await Promise.all([
-      fetchYahooChart(spec.yahoo, tf, range),
-      activeUnderlying === "NIFTY" ? Promise.resolve(null) : fetchYahooChart("^NSEI", "1d", "5d"),
-      activeUnderlying === "BANKNIFTY" ? Promise.resolve(null) : fetchYahooChart("^NSEBANK", "1d", "5d"),
-      activeUnderlying === "SENSEX" ? Promise.resolve(null) : fetchYahooChart("^BSESN", "1d", "5d"),
+    const [parsedActive, nRaw, bnRaw, snxRaw, vixRaw] = await Promise.all([
+      fetchActiveUnderlyingChart(spec, tf, range),
+      reqUnderlying === "NIFTY" ? Promise.resolve(null) : fetchYahooChart("^NSEI", "1d", "5d"),
+      reqUnderlying === "BANKNIFTY" ? Promise.resolve(null) : fetchYahooChart("^NSEBANK", "1d", "5d"),
+      reqUnderlying === "SENSEX" ? Promise.resolve(null) : fetchYahooChart("^BSESN", "1d", "5d"),
       fetchYahooChart("^INDIAVIX", "1d", "5d")
     ]);
 
-    const parsedActive = parseYahooCandles(activeRaw, spec.defaultSpot);
-    if (parsedActive && parsedActive.ltp > 0) {
-      liveSpotMap[activeUnderlying] = { ltp: parsedActive.ltp, chg: parsedActive.chg, pct: parsedActive.pct };
-      activeCandles = parsedActive.candles.length >= 25 ? parsedActive.candles.slice(-65) : generateSyntheticCandlesFromSpot(parsedActive.ltp);
-    } else if (!liveSpotMap[activeUnderlying] || !liveSpotMap[activeUnderlying].ltp) {
-      liveSpotMap[activeUnderlying] = { ltp: spec.defaultSpot, chg: spec.defaultSpot * 0.0045, pct: 0.45 };
-      activeCandles = generateSyntheticCandlesFromSpot(spec.defaultSpot);
+    // Update top-strip benchmark maps strictly using reqUnderlying (never cross-contaminating NIFTY into SENSEX!)
+    const pN = reqUnderlying === "NIFTY" ? parsedActive : parseYahooCandles(nRaw, 0);
+    if (pN && isSpotWithinValidBounds(UNDERLYING_SPECS.NIFTY, pN.ltp)) {
+      liveSpotMap.NIFTY = { ltp: pN.ltp, chg: pN.chg, pct: pN.pct };
     }
 
-    const pN = activeUnderlying === "NIFTY" ? parsedActive : parseYahooCandles(nRaw, 24350);
-    if (pN && pN.ltp > 0) liveSpotMap.NIFTY = { ltp: pN.ltp, chg: pN.chg, pct: pN.pct };
+    const pBN = reqUnderlying === "BANKNIFTY" ? parsedActive : parseYahooCandles(bnRaw, 0);
+    if (pBN && isSpotWithinValidBounds(UNDERLYING_SPECS.BANKNIFTY, pBN.ltp)) {
+      liveSpotMap.BANKNIFTY = { ltp: pBN.ltp, chg: pBN.chg, pct: pBN.pct };
+    }
 
-    const pBN = activeUnderlying === "BANKNIFTY" ? parsedActive : parseYahooCandles(bnRaw, 51800);
-    if (pBN && pBN.ltp > 0) liveSpotMap.BANKNIFTY = { ltp: pBN.ltp, chg: pBN.chg, pct: pBN.pct };
+    const pS = reqUnderlying === "SENSEX" ? parsedActive : parseYahooCandles(snxRaw, 0);
+    if (pS && isSpotWithinValidBounds(UNDERLYING_SPECS.SENSEX, pS.ltp)) {
+      liveSpotMap.SENSEX = { ltp: pS.ltp, chg: pS.chg, pct: pS.pct };
+    }
 
-    const pS = activeUnderlying === "SENSEX" ? parsedActive : parseYahooCandles(snxRaw, 79900);
-    if (pS && pS.ltp > 0) liveSpotMap.SENSEX = { ltp: pS.ltp, chg: pS.chg, pct: pS.pct };
+    const pVix = parseYahooCandles(vixRaw, 0);
+    if (pVix && pVix.ltp > 2 && pVix.ltp < 90) {
+      liveSpotMap.INDIAVIX = { ltp: pVix.ltp, chg: pVix.chg, pct: pVix.pct };
+    }
 
-    const pVix = parseYahooCandles(vixRaw, 14.5);
-    if (pVix && pVix.ltp > 0) liveSpotMap.INDIAVIX = { ltp: pVix.ltp, chg: pVix.chg, pct: pVix.pct };
+    // If a newer sync request was triggered while this one was in flight, do not overwrite activeCandles
+    if (reqId !== latestSyncReqId || reqUnderlying !== activeUnderlying) {
+      updateHeaderStripUI();
+      return;
+    }
+
+    const feedPill = document.getElementById("hdr-feed-pill");
+    if (parsedActive && isSpotWithinValidBounds(spec, parsedActive.ltp) && parsedActive.candles.length >= 15) {
+      isSimulatedFeed = false;
+      liveSpotMap[reqUnderlying] = { ltp: parsedActive.ltp, chg: parsedActive.chg, pct: parsedActive.pct };
+      activeCandles = parsedActive.candles.slice(-65);
+      activeCandlesUnderlying = reqUnderlying;
+      if (feedPill) {
+        feedPill.textContent = "🟢 Live NSE/BSE Feed";
+        feedPill.className = "badge badge-emerald";
+      }
+    } else {
+      const existingSpot = (liveSpotMap[reqUnderlying] && isSpotWithinValidBounds(spec, liveSpotMap[reqUnderlying].ltp))
+        ? liveSpotMap[reqUnderlying].ltp
+        : spec.defaultSpot;
+      isSimulatedFeed = true;
+      liveSpotMap[reqUnderlying] = {
+        ltp: existingSpot,
+        chg: (liveSpotMap[reqUnderlying] && liveSpotMap[reqUnderlying].chg) || 0,
+        pct: (liveSpotMap[reqUnderlying] && liveSpotMap[reqUnderlying].pct) || 0
+      };
+      activeCandles = generateSyntheticCandlesFromSpot(existingSpot);
+      activeCandlesUnderlying = reqUnderlying;
+      if (feedPill) {
+        feedPill.textContent = "⚠️ Offline Preview (Click Sync / Override)";
+        feedPill.className = "badge badge-amber";
+      }
+    }
 
     lastSyncMs = Date.now();
     isSyncing = false;
@@ -1048,7 +1261,11 @@
 
     updateHeaderStripUI();
     recomputeAllOptionModels();
-    if (manual) showToast(`✅ Synced live ${activeUnderlying} (${tf}) candles & Option Chain!`);
+    if (manual) {
+      showToast(isSimulatedFeed
+        ? `⚠️ Live proxy blocked for ${reqUnderlying} — showing ${reqUnderlying} baseline (₹${liveSpotMap[reqUnderlying].ltp.toLocaleString("en-IN")})`
+        : `✅ Synced live ${reqUnderlying} (${tf}) Spot ₹${liveSpotMap[reqUnderlying].ltp.toLocaleString("en-IN")} & Option Chain!`);
+    }
   }
 
   function updateHeaderStripUI() {
@@ -1085,6 +1302,20 @@
     return out;
   }
 
+  // Wilder's RMA (alpha = 1 / period) — matches TradingView Pine Script ta.rma & ta.atr
+  function computeRMA(values, period) {
+    const out = [];
+    if (!values.length) return out;
+    const alpha = 1 / Math.max(1, period);
+    let rma = values[0];
+    for (let i = 0; i < values.length; i++) {
+      rma = i === 0 ? values[0] : alpha * values[i] + (1 - alpha) * rma;
+      out.push(rma);
+    }
+    return out;
+  }
+
+  // Exact TradingView ta.supertrend(mult, period) using HL2 = (High + Low)/2 and Wilder's ATR
   function computeATRAndSupertrend(candles, period, mult) {
     const trs = [];
     for (let i = 0; i < candles.length; i++) {
@@ -1096,40 +1327,60 @@
         trs.push(Math.max(c.h - c.l, Math.abs(c.h - pc), Math.abs(c.l - pc)));
       }
     }
-    const atrs = computeEMA(trs, period);
+    const atrs = computeRMA(trs, period);
+    const finalUpper = [];
+    const finalLower = [];
     const trail = [];
-    const dir = []; // 1 = Bullish, -1 = Bearish
-    let curDir = 1;
-    let curStop = candles[0].c - atrs[0] * mult;
+    const dir = []; // 1 = Bullish (price > supertrend), -1 = Bearish
 
     for (let i = 0; i < candles.length; i++) {
-      const c = candles[i].c;
-      const upper = candles[i].c + atrs[i] * mult;
-      const lower = candles[i].c - atrs[i] * mult;
-      if (i > 0) {
-        if (curDir === 1) {
-          curStop = Math.max(curStop, lower);
-          if (c < curStop) { curDir = -1; curStop = upper; }
-        } else {
-          curStop = Math.min(curStop, upper);
-          if (c > curStop) { curDir = 1; curStop = lower; }
-        }
+      const hl2 = (candles[i].h + candles[i].l) / 2.0;
+      const basicUpper = hl2 + mult * atrs[i];
+      const basicLower = hl2 - mult * atrs[i];
+
+      if (i === 0) {
+        finalUpper.push(basicUpper);
+        finalLower.push(basicLower);
+        dir.push(1);
+        trail.push(basicLower);
+      } else {
+        const prevC = candles[i - 1].c;
+        const fu = (basicUpper < finalUpper[i - 1] || prevC > finalUpper[i - 1]) ? basicUpper : finalUpper[i - 1];
+        const fl = (basicLower > finalLower[i - 1] || prevC < finalLower[i - 1]) ? basicLower : finalLower[i - 1];
+        finalUpper.push(fu);
+        finalLower.push(fl);
+
+        let curDir = dir[i - 1];
+        if (curDir === -1 && candles[i].c > finalUpper[i - 1]) curDir = 1;
+        else if (curDir === 1 && candles[i].c < finalLower[i - 1]) curDir = -1;
+
+        dir.push(curDir);
+        trail.push(curDir === 1 ? fl : fu);
       }
-      trail.push(curStop);
-      dir.push(curDir);
     }
     return { atrs, trail, dir };
   }
 
+  // Exact Wilder's Smoothed RSI — matches TradingView ta.rsi(close, period)
   function computeRSI(closes, period = 14) {
-    if (closes.length < period + 1) return 52;
-    let gains = 0, losses = 0;
-    for (let i = closes.length - period; i < closes.length; i++) {
+    if (closes.length < 2) return 50;
+    let avgGain = 0, avgLoss = 0;
+    const initLen = Math.min(period, closes.length - 1);
+    for (let i = 1; i <= initLen; i++) {
       const diff = closes[i] - closes[i - 1];
-      if (diff >= 0) gains += diff; else losses -= diff;
+      if (diff >= 0) avgGain += diff; else avgLoss -= diff;
     }
-    if (losses === 0) return 75;
-    const rs = (gains / period) / (losses / period);
+    avgGain /= initLen;
+    avgLoss /= initLen;
+    for (let i = initLen + 1; i < closes.length; i++) {
+      const diff = closes[i] - closes[i - 1];
+      const g = diff > 0 ? diff : 0;
+      const l = diff < 0 ? -diff : 0;
+      avgGain = (avgGain * (period - 1) + g) / period;
+      avgLoss = (avgLoss * (period - 1) + l) / period;
+    }
+    if (avgLoss <= 1e-9) return 100;
+    const rs = avgGain / avgLoss;
     return +(100 - 100 / (1 + rs)).toFixed(1);
   }
 
@@ -1149,9 +1400,30 @@
     return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
   }
 
+  // Union Budget 2026-27 F&O Statutory Cost Calculator (Effective April 1, 2026: Option Sale STT = 0.15%)
+  function calcFnoStatutoryCharges(buyPrem, sellPrem, totalQty, numLegs = 1) {
+    const buyTurnover = buyPrem * totalQty;
+    const sellTurnover = sellPrem * totalQty;
+    const stt = sellTurnover * 0.0015; // 0.15% STT on Option Sale (Budget 2026-27)
+    const exchTxn = (buyTurnover + sellTurnover) * 0.0003503; // NSE Option Txn Charge ~0.03503%
+    const sebiFee = (buyTurnover + sellTurnover) * 0.000001; // ₹10 / Crore
+    const stampDuty = buyTurnover * 0.00003; // 0.003% on Buy Side
+    const brokerage = 40 * numLegs; // Dhan ₹20 Buy + ₹20 Sell per leg
+    const gst = 0.18 * (brokerage + exchTxn + sebiFee);
+    const totalCharges = stt + exchTxn + sebiFee + stampDuty + brokerage + gst;
+    return {
+      stt: Math.round(stt),
+      brokerage: Math.round(brokerage),
+      otherTaxes: Math.round(exchTxn + sebiFee + stampDuty + gst),
+      total: Math.round(totalCharges)
+    };
+  }
+
   function calcOptionGreeks(spot, strike, dteDays, ivPct, optType = "CE") {
-    const T = Math.max(0.5, dteDays) / 365.0;
-    const r = 0.068; // India risk-free rate ~6.8%
+    const T = Math.max(0.25, parseFloat(dteDays) || 1) / 365.0;
+    const rInp = document.getElementById("inp-rfr");
+    const rPct = rInp ? parseFloat(rInp.value) : 7.16;
+    const r = (!isNaN(rPct) && rPct > 0 ? rPct : 7.16) / 100.0; // Nov 2026 India 10Y G-Sec ~7.16%
     const sigma = Math.max(0.08, ivPct / 100.0);
     const sqrtT = Math.sqrt(T);
     const d1 = (Math.log(spot / strike) + (r + 0.5 * sigma * sigma) * T) / (sigma * sqrtT);
@@ -1184,12 +1456,17 @@
      ========================================================================= */
   function recomputeAllOptionModels() {
     const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
-    const spotObj = liveSpotMap[activeUnderlying] || { ltp: spec.defaultSpot, chg: 0, pct: 0 };
-    const spot = spotObj.ltp || spec.defaultSpot;
+    const rawSpotObj = liveSpotMap[activeUnderlying];
+    const validSpot = (rawSpotObj && isSpotWithinValidBounds(spec, rawSpotObj.ltp)) ? rawSpotObj.ltp : spec.defaultSpot;
+    const spotObj = (rawSpotObj && isSpotWithinValidBounds(spec, rawSpotObj.ltp)) ? rawSpotObj : { ltp: validSpot, chg: 0, pct: 0 };
+    const spot = validSpot;
     const vix = (liveSpotMap.INDIAVIX && liveSpotMap.INDIAVIX.ltp) ? liveSpotMap.INDIAVIX.ltp : 14.5;
 
-    if (!activeCandles || activeCandles.length < 15) {
+    // Ensure activeCandles strictly match activeUnderlying and its price scale (prevents NIFTY candles ever leaking into SENSEX)
+    const lastCandleClose = (activeCandles && activeCandles.length > 0) ? activeCandles[activeCandles.length - 1].c : 0;
+    if (!activeCandles || activeCandles.length < 15 || activeCandlesUnderlying !== activeUnderlying || !isSpotWithinValidBounds(spec, lastCandleClose)) {
       activeCandles = generateSyntheticCandlesFromSpot(spot);
+      activeCandlesUnderlying = activeUnderlying;
     }
 
     const fastLen = parseInt(document.getElementById("rng-ema-fast").value, 10) || 9;
@@ -1302,27 +1579,52 @@
     hdrSig.className = "header-signal-pill " + (isBullish ? "badge-emerald" : "badge-red");
     document.getElementById("hdr-rec-strike").textContent = `Action: ${recSide} ${activeUnderlying} ${recStrike} ${recOptType} @ ₹${entryPrem} (SL ₹${slPrem} · TP ₹${tp1Prem})`;
 
+    // Compute genuine Volume-Weighted Up/Down Flow Ratio from active candles
+    let upVol = 0, downVol = 0;
+    const recentBars = activeCandles.slice(-20);
+    recentBars.forEach(b => {
+      if (b.c >= b.o) upVol += (b.v || 1);
+      else downVol += (b.v || 1);
+    });
+    const volFlowRatio = downVol > 0 ? +(upVol / downVol).toFixed(2) : 1.25;
+
     const pcrEl = document.getElementById("strip-pcr");
     if (pcrEl) {
-      pcrEl.textContent = `Implied PCR: ${isBullish ? '1.18 (Bullish)' : '0.78 (Bearish)'}`;
+      pcrEl.textContent = `Vol Flow Ratio: ${volFlowRatio}x (${isBullish ? 'Bullish Regime' : 'Bearish Regime'})`;
       pcrEl.className = "badge " + (isBullish ? "badge-emerald" : "badge-red");
     }
 
-    // Render Trade Ticket in Tab 1
-    const maxRiskRs = Math.round(Math.abs(entryPrem - slPrem) * totalQty);
-    const rewardTp1Rs = Math.round(Math.abs(tp1Prem - entryPrem) * totalQty);
+    // Render Trade Ticket in Tab 1 (with FY 2026-27 Budget 0.15% Option STT + Dhan Brokerage Deduction)
+    const grossRiskRs = Math.round(Math.abs(entryPrem - slPrem) * totalQty);
+    const grossTp1Rs = Math.round(Math.abs(tp1Prem - entryPrem) * totalQty);
+    const chargesTp1 = calcFnoStatutoryCharges(
+      recSide === "BUY" ? entryPrem : tp1Prem,
+      recSide === "BUY" ? tp1Prem : entryPrem,
+      totalQty,
+      1
+    );
+    const netTp1Rs = grossTp1Rs - chargesTp1.total;
+    const netRiskRs = grossRiskRs + chargesTp1.total;
+    const breakevenPts = +(chargesTp1.total / Math.max(1, totalQty)).toFixed(2);
+    const simWarnBanner = isSimulatedFeed
+      ? `<div style="background:rgba(245,158,11,0.16); border:1px solid #f59e0b; color:#fde68a; padding:6px 10px; border-radius:6px; font-size:0.74rem; margin-bottom:8px;">
+           ⚠️ <strong>SIMULATION / OFFLINE PREVIEW:</strong> Showing synthetic candles around ₹${spot.toLocaleString("en-IN")}. Click <strong>⚡ Sync Live Candles &amp; Chain</strong> during market hours or connect your Cloudflare Worker before placing live orders.
+         </div>`
+      : "";
+
     const ticketEl = document.getElementById("scanner-trade-ticket");
     if (ticketEl) {
       ticketEl.innerHTML = `
+        ${simWarnBanner}
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
           <span style="font-weight:800; font-size:0.9rem; color:#fff;">
             ⚡ GainzAlgo V2 Alpha Action: <span style="color:${isBullish ? '#34d399' : '#f87171'};">${recSide} ${activeUnderlying} ${expIso} ${recStrike} ${recOptType}</span>
           </span>
-          <span class="badge ${isBullish ? 'badge-emerald' : 'badge-red'}">${lots} Lot(s) = ${totalQty} Qty</span>
+          <span class="badge ${isBullish ? 'badge-emerald' : 'badge-red'}">${lots} Lot(s) = ${totalQty} Qty (${spec.lot}/lot)</span>
         </div>
         <div style="font-size:0.77rem; color:#cbd5e1; line-height:1.55; margin-bottom:10px;">
-          • <strong>Option Premium Levels:</strong> Entry Limit: <strong>₹${entryPrem}</strong> &nbsp;|&nbsp; ATR Stop-Loss: <strong style="color:var(--red);">₹${slPrem}</strong> &nbsp;|&nbsp; Target 1 (1:1.5): <strong style="color:var(--emerald);">₹${tp1Prem}</strong> &nbsp;|&nbsp; Target 2 (1:2.5): <strong style="color:var(--emerald);">₹${tp2Prem}</strong><br>
-          • <strong>Position Risk &amp; Greeks:</strong> Capital Required: <strong>₹${Math.round(entryPrem * totalQty).toLocaleString("en-IN")}</strong> · Max SL Risk: <strong style="color:var(--red);">-₹${maxRiskRs.toLocaleString("en-IN")}</strong> · Est. TP1 Profit: <strong style="color:var(--emerald);">+₹${rewardTp1Rs.toLocaleString("en-IN")}</strong> (Delta: ${gRec.delta}, Theta: ₹${gRec.theta}/day)
+          • <strong>Option Premium Levels:</strong> Entry Limit: <strong>₹${entryPrem}</strong> (Net Breakeven: <strong>₹${(recSide === 'BUY' ? entryPrem + breakevenPts : entryPrem - breakevenPts).toFixed(2)}</strong>) &nbsp;|&nbsp; ATR Stop-Loss: <strong style="color:var(--red);">₹${slPrem}</strong> &nbsp;|&nbsp; Target 1 (1:1.5): <strong style="color:var(--emerald);">₹${tp1Prem}</strong> &nbsp;|&nbsp; Target 2 (1:2.5): <strong style="color:var(--emerald);">₹${tp2Prem}</strong><br>
+          • <strong>Net Post-STT/Charges P&amp;L (FY 2026-27 0.15% Opt STT):</strong> Capital: <strong>₹${Math.round(entryPrem * totalQty).toLocaleString("en-IN")}</strong> · Net TP1 Profit: <strong style="color:var(--emerald);">+₹${netTp1Rs.toLocaleString("en-IN")}</strong> (Gross +₹${grossTp1Rs.toLocaleString("en-IN")} − ₹${chargesTp1.total} charges) · Net SL Risk: <strong style="color:var(--red);">-₹${netRiskRs.toLocaleString("en-IN")}</strong> (Delta: ${gRec.delta}, Theta: ₹${gRec.theta}/day)
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn-emerald" onclick="loadSignalIntoDhanExec()">🚀 1-Click Load into Dhan Super Order</button>
@@ -1559,9 +1861,14 @@
       if (pnl < maxLoss) maxLoss = pnl;
     }
 
+    let estLegCharges = 0;
+    strategyLegs.forEach(leg => {
+      const c = calcFnoStatutoryCharges(leg.prem, leg.prem, leg.lots * spec.lot, 1);
+      estLegCharges += c.total;
+    });
     sumEl.innerHTML = `
-      • <strong>Projected Max Profit (Within ±5% Spot):</strong> <span class="pos"><strong>+₹${Math.round(Math.max(0, maxProfit)).toLocaleString("en-IN")}</strong></span><br>
-      • <strong>Projected Max Risk / Loss:</strong> <span class="neg"><strong>₹${Math.round(maxLoss).toLocaleString("en-IN")}</strong></span>
+      • <strong>Gross Max Profit (Within ±5% Spot):</strong> <span class="pos"><strong>+₹${Math.round(Math.max(0, maxProfit)).toLocaleString("en-IN")}</strong></span> (Net after STT/Charges: <strong class="pos">+₹${Math.round(Math.max(0, maxProfit - estLegCharges)).toLocaleString("en-IN")}</strong>)<br>
+      • <strong>Projected Max Risk / Loss:</strong> <span class="neg"><strong>₹${Math.round(maxLoss).toLocaleString("en-IN")}</strong></span> · <strong>Est. Round-Trip Charges (${strategyLegs.length} leg${strategyLegs.length>1?'s':''}, 0.15% STT):</strong> ₹${estLegCharges.toLocaleString("en-IN")}
     `;
 
     const canvas = document.getElementById("canvas-payoff-chart");
@@ -1721,7 +2028,7 @@ if sellSignal
     const symInp = document.getElementById("exec-contract-sym");
     if (symInp) symInp.value = `${activeUnderlying} ${s.expIso} ${s.recStrike} ${s.recOptType}`;
     document.getElementById("exec-side").value = s.recSide || "BUY";
-    document.getElementById("exec-qty").value = s.totalQty || 75;
+    document.getElementById("exec-qty").value = s.totalQty || 65;
     document.getElementById("exec-price").value = s.entryPrem || 180;
     document.getElementById("exec-sl").value = s.slPrem || 145;
     document.getElementById("exec-tgt").value = s.tp1Prem || 240;
@@ -1736,8 +2043,13 @@ if sellSignal
 
   function refreshDhanExecPayloads() {
     const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const rawSecId = document.getElementById("exec-sec-id").value.trim();
+    if (!rawSecId || isNaN(Number(rawSecId))) {
+      msgEl.innerHTML = `<span style="color:var(--amber);">⚠️ Direct REST API orders require the specific strike's numeric <strong>Dhan Scrip Master <code>securityId</code></strong>. Enter the strike <code>securityId</code> above, OR use <strong>Tab 3: GainzAlgo Webhook</strong> which routes orders directly by symbol, expiry, and strike without needing a <code>securityId</code>!</span>`;
+      return;
+    }
     const mode = document.getElementById("exec-order-mode").value || "SUPER";
-    const secId = String(document.getElementById("exec-sec-id").value || "49081");
+    const secId = String(document.getElementById("exec-sec-id").value.trim() || "ENTER_DHAN_SCRIP_MASTER_SECURITY_ID");
     const side = document.getElementById("exec-side").value || "BUY";
     const prod = document.getElementById("exec-product").value || "INTRADAY";
     const qty = parseInt(document.getElementById("exec-qty").value, 10) || spec.lot;
@@ -1810,7 +2122,7 @@ from dhanhq import dhanhq
 dhan = dhanhq("${cid}", "YOUR_DHAN_JWT_ACCESS_TOKEN")
 
 # 1. Fetch Live Option Chain with Greeks for ${activeUnderlying}
-chain = dhan.option_chain(under_security_id=13, under_exchange_segment="IDX_I", expiry="${lastGainzState.expIso || '2026-11-05'}")
+chain = dhan.option_chain(under_security_id=${spec.dhanUnderId || 13}, under_exchange_segment="${spec.inst === 'OPTIDX' ? 'IDX_I' : 'NSE_EQ'}", expiry="${lastGainzState.expIso}")
 
 # 2. Place F&O Option Order (${document.getElementById("exec-contract-sym").value})
 res = dhan.place_order(
@@ -1917,8 +2229,24 @@ print("Dhan F&O Order Response:", res)`;
 
   function onUnderlyingChange() {
     activeUnderlying = document.getElementById("sel-underlying").value || "NIFTY";
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const lotInp = document.getElementById("inp-lot-size");
+    if (lotInp) lotInp.value = spec.lot;
+    activeCandles = [];
+    activeCandlesUnderlying = "";
+    populateExpiries();
     strategyLegs = [];
+    recomputeAllOptionModels();
     syncOptionsMarketData(true);
+  }
+
+  function onCustomLotSizeChange() {
+    const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
+    const customLot = parseInt(document.getElementById("inp-lot-size").value, 10);
+    if (!isNaN(customLot) && customLot > 0) {
+      spec.lot = customLot;
+      recomputeAllOptionModels();
+    }
   }
 
   function onGainzParamChange() {
@@ -1937,17 +2265,16 @@ print("Dhan F&O Order Response:", res)`;
 
   function simulateSignalFlip(mode) {
     const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
-    const spot = (liveSpotMap[activeUnderlying] && liveSpotMap[activeUnderlying].ltp) || spec.defaultSpot;
-    activeCandles = generateSyntheticCandlesFromSpot(spot, 60);
-    if (mode === "BUY_PE") {
-      // Invert slope of last 12 bars so Fast EMA crosses below Slow EMA and breaks ATR stop
-      for (let i = activeCandles.length - 12; i < activeCandles.length; i++) {
-        const drop = (i - (activeCandles.length - 13)) * (spot * 0.0018);
-        activeCandles[i].c = +(spot - drop).toFixed(2);
-        activeCandles[i].o = +(activeCandles[i].c + spot * 0.0008).toFixed(2);
-        activeCandles[i].h = +(activeCandles[i].o + spot * 0.0005).toFixed(2);
-        activeCandles[i].l = +(activeCandles[i].c - spot * 0.0005).toFixed(2);
-      }
+    const spot = (liveSpotMap[activeUnderlying] && isSpotWithinValidBounds(spec, liveSpotMap[activeUnderlying].ltp))
+      ? liveSpotMap[activeUnderlying].ltp
+      : spec.defaultSpot;
+    activeCandles = generateSyntheticCandlesFromSpot(spot, 60, mode);
+    activeCandlesUnderlying = activeUnderlying;
+    isSimulatedFeed = true;
+    const feedPill = document.getElementById("hdr-feed-pill");
+    if (feedPill) {
+      feedPill.textContent = "🧪 Simulation Preview";
+      feedPill.className = "badge badge-amber";
     }
     strategyLegs = [];
     recomputeAllOptionModels();
@@ -2003,6 +2330,7 @@ print("Dhan F&O Order Response:", res)`;
     if (!isNaN(sVal) && sVal > 0) {
       liveSpotMap[activeUnderlying] = { ltp: sVal, chg: 0, pct: 0 };
       activeCandles = generateSyntheticCandlesFromSpot(sVal);
+      activeCandlesUnderlying = activeUnderlying;
     }
     if (!isNaN(vVal) && vVal > 0) {
       liveSpotMap.INDIAVIX = { ltp: vVal, chg: 0, pct: 0 };

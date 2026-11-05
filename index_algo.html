@@ -1531,13 +1531,13 @@
     "hindustan unilever": "HINDUNILVR.NS", "axis bank": "AXISBANK.NS",
     "kotak mahindra": "KOTAKBANK.NS", "bajaj finance": "BAJFINANCE.NS",
     "maruti": "MARUTI.NS", "mahindra & mahindra": "M&M.NS", "sun pharma": "SUNPHARMA.NS",
-    "titan": "TITAN.NS", "tata motors": "TATAMOTORS.NS", "ntpc": "NTPC.NS",
+    "titan": "TITAN.NS", "tata motors": "TMPV.NS", "tmpv": "TMPV.NS", "tmcv": "TMCV.NS", "ntpc": "NTPC.NS",
     "power grid": "POWERGRID.NS", "ultratech": "ULTRACEMCO.NS", "asian paints": "ASIANPAINT.NS",
     "adani ports": "ADANIPORTS.NS", "coal india": "COALINDIA.NS", "ongc": "ONGC.NS",
     "bajaj auto": "BAJAJ-AUTO.NS", "nestle": "NESTLEIND.NS", "tata power": "TATAPOWER.NS",
     "hal": "HAL.NS", "hindustan aeronautics": "HAL.NS", "bharat electronics": "BEL.NS",
     "bel": "BEL.NS", "rvnl": "RVNL.NS", "rail vikas": "RVNL.NS", "irfc": "IRFC.NS",
-    "irctc": "IRCTC.NS", "jio financial": "JIOFIN.NS", "zomato": "ZOMATO.NS",
+    "irctc": "IRCTC.NS", "jio financial": "JIOFIN.NS", "zomato": "ETERNAL.NS", "eternal": "ETERNAL.NS",
     "dlf": "DLF.NS", "varun beverages": "VBL.NS", "trent": "TRENT.NS",
     "vedanta": "VEDL.NS", "hindalco": "HINDALCO.NS", "tata steel": "TATASTEEL.NS",
     "jsw steel": "JSWSTEEL.NS", "grasim": "GRASIM.NS", "dr reddy": "DRREDDY.NS",
@@ -1570,7 +1570,7 @@
     "kpit": "KPITTECH.NS", "tata tech": "TATATECH.NS", "coforge": "COFORGE.NS",
     "persistent": "PERSISTENT.NS", "mphasis": "MPHASIS.NS", "oracle": "OFSS.NS",
     "pb fintech": "POLICYBZR.NS", "paytm": "PAYTM.NS", "nykaa": "NYKAA.NS",
-    "honasa": "HONASA.NS", "mamaearth": "HONASA.NS", "firstcry": "FIRSTCRY.NS",
+    "honasa": "HONASA.NS", "mamaearth": "HONASA.NS", "firstcry": "BRAINBEES.NS", "brainbees": "BRAINBEES.NS",
     "ola electric": "OLAELEC.NS", "hyundai": "HYUNDAI.NS", "waaree": "WAAREEENER.NS",
     "premier energies": "PREMIERENE.NS", "ntpc green": "NTPCGREEN.NS", "afcons": "AFCONS.NS"
   };
@@ -2192,7 +2192,7 @@
     const res = data.chart.result[0];
     const meta = res.meta || {};
     let ltp = parseFloat(meta.regularMarketPrice);
-    let prevClose = parseFloat(meta.chartPreviousClose || meta.previousClose || meta.regularMarketPreviousClose || 0);
+    let prevClose = parseFloat(meta.previousClose || meta.regularMarketPreviousClose || 0);
 
     try {
       const q0 = (res.indicators && res.indicators.quote && res.indicators.quote[0]) ? res.indicators.quote[0] : {};
@@ -2200,8 +2200,12 @@
       if ((!ltp || isNaN(ltp)) && closes.length > 0) {
         ltp = closes[closes.length - 1];
       }
+      // On 1d/5d charts, closes[closes.length - 2] is the true prior session close (whereas chartPreviousClose is 5 days ago)
       if ((!prevClose || isNaN(prevClose) || prevClose === ltp) && closes.length >= 2) {
         prevClose = closes[closes.length - 2];
+      }
+      if (!prevClose || isNaN(prevClose)) {
+        prevClose = parseFloat(meta.chartPreviousClose || ltp);
       }
     } catch (e) {}
 
@@ -2217,11 +2221,11 @@
     return null;
   }
 
-  // Fallback ETF proxies if a proxy blocks '^' Caret symbols like ^NSEI
+  // Fallback ETF proxies ONLY for % intraday delta if a verified index baseline is already present
   const INDEX_ETF_FALLBACKS = {
-    "^NSEI": { etfSym: "NIFTYBEES.NS", approxMultiplier: 88.5 },
-    "^BSESN": { etfSym: "SENSEXBEES.BO", approxMultiplier: 100.0 },
-    "^NSEBANK": { etfSym: "BANKBEES.NS", approxMultiplier: 97.4 }
+    "^NSEI": { etfSym: "NIFTYBEES.NS" },
+    "^BSESN": { etfSym: "SENSEXBEES.BO" },
+    "^NSEBANK": { etfSym: "BANKBEES.NS" }
   };
 
   async function fetchQuoteForSymbol(symbol) {
@@ -2230,23 +2234,28 @@
     const parsed = extractYahooMetaQuote(data, symbol);
     if (parsed && parsed.ltp > 0) return parsed;
 
-    // Retry once on query2 with 1d range if 5d failed
+    // Retry on query2 with 15m/1d and 1d/1mo
     const cUrl2 = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=15m&range=1d`;
     const data2 = await fetchWithCORSFallback(cUrl2);
     const parsed2 = extractYahooMetaQuote(data2, symbol);
     if (parsed2 && parsed2.ltp > 0) return parsed2;
 
-    // If this is a Caret index (^NSEI, ^BSESN, ^NSEBANK) and caret was blocked by proxy, apply ETF delta to last known index level!
-    if (INDEX_ETF_FALLBACKS[symbol]) {
+    const cUrl3 = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1mo`;
+    const data3 = await fetchWithCORSFallback(cUrl3);
+    const parsed3 = extractYahooMetaQuote(data3, symbol);
+    if (parsed3 && parsed3.ltp > 0) return parsed3;
+
+    // Apply ETF % change ONLY if a verified index prevClose (>1000) already exists — never multiply by a static ratio
+    const existing = liveBenchmarks[symbol];
+    if (INDEX_ETF_FALLBACKS[symbol] && existing && existing.prevClose > 1000) {
       const fb = INDEX_ETF_FALLBACKS[symbol];
       const etfData = await fetchWithCORSFallback(`https://query1.finance.yahoo.com/v8/finance/chart/${fb.etfSym}?interval=1d&range=5d`);
       const etfQ = extractYahooMetaQuote(etfData, fb.etfSym);
       if (etfQ && etfQ.ltp > 0) {
-        const existing = liveBenchmarks[symbol];
-        const baseClose = (existing && existing.prevClose > 1000) ? existing.prevClose : (etfQ.prevClose * fb.approxMultiplier);
+        const baseClose = existing.prevClose;
         const impliedLtp = +(baseClose * (1 + etfQ.pct / 100)).toFixed(2);
         const impliedChg = +(impliedLtp - baseClose).toFixed(2);
-        return { ltp: impliedLtp, prevClose: baseClose, chg: impliedChg, pct: etfQ.pct, symbol, mktTime: etfQ.mktTime + " (via ETF)" };
+        return { ltp: impliedLtp, prevClose: baseClose, chg: impliedChg, pct: etfQ.pct, symbol, mktTime: etfQ.mktTime + " (ETF Δ)" };
       }
     }
     return null;
@@ -2254,7 +2263,18 @@
 
   // Expanded Indian NSE/BSE Symbol Map with strict word-boundary matching
   const EXTRA_NSE_SYMBOLS = {
+    "tata motors": "TMPV.NS", "tata motors passenger": "TMPV.NS", "tmpv": "TMPV.NS",
+    "tata motors commercial": "TMCV.NS", "tml commercial": "TMCV.NS", "tmcv": "TMCV.NS",
     "eternal": "ETERNAL.NS", "zomato": "ETERNAL.NS", "brainbees": "BRAINBEES.NS", "firstcry": "BRAINBEES.NS",
+    "vishal mega mart": "VMM.NS", "sagility": "SAGILITY.NS", "acme solar": "ACMESOLAR.NS",
+    "niva bupa": "NIVABUPA.NS", "mobikwik": "MOBIKWIK.NS", "one mobikwik": "MOBIKWIK.NS",
+    "siemens energy": "ENRIN.NS", "allied blenders": "ABDL.NS", "ather energy": "ATHERENERG.NS",
+    "hexaware": "HEXATRADEX.NS", "hdb financial": "HDFCBANK.NS", "idfc ltd": "IDFCFIRSTB.NS",
+    "idfc limited": "IDFCFIRSTB.NS", "shriram transport": "SHRIRAMFIN.NS", "shriram city": "SHRIRAMFIN.NS",
+    "indiabulls housing": "SAMMAANCAP.NS", "sammaan capital": "SAMMAANCAP.NS",
+    "awl agri": "AWL.NS", "welspun india": "WELSPUNLIV.NS", "cdsl": "CDSL.NS", "central depository": "CDSL.NS",
+    "bse": "BSE.NS", "bse ltd": "BSE.NS", "mcx": "MCX.NS", "multi commodity": "MCX.NS",
+    "angel one": "ANGELONE.NS", "angel broking": "ANGELONE.NS",
     "swiggy": "SWIGGY.NS", "hyundai motor": "HYUNDAI.NS", "waaree energies": "WAAREEENER.NS",
     "ntpc green": "NTPCGREEN.NS", "premier energies": "PREMIERENE.NS", "bajaj housing": "BAJAJHFL.NS",
     "ola electric": "OLAELEC.NS", "tata consumer": "TATACONSUM.NS", "tata chemicals": "TATACHEM.NS",
@@ -2461,18 +2481,25 @@
 
   // Alternate ticker aliases for renamed Indian companies
   const RENAMED_TICKER_ALIASES = {
-    "ZOMATO.NS": ["ETERNAL.NS", "ZOMATO.BO", "ETERNAL.BO"],
-    "ETERNAL.NS": ["ZOMATO.NS", "ETERNAL.BO"],
-    "FIRSTCRY.NS": ["BRAINBEES.NS", "BRAINBEES.BO"],
-    "TATAMOTORS.NS": ["TATAMOTORS.BO", "TMPV.NS"],
+    "TATAMOTORS.NS": ["TMPV.NS", "TMCV.NS", "500570.BO"],
+    "TMPV.NS": ["TMCV.NS", "TATAMOTORS.NS", "500570.BO"],
+    "TMCV.NS": ["TMPV.NS", "TATAMOTORS.NS"],
+    "ZOMATO.NS": ["ETERNAL.NS", "543320.BO"],
+    "ETERNAL.NS": ["ZOMATO.NS", "543320.BO"],
+    "FIRSTCRY.NS": ["BRAINBEES.NS", "544226.BO"],
+    "IDFC.NS": ["IDFCFIRSTB.NS"],
+    "HDFC.NS": ["HDFCBANK.NS"],
     "MCDOWELL-N.NS": ["UNITDSPR.NS"],
     "LTI.NS": ["LTIM.NS"],
     "MINDTREE.NS": ["LTIM.NS"],
     "SRTRANSFIN.NS": ["SHRIRAMFIN.NS"],
+    "SCUF.NS": ["SHRIRAMFIN.NS"],
     "AMARAJABAT.NS": ["ARE&M.NS"],
     "WELSPUNIND.NS": ["WELSPUNLIV.NS"],
     "GMRINFRA.NS": ["GMRAIRPORT.NS"],
-    "IBULHSGFIN.NS": ["SAMMAANCAP.NS"]
+    "IBULHSGFIN.NS": ["SAMMAANCAP.NS"],
+    "TATACOFFEE.NS": ["TATACONSUM.NS"],
+    "AEGISCHEM.NS": ["AEGISLOG.NS"]
   };
 
   async function fetchFastStockQuote(h) {
@@ -2922,6 +2949,15 @@
      PORTFOLIO INTELLIGENCE ENGINE (100% DATA-DRIVEN)
      ========================================================================= */
   function runPortfolioIntelligenceEngine() {
+    if (etfs && etfs.length > 0) {
+      etfs.forEach(e => {
+        e.qty = parseFloat(e.qty) || 1;
+        e.avg = parseFloat(e.avg) || 0;
+        e.ltp = parseFloat(e.ltp) || e.avg;
+        if (e.avg > 0) e.inv = e.qty * e.avg;
+        if (e.ltp > 0) e.cur = e.qty * e.ltp;
+      });
+    }
     holdings.forEach(h => {
       h.qty = parseFloat(h.qty) || 1;
       h.avg = parseFloat(h.avg) || 0;
@@ -3607,6 +3643,7 @@
         t.qty = +(t.qty + addQty).toFixed(4);
         t.inv += perStock;
         t.cur += perStock;
+        t.avg = t.qty > 0 ? +(t.inv / t.qty).toFixed(2) : t.avg;
       });
       cashReserve = 0;
     }
@@ -3615,10 +3652,16 @@
       simEq.forEach(h => {
         h.ltp = +(h.ltp * 0.90).toFixed(2);
         h.cur = h.qty * h.ltp;
-        h.pnl = h.cur - h.inv;
-        h.pct = h.inv > 0 ? (h.pnl / h.inv) * 100 : 0;
       });
     }
+
+    // Recompute P&L, Return %, Action Tag, and Health Score for all simulated holdings
+    simEq.forEach(h => {
+      h.pnl = h.cur - h.inv;
+      h.pct = h.inv > 0 ? (h.pnl / h.inv) * 100 : 0;
+      const health = 50 + (h.pct >= ruleProfitBook ? 32 : h.pct > 20 ? 20 : h.pct > 0 ? 10 : h.pct > ruleExitDrawdown ? -10 : -32);
+      h.h = Math.max(15, Math.min(95, health));
+    });
 
     simulatedHoldings = simEq;
     const curVal = holdings.reduce((s, h) => s + h.cur, 0);
@@ -3656,20 +3699,22 @@
     document.getElementById("lbl-tax-gain-pct").textContent = gainPct + "%";
     document.getElementById("lbl-tax-stcg-mix").textContent = stcgMix + "%";
 
-    const gains = holdings.filter(h => h.pnl > 0).reduce((s, h) => s + h.pnl, 0);
+    const etfGains = (etfs || []).filter(e => (e.cur - e.inv) > 0).reduce((s, e) => s + (e.cur - e.inv), 0);
+    const etfLosses = (etfs || []).filter(e => (e.cur - e.inv) < 0).reduce((s, e) => s + Math.abs(e.cur - e.inv), 0);
+    const gains = holdings.filter(h => h.pnl > 0).reduce((s, h) => s + h.pnl, 0) + etfGains;
     const exitLosers = holdings.filter(h => h.pnl < 0 && h.act.includes("EXIT"));
     const mildLosers = holdings.filter(h => h.pnl < 0 && !h.act.includes("EXIT"));
 
     const exitLossSum = Math.abs(exitLosers.reduce((s, h) => s + h.pnl, 0));
-    const mildLossSum = Math.abs(mildLosers.reduce((s, h) => s + h.pnl, 0));
+    const mildLossSum = Math.abs(mildLosers.reduce((s, h) => s + h.pnl, 0)) + etfLosses;
     const totalLossPool = exitLossSum + mildLossSum;
 
     document.getElementById("tax-desc-exits").textContent = exitLosers.length
       ? `Harvests ${fmtVal(exitLossSum)} across ${exitLosers.length} flagged exit positions (${exitLosers.map(h=>h.n).slice(0,4).join(", ")}).`
       : `No flagged exit losses in your current portfolio.`;
 
-    document.getElementById("tax-desc-mild").textContent = mildLosers.length
-      ? `Harvests ${fmtVal(mildLossSum)} across ${mildLosers.length} mild drawdown positions (${mildLosers.map(h=>h.n).slice(0,4).join(", ")}).`
+    document.getElementById("tax-desc-mild").textContent = (mildLosers.length || etfLosses > 0)
+      ? `Harvests ${fmtVal(mildLossSum)} across ${mildLosers.length} mild drawdown equity/ETF positions (${mildLosers.map(h=>h.n).slice(0,4).join(", ")}).`
       : `No mild drawdown positions in your current portfolio.`;
 
     const bookedGains = gains * (gainPct / 100);
@@ -3680,11 +3725,14 @@
     if (document.getElementById("tax-chk-exits").checked) harvLoss += exitLossSum;
     if (document.getElementById("tax-chk-mild").checked) harvLoss += mildLossSum;
 
-    const taxBefore = Math.round(stcg * 0.20 + Math.max(0, ltcg - 125000) * 0.125);
+    // FY 2026-27 Union Budget Rates: 20% STCG (Sec 111A) + 12.5% LTCG above ₹1,25,000 (Sec 112A) + 4% Health & Education Cess
+    const baseTaxBefore = stcg * 0.20 + Math.max(0, ltcg - 125000) * 0.125;
+    const taxBefore = Math.round(baseTaxBefore * 1.04);
     const netStcg = Math.max(0, stcg - harvLoss);
     const remLoss = Math.max(0, harvLoss - stcg);
     const netLtcg = Math.max(0, ltcg - remLoss);
-    const taxAfter = Math.round(netStcg * 0.20 + Math.max(0, netLtcg - 125000) * 0.125);
+    const baseTaxAfter = netStcg * 0.20 + Math.max(0, netLtcg - 125000) * 0.125;
+    const taxAfter = Math.round(baseTaxAfter * 1.04);
     const saved = Math.max(0, taxBefore - taxAfter);
 
     lastTaxSummary = { saved, beforeTax: taxBefore, afterTax: taxAfter, lossesUsed: Math.round(harvLoss) };
@@ -3696,9 +3744,9 @@
     document.getElementById("tax-ledger-tbody").innerHTML = `
       <tr><td>Booked Capital Gains (${gainPct}% of pool)</td><td>${fmtVal(bookedGains)}</td><td>${fmtVal(bookedGains)}</td><td>STCG (${stcgMix}%) / LTCG (${100-stcgMix}%)</td></tr>
       <tr><td>Harvested Losses Applied</td><td>₹0</td><td class="pos">-${fmtVal(harvLoss)}</td><td>Offsets 20% STCG first, then 12.5% LTCG</td></tr>
-      <tr><td>Taxable STCG (@ 20%)</td><td>${fmtVal(stcg)}</td><td>${fmtVal(netStcg)}</td><td>Section 111A</td></tr>
-      <tr><td>Taxable LTCG (Above ₹1.25L @ 12.5%)</td><td>${fmtVal(Math.max(0, ltcg - 125000))}</td><td>${fmtVal(Math.max(0, netLtcg - 125000))}</td><td>Section 112A (₹1.25L Exempt)</td></tr>
-      <tr><td><strong>Estimated Tax Liability</strong></td><td class="neg"><strong>${fmtVal(taxBefore)}</strong></td><td class="pos"><strong>${fmtVal(taxAfter)}</strong></td><td><strong>Tax Saved: ₹${saved.toLocaleString("en-IN")}</strong></td></tr>
+      <tr><td>Taxable STCG (@ 20% Base)</td><td>${fmtVal(stcg)}</td><td>${fmtVal(netStcg)}</td><td>Sec 111A (FY 2026-27 Budget)</td></tr>
+      <tr><td>Taxable LTCG (Above ₹1.25L @ 12.5% Base)</td><td>${fmtVal(Math.max(0, ltcg - 125000))}</td><td>${fmtVal(Math.max(0, netLtcg - 125000))}</td><td>Sec 112A (₹1.25L Annual Exemption)</td></tr>
+      <tr><td><strong>Total Tax Liability (incl. 4% Cess)</strong></td><td class="neg"><strong>${fmtVal(taxBefore)}</strong></td><td class="pos"><strong>${fmtVal(taxAfter)}</strong></td><td><strong>Tax Saved: ₹${saved.toLocaleString("en-IN")}</strong></td></tr>
     `;
   }
 
@@ -3860,7 +3908,8 @@
 
       const headers = splitCSVRow(rawLines[headerRowIdx]).map(h => h.toLowerCase().replace(/^["']|["']$/g, "").trim());
 
-      let nameIdx = headers.findIndex(h => h.includes("instrument") || h.includes("symbol") || h.includes("stock") || h.includes("scrip") || h.includes("scheme") || h.includes("company") || h.includes("name") || h.includes("particular") || h.includes("asset"));
+      let symIdx = headers.findIndex(h => h === "symbol" || h === "tradingsymbol" || h === "trading symbol" || h === "ticker" || h === "nse symbol" || h === "scrip code" || h === "instrument");
+      let nameIdx = headers.findIndex(h => h.includes("company") || h.includes("stock name") || h.includes("scheme") || h.includes("instrument") || h.includes("symbol") || h.includes("stock") || h.includes("scrip") || h.includes("name") || h.includes("particular") || h.includes("asset"));
       let typeIdx = headers.findIndex(h => h.includes("type") || h.includes("category") || h.includes("asset class") || h.includes("segment"));
       let secIdx = headers.findIndex(h => h.includes("sec") || h.includes("industry"));
       if (secIdx === -1 && typeIdx !== -1) secIdx = typeIdx;
@@ -3934,14 +3983,24 @@
 
         if (fInv <= 0 && fCur <= 0) continue;
 
+        let explicitTicker = null;
+        if (symIdx !== -1 && cols[symIdx]) {
+          const cleanSym = normalizeBrokerStockName(cols[symIdx]).toUpperCase();
+          if (/^[A-Z0-9&-]{2,16}$/.test(cleanSym)) {
+            explicitTicker = cleanSym + ".NS";
+          } else if (/^\d{6}$/.test(cleanSym)) {
+            explicitTicker = cleanSym + ".BO";
+          }
+        }
+
         if (cat.includes("mutual fund") || (cat.includes("fund") && !cat.includes("etf") && !cat.includes("invit"))) {
           newMFs.push({ n: name, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else if (cat.includes("etf") || cat.includes("bees")) {
-          newETFs.push({ n: name, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
+          newETFs.push({ n: name, ticker: explicitTicker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else if (cat.includes("bond") || cat.includes("sgb") || cat.includes("invit") || cat.includes("gold bond")) {
           newBonds.push({ n: name, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else {
-          newEq.push({ n: name, sec: secStr, qty, avg: fAvg, ltp: fLtp, inv: fInv, cur: fCur, today: 0 });
+          newEq.push({ n: name, ticker: explicitTicker, sec: secStr, qty, avg: fAvg, ltp: fLtp, inv: fInv, cur: fCur, today: 0 });
         }
       }
 
