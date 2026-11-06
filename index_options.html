@@ -1041,37 +1041,48 @@
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Accept, access-token, client-id, Authorization, X-Requested-With"
+      "Access-Control-Allow-Headers": "Content-Type, Accept, access-token, client-id, Authorization, Auth, Sid, sid, neo-fin-key, x-api-key, X-Requested-With"
     };
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
     const reqUrl = new URL(request.url);
-    const targetUrl = reqUrl.searchParams.get("url");
-    if (!targetUrl) {
-      return new Response(JSON.stringify({ error: "Missing ?url= parameter" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const url = reqUrl.searchParams.get("url");
+    if (!url) {
+      return new Response(JSON.stringify({ error: "Missing ?url=" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const dhanToken = request.headers.get("access-token") || reqUrl.searchParams.get("dhan_tok") || "";
-    const dhanClient = request.headers.get("client-id") || reqUrl.searchParams.get("dhan_cid") || "";
     const upstreamHeaders = {
       "User-Agent": "Mozilla/5.0",
       "Accept": "application/json",
-      "Content-Type": "application/json"
+      "Content-Type": request.headers.get("Content-Type") || reqUrl.searchParams.get("hdr_ct") || "application/json"
     };
+    const dhanToken = request.headers.get("access-token") || reqUrl.searchParams.get("dhan_tok") || "";
+    const dhanClient = request.headers.get("client-id") || reqUrl.searchParams.get("dhan_cid") || "";
     if (dhanToken) upstreamHeaders["access-token"] = dhanToken;
     if (dhanClient) upstreamHeaders["client-id"] = dhanClient;
 
-    const bodyText = (request.method !== "GET" && request.method !== "HEAD") ? await request.text() : undefined;
-    const resp = await fetch(targetUrl, {
+    const authHdr = request.headers.get("Authorization") || reqUrl.searchParams.get("hdr_authorization") || "";
+    const kotakAuth = request.headers.get("Auth") || reqUrl.searchParams.get("hdr_auth") || "";
+    const kotakSid = request.headers.get("Sid") || request.headers.get("sid") || reqUrl.searchParams.get("hdr_sid") || "";
+    const neoFinKey = request.headers.get("neo-fin-key") || reqUrl.searchParams.get("hdr_neokey") || "";
+    const xApiKey = request.headers.get("x-api-key") || reqUrl.searchParams.get("hdr_xapikey") || "";
+
+    if (authHdr) upstreamHeaders["Authorization"] = authHdr;
+    if (kotakAuth) upstreamHeaders["Auth"] = kotakAuth;
+    if (kotakSid) {
+      upstreamHeaders["Sid"] = kotakSid;
+      upstreamHeaders["sid"] = kotakSid;
+    }
+    if (neoFinKey) upstreamHeaders["neo-fin-key"] = neoFinKey;
+    if (xApiKey) upstreamHeaders["x-api-key"] = xApiKey;
+
+    const resp = await fetch(url, {
       method: request.method,
       headers: upstreamHeaders,
-      body: bodyText
+      body: (request.method !== "GET" && request.method !== "HEAD") ? await request.text() : undefined
     });
-    const respBody = await resp.text();
-    return new Response(respBody, {
-      status: resp.status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
+    const body = await resp.text();
+    return new Response(body, { status: resp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 };`;
     if (navigator.clipboard && navigator.clipboard.writeText) {

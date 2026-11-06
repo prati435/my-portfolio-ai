@@ -373,13 +373,22 @@
       </div>
     </div>
     <div class="upload-btn-group">
-      <label class="btn-primary">
-        <span>📁 Upload Broker CSV</span>
-        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-      </label>
+      <div style="display:inline-flex; align-items:center; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:2px 6px; gap:6px;">
+        <span style="font-size:0.7rem; color:#94a3b8; font-weight:600;">CSV Broker:</span>
+        <select id="csv-broker-select" style="background:#0f172a; color:#f8fafc; border:1px solid #475569; border-radius:6px; padding:4px 6px; font-size:0.74rem; font-weight:600;">
+          <option value="Kotak" selected>🏦 Kotak Securities</option>
+          <option value="Dhan">⚡ DhanHQ</option>
+          <option value="INDmoney">🟣 INDmoney</option>
+          <option value="Custom">📁 Other / Custom</option>
+        </select>
+        <label class="btn-primary" style="margin:0; padding:5px 10px;">
+          <span>📁 Upload Broker CSV (Merge)</span>
+          <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+        </label>
+      </div>
       <button type="button" class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices(true)">⚡ Sync Live NSE Prices</button>
       <button type="button" class="btn-secondary" style="border:1px solid #38bdf8; color:#7dd3fc;" onclick="openReliabilityModal()">🛡️ Feed Diagnostics &amp; Worker</button>
-      <button type="button" class="btn-primary" style="background:#0284c7;" onclick="toggleDhanModal()">🔗 Connect DhanHQ API</button>
+      <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#0284c7,#7c3aed);" onclick="toggleDhanModal()">🔗 Connect Brokers (Dhan · Kotak · INDmoney)</button>
       
       <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#2563eb);" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Algo</button>
       <button type="button" class="btn-secondary" onclick="toggleAddHoldingForm()">➕ Add Position</button>
@@ -388,55 +397,163 @@
     </div>
   </div>
 
-  <!-- DHANHQ FREE TIER & LIVE API INTEGRATION DRAWER -->
+  <!-- MULTI-BROKER FREE API INTEGRATION HUB (DHANHQ + KOTAK NEO + INDMONEY) -->
   <div class="card" id="dhan-config-card" style="display: none; margin-bottom: 12px; border: 1px solid #0284c7; background: #0c192c;">
     <div class="card-title" style="color: #38bdf8;">
-      <span>🔗 DhanHQ v2 API &amp; Worker Verification (8s Timeout Guard)</span>
-      <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleDhanModal()">Close</button>
+      <span>🔗 Multi-Broker Free API Integration Hub — Non-Destructive Broker-Wise Sync (Stocks &amp; ETFs)</span>
+      <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleDhanModal()">✕ Close</button>
     </div>
-    <div class="form-grid">
-      <div>
-        <label style="font-size:0.7rem; color:var(--text-muted);">Dhan API Tier</label>
-        <select id="dhan-tier-mode" class="watchlist-input" style="margin-bottom:0;">
-          <option value="FREE" selected>🟢 Free Tier (Holdings/Positions API + Turbo Free LTP)</option>
-          <option value="PAID">⚡ Paid Data API Plan (₹499/mo /v2/marketfeed/ohlc)</option>
-        </select>
+    <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:10px; line-height:1.45;">
+      Each broker imports into its own dedicated <strong>Broker Slice</strong> (<code>🏦 Kotak</code>, <code>⚡ Dhan</code>, <code>🟣 INDmoney</code>) so syncing one broker <strong>never overrides</strong> your stocks or ETFs from another broker. All three broker APIs below are <strong>₹0/month Free Tier</strong> for fetching demat holdings, positions, stocks, and ETFs.
+    </div>
+
+    <!-- Shared Cloudflare Worker Relay Bar -->
+    <div style="background:#070d19; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <div style="flex:1; min-width:240px;">
+        <label style="font-size:0.68rem; color:#7dd3fc; font-weight:700;">Cloudflare Worker CORS Relay URL (Shared across Dhan, Kotak Neo &amp; INDmoney)</label>
+        <input type="text" id="dhan-proxy-url" class="watchlist-input" style="margin-bottom:0; margin-top:3px;" placeholder="https://piai-relay.yourname.workers.dev/?url=">
       </div>
-      <div>
-        <label style="font-size:0.7rem; color:var(--text-muted);">Dhan Client ID (<code>client-id</code>)</label>
-        <input type="text" id="dhan-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. 1000000001">
+      <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:6px 10px;" onclick="copyCloudflareWorkerCode()">📋 Copy Multi-Broker Worker Script</button>
+      <button type="button" class="btn-primary" style="font-size:0.72rem; padding:6px 10px;" onclick="verifyFeedAndDhanDiagnostics('dhan-status-msg')">🔍 Verify Worker &amp; Active Brokers</button>
+    </div>
+
+    <!-- Broker Sub-Tabs -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; border-bottom:1px solid #1e293b; padding-bottom:8px;">
+      <button type="button" class="filter-chip active" id="brk-tab-btn-dhan" onclick="switchBrokerApiTab('dhan')">⚡ DhanHQ v2 API (₹0 Free)</button>
+      <button type="button" class="filter-chip" id="brk-tab-btn-kotak" onclick="switchBrokerApiTab('kotak')">🏦 Kotak Neo / Securities API (₹0 Free)</button>
+      <button type="button" class="filter-chip" id="brk-tab-btn-indmoney" onclick="switchBrokerApiTab('indmoney')">🟣 INDmoney / INDstocks API (₹0 Free)</button>
+    </div>
+
+    <!-- BROKER PANEL 1: DHANHQ -->
+    <div id="brk-panel-dhan" class="broker-api-panel">
+      <div class="form-grid">
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Dhan API Tier</label>
+          <select id="dhan-tier-mode" class="watchlist-input" style="margin-bottom:0;">
+            <option value="FREE" selected>🟢 Free Tier (Holdings/Positions API + Live NSE LTP)</option>
+            <option value="PAID">⚡ Paid Data API Plan (₹499/mo /v2/marketfeed/ohlc)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Dhan Client ID (<code>client-id</code>)</label>
+          <input type="text" id="dhan-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. 1000000001">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Dhan JWT Access Token (<code>access-token</code>)</label>
+          <input type="password" id="dhan-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste 24h JWT token from web.dhan.co">
+        </div>
       </div>
-      <div>
-        <label style="font-size:0.7rem; color:var(--text-muted);">Dhan JWT Access Token (<code>access-token</code>)</label>
-        <input type="password" id="dhan-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste token from web.dhan.co">
-      </div>
-      <div>
-        <label style="font-size:0.7rem; color:var(--text-muted);">Cloudflare Worker / CORS Relay URL</label>
-        <input type="text" id="dhan-proxy-url" class="watchlist-input" style="margin-bottom:0;" placeholder="https://piai-relay.yourname.workers.dev/?url=">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+        <button type="button" class="btn-emerald" onclick="saveAndSyncDhanHQ()">⚡ Sync Dhan Stocks &amp; ETFs (Preserves Kotak &amp; INDmoney)</button>
+        <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('Dhan')">🗑️ Clear Only Dhan Holdings</button>
+        <button type="button" class="btn-secondary" onclick="disconnectDhanHQ()">Disconnect Dhan</button>
       </div>
     </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-      <button type="button" class="btn-emerald" onclick="saveAndSyncDhanHQ()">⚡ Save &amp; Import Dhan Holdings + Positions</button>
-      <button type="button" class="btn-primary" onclick="verifyFeedAndDhanDiagnostics('dhan-status-msg')">🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)</button>
-      <button type="button" class="btn-secondary" onclick="disconnectDhanHQ()">Disconnect Dhan</button>
-      <span id="dhan-status-msg" style="font-size: 0.75rem; color: #7dd3fc;"></span>
+
+    <!-- BROKER PANEL 2: KOTAK NEO / SECURITIES (FREE TRADE API V2) -->
+    <div id="brk-panel-kotak" class="broker-api-panel" style="display:none;">
+      <div style="font-size:0.72rem; color:#93c5fd; margin-bottom:8px; line-height:1.45;">
+        <strong>Kotak Neo Free Trade API v2 (₹0/mo):</strong> In Kotak Neo App/Web, go to <strong>More / Invest → Trade API → Generate Application</strong> to copy your plain <strong>Consumer Key / Access Token</strong>, and complete one-time <strong>TOTP Registration</strong>. Enter your TOTP + MPIN below to authenticate (or paste an existing Session <code>Auth</code> Token + <code>Sid</code>) and fetch <code>GET /portfolio/v1/holdings</code> &amp; <code>/quick/user/positions</code>.
+      </div>
+      <div class="form-grid">
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Kotak Consumer Key (Plain Token from Trade API)</label>
+          <input type="password" id="kotak-consumer-key" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. ec6a746c-e44b-455e-abf2-...">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Registered Mobile Number</label>
+          <input type="text" id="kotak-mobile" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. +919876543210 or 10-digit">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">UCC (5-Char Client Code in Profile)</label>
+          <input type="text" id="kotak-ucc" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. AB123">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">6-Digit Trading MPIN</label>
+          <input type="password" id="kotak-mpin" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit MPIN">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Live 6-Digit Authenticator TOTP</label>
+          <input type="text" id="kotak-totp" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit TOTP (for step-1 login)">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Session <code>Auth</code> Token (Auto-filled after TOTP login)</label>
+          <input type="password" id="kotak-session-auth" class="watchlist-input" style="margin-bottom:0;" placeholder="Auto-filled or paste session Auth">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Session <code>Sid</code> (Auto-filled after TOTP login)</label>
+          <input type="text" id="kotak-session-sid" class="watchlist-input" style="margin-bottom:0;" placeholder="Auto-filled or paste session Sid">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Kotak Gateway Base URL</label>
+          <input type="text" id="kotak-base-url" class="watchlist-input" style="margin-bottom:0;" placeholder="https://gw-napi.kotaksecurities.com">
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+        <button type="button" class="btn-emerald" onclick="loginAndSyncKotakNeo(true)">🔐 Authenticate TOTP+MPIN &amp; Import Kotak Stocks + ETFs</button>
+        <button type="button" class="btn-primary" onclick="loginAndSyncKotakNeo(false)">⚡ Sync Using Saved Session Auth + Sid</button>
+        <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('Kotak')">🗑️ Clear Only Kotak Holdings</button>
+      </div>
+    </div>
+
+    <!-- BROKER PANEL 3: INDMONEY / INDSTOCKS (FREE API) -->
+    <div id="brk-panel-indmoney" class="broker-api-panel" style="display:none;">
+      <div style="font-size:0.72rem; color:#d8b4fe; margin-bottom:8px; line-height:1.45;">
+        <strong>INDmoney / INDstocks Free Trading API (₹0/mo):</strong> Log in to <code>indstocks.com/app/api-trading/access-tokens</code> (or click <strong>Algo Trading</strong> on INDstocks web) to copy your 24-hour <strong>Access Token</strong> (or generate one via TOTP using your static Client ID <code>x-api-key</code> + MPIN + TOTP). Calls <code>GET https://api.indstocks.com/portfolio/holdings</code> &amp; <code>/portfolio/positions</code> to import your Stocks &amp; ETFs.
+      </div>
+      <div class="form-grid">
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">INDmoney / INDstocks Access Token (<code>Authorization</code>)</label>
+          <input type="password" id="ind-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste token from indstocks.com/app/api-trading/access-tokens">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Optional: Static Client ID (<code>x-api-key</code> for TOTP login)</label>
+          <input type="text" id="ind-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="Optional if Access Token is pasted above">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Optional: INDstocks MPIN (for TOTP token gen)</label>
+          <input type="password" id="ind-mpin" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit MPIN (optional)">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Optional: 6-Digit Authenticator TOTP</label>
+          <input type="text" id="ind-totp" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit TOTP (optional)">
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+        <button type="button" class="btn-emerald" onclick="saveAndSyncIndMoney(false)">🟣 Sync INDmoney Stocks &amp; ETFs (Using Access Token)</button>
+        <button type="button" class="btn-primary" onclick="saveAndSyncIndMoney(true)">🔐 Generate Token via TOTP &amp; Sync INDmoney</button>
+        <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('INDmoney')">🗑️ Clear Only INDmoney Holdings</button>
+      </div>
+    </div>
+
+    <div id="dhan-status-msg" style="font-size: 0.75rem; color: #7dd3fc; margin-top: 10px; padding: 8px; border-radius: 6px; background: #060b14; border: 1px solid #1e293b;">
+      Ready — select a broker tab above (DhanHQ, Kotak Neo, or INDmoney) to sync your Stocks &amp; ETFs without overriding other brokers.
     </div>
   </div>
 
   <!-- ADD POSITION DRAWER -->
   <div class="card" id="add-holding-card" style="display: none; margin-bottom: 12px; border: 1px solid #374151;">
     <div class="card-title">
-      <span>➕ Add Equity / ETF / Mutual Fund Position</span>
+      <span>➕ Add Equity / ETF Position (Broker-Tagged)</span>
       <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleAddHoldingForm()">Close</button>
     </div>
     <form onsubmit="handleAddHoldingSubmit(event)">
       <div class="form-grid">
         <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Stock / Asset Name or NSE Ticker</label>
-          <input type="text" id="add-name" class="watchlist-input" placeholder="e.g. RELIANCE or TMPV" required>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Broker Account</label>
+          <select id="add-broker" class="watchlist-input">
+            <option value="Kotak" selected>🏦 Kotak Securities</option>
+            <option value="Dhan">⚡ DhanHQ</option>
+            <option value="INDmoney">🟣 INDmoney</option>
+            <option value="Custom">📁 Other / Custom</option>
+          </select>
         </div>
         <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Sector / Category</label>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Stock / ETF Name or NSE Ticker</label>
+          <input type="text" id="add-name" class="watchlist-input" placeholder="e.g. RELIANCE, TMPV, NIFTYBEES" required>
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Sector / Category (use ETF for ETFs)</label>
           <input type="text" id="add-sec" class="watchlist-input" placeholder="e.g. Banking, IT, Auto, ETF" value="Equity">
         </div>
         <div>
@@ -452,7 +569,7 @@
           <input type="number" id="add-ltp" class="watchlist-input" step="any" placeholder="Auto-fetched if blank">
         </div>
       </div>
-      <button type="submit" class="btn-emerald">✅ Save Position &amp; Sync Live LTP</button>
+      <button type="submit" class="btn-emerald">✅ Save Position to Broker &amp; Sync Live LTP</button>
     </form>
   </div>
 
@@ -522,17 +639,25 @@
     </div>
   </div>
 
-  <!-- ════ TAB 2: STOCKS ════ -->
+  <!-- ════ TAB 2: STOCKS (BROKER-WISE) ════ -->
   <div id="view-stocks" class="tab-view" style="display: none;">
+    <div id="broker-summary-pills" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;"></div>
     <div class="filter-bar">
-      <input type="text" id="stock-search" class="search-input" style="max-width:260px;" placeholder="🔍 Search stock, ticker, or sector..." oninput="handleSearch()">
+      <input type="text" id="stock-search" class="search-input" style="max-width:240px;" placeholder="🔍 Search stock, ticker, broker, sector..." oninput="handleSearch()">
       <button type="button" class="filter-chip active" onclick="setStockFilter('ALL', this)">All</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('WINNERS', this)">🟢 Winners</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('LOSERS', this)">🔴 Losers</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('EXIT', this)">🚨 Flagged Exits</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('BOOK', this)">🟣 Profit Booking</button>
+      <button type="button" class="filter-chip active" id="btn-toggle-broker-group" style="margin-left:auto; border-color:#38bdf8; color:#7dd3fc;" onclick="toggleBrokerGroupingMode()">🗂️ Grouped by Broker: ON</button>
     </div>
     <div id="stocks-list-container"></div>
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title">
+        <span>🌍 Broker-Wise ETFs (Synced from Kotak, Dhan, INDmoney &amp; CSV)</span>
+      </div>
+      <div id="stocks-tab-etf-container"></div>
+    </div>
   </div>
 
   <!-- ════ TAB 3: MF / ETF / BONDS ════ -->
@@ -1017,6 +1142,109 @@
     }
   }
 
+  const STORAGE_KEY_KOTAK = "piai_kotak_creds_v1";
+  const STORAGE_KEY_INDMONEY = "piai_indmoney_creds_v1";
+  let kotakConfig = { consumerKey: "", mobile: "", ucc: "", sessionAuth: "", sessionSid: "", baseUrl: "https://gw-napi.kotaksecurities.com" };
+  let indMoneyConfig = { accessToken: "", clientId: "" };
+  let activeBrokerFilter = "ALL";
+  let groupStocksByBroker = true;
+
+  function normalizeBrokerTag(b) {
+    if (!b) return "Kotak";
+    const s = String(b).trim().toLowerCase();
+    if (s.includes("dhan")) return "Dhan";
+    if (s.includes("indmoney") || s.includes("indstocks") || s === "ind") return "INDmoney";
+    if (s.includes("kotak")) return "Kotak";
+    return String(b).trim();
+  }
+
+  function getBrokerBadgeStyle(brokerName) {
+    const b = normalizeBrokerTag(brokerName);
+    if (b === "Dhan") return { label: "⚡ DhanHQ", short: "⚡ Dhan", bg: "rgba(16,185,129,0.16)", border: "#10b981", color: "#6ee7b7" };
+    if (b === "INDmoney") return { label: "🟣 INDmoney", short: "🟣 INDmoney", bg: "rgba(168,85,247,0.18)", border: "#a855f7", color: "#d8b4fe" };
+    if (b === "Kotak") return { label: "🏦 Kotak Securities", short: "🏦 Kotak", bg: "rgba(56,189,248,0.16)", border: "#0284c7", color: "#7dd3fc" };
+    return { label: `📁 ${b}`, short: `📁 ${b}`, bg: "rgba(148,163,184,0.16)", border: "#64748b", color: "#cbd5e1" };
+  }
+
+  function getHoldingKey(h) {
+    return `${normalizeBrokerTag(h.broker)}__${h.n}`;
+  }
+
+  function isInstrumentETF(sym, name, secType, subType) {
+    const combined = `${sym || ""} ${name || ""} ${secType || ""} ${subType || ""}`.toUpperCase();
+    if (combined.includes("ETF") || combined.includes("BEES") || combined.includes("IETF")) return true;
+    const cleanSym = String(sym || "").toUpperCase().replace(/\.(NS|BO)$/, "").replace(/-EQ$/, "");
+    const knownEtfs = new Set([
+      "NIFTYBEES", "BANKBEES", "GOLDBEES", "SILVERBEES", "ITBEES", "JUNIORBEES", "LIQUIDBEES",
+      "CPSEETF", "MON100", "MAFANG", "PHARMABEES", "AUTOBEES", "PSUBNKBEES", "MID150BEES",
+      "HDFCNIFTY", "ICICINIFTY", "SETFNIF50", "KOTAKNIFTY", "GOLDCASE", "SILVERIETF", "GOLDIETF", "NIFTYIETF"
+    ]);
+    return knownEtfs.has(cleanSym);
+  }
+
+  // Non-destructively merges a single broker's stocks, ETFs, MFs, and Bonds without overriding other brokers!
+  function mergeBrokerPortfolio(brokerName, newEq = [], newETFs = [], newMFs = null, newBonds = null) {
+    const bTag = normalizeBrokerTag(brokerName);
+    const taggedEq = newEq.map(item => ({ ...item, broker: bTag }));
+    const taggedEtfs = newETFs.map(item => ({ ...item, broker: bTag }));
+
+    holdings = [
+      ...holdings.map(h => ({ ...h, broker: normalizeBrokerTag(h.broker) })).filter(h => h.broker !== bTag),
+      ...taggedEq
+    ];
+    etfs = [
+      ...etfs.map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) })).filter(e => e.broker !== bTag),
+      ...taggedEtfs
+    ];
+    if (Array.isArray(newMFs) && newMFs.length > 0) {
+      const taggedMfs = newMFs.map(item => ({ ...item, broker: bTag }));
+      mfs = [
+        ...mfs.map(m => ({ ...m, broker: normalizeBrokerTag(m.broker) })).filter(m => m.broker !== bTag),
+        ...taggedMfs
+      ];
+    }
+    if (Array.isArray(newBonds) && newBonds.length > 0) {
+      const taggedBonds = newBonds.map(item => ({ ...item, broker: bTag }));
+      bonds = [
+        ...bonds.map(b => ({ ...b, broker: normalizeBrokerTag(b.broker) })).filter(b => b.broker !== bTag),
+        ...taggedBonds
+      ];
+    }
+    persistState();
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+    calculateWealthProjection();
+  }
+
+  function clearSingleBrokerHoldings(brokerName) {
+    const bTag = normalizeBrokerTag(brokerName);
+    const beforeEq = holdings.length;
+    const beforeEtf = etfs.length;
+    holdings = holdings.filter(h => normalizeBrokerTag(h.broker) !== bTag);
+    etfs = etfs.filter(e => normalizeBrokerTag(e.broker) !== bTag);
+    mfs = mfs.filter(m => normalizeBrokerTag(m.broker) !== bTag);
+    bonds = bonds.filter(b => normalizeBrokerTag(b.broker) !== bTag);
+    persistState();
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+    calculateWealthProjection();
+    const msg = document.getElementById("dhan-status-msg");
+    if (msg) {
+      msg.innerHTML = `<span style="color:var(--amber);">🗑️ Cleared ${beforeEq - holdings.length} stocks and ${beforeEtf - etfs.length} ETFs from <strong>${bTag}</strong>. All other brokers remain intact.</span>`;
+    }
+  }
+
+  function switchBrokerApiTab(tabKey) {
+    ["dhan", "kotak", "indmoney"].forEach(k => {
+      const panel = document.getElementById(`brk-panel-${k}`);
+      const btn = document.getElementById(`brk-tab-btn-${k}`);
+      if (panel) panel.style.display = (k === tabKey) ? "block" : "none";
+      if (btn) btn.classList.toggle("active", k === tabKey);
+    });
+  }
+
   function persistState() {
     safeSetStorage(STORAGE_KEY_STATE, JSON.stringify({
       holdings, mfs, etfs, bonds, watchlist, liveBenchmarks,
@@ -1029,10 +1257,10 @@
       const raw = safeGetStorage(STORAGE_KEY_STATE, "");
       if (raw) {
         const p = JSON.parse(raw);
-        holdings = Array.isArray(p.holdings) ? p.holdings : [];
-        mfs = Array.isArray(p.mfs) ? p.mfs : [];
-        etfs = Array.isArray(p.etfs) ? p.etfs : [];
-        bonds = Array.isArray(p.bonds) ? p.bonds : [];
+        holdings = (Array.isArray(p.holdings) ? p.holdings : []).map(h => ({ ...h, broker: normalizeBrokerTag(h.broker) }));
+        mfs = (Array.isArray(p.mfs) ? p.mfs : []).map(m => ({ ...m, broker: normalizeBrokerTag(m.broker) }));
+        etfs = (Array.isArray(p.etfs) ? p.etfs : []).map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) }));
+        bonds = (Array.isArray(p.bonds) ? p.bonds : []).map(b => ({ ...b, broker: normalizeBrokerTag(b.broker) }));
         watchlist = Array.isArray(p.watchlist) ? p.watchlist : [];
         liveBenchmarks = p.liveBenchmarks || {};
         if (typeof p.ruleExitDrawdown === "number") ruleExitDrawdown = p.ruleExitDrawdown;
@@ -1046,6 +1274,24 @@
         document.getElementById("dhan-access-token").value = dhanConfig.accessToken || "";
         document.getElementById("dhan-proxy-url").value = dhanConfig.proxyUrl || safeGetStorage(STORAGE_KEY_WORKER, "");
         document.getElementById("dhan-tier-mode").value = dhanConfig.tier || "FREE";
+      } else {
+        document.getElementById("dhan-proxy-url").value = safeGetStorage(STORAGE_KEY_WORKER, "");
+      }
+      const kRaw = safeGetStorage(STORAGE_KEY_KOTAK, "");
+      if (kRaw) {
+        kotakConfig = { ...kotakConfig, ...JSON.parse(kRaw) };
+        if (document.getElementById("kotak-consumer-key")) document.getElementById("kotak-consumer-key").value = kotakConfig.consumerKey || "";
+        if (document.getElementById("kotak-mobile")) document.getElementById("kotak-mobile").value = kotakConfig.mobile || "";
+        if (document.getElementById("kotak-ucc")) document.getElementById("kotak-ucc").value = kotakConfig.ucc || "";
+        if (document.getElementById("kotak-session-auth")) document.getElementById("kotak-session-auth").value = kotakConfig.sessionAuth || "";
+        if (document.getElementById("kotak-session-sid")) document.getElementById("kotak-session-sid").value = kotakConfig.sessionSid || "";
+        if (document.getElementById("kotak-base-url")) document.getElementById("kotak-base-url").value = kotakConfig.baseUrl || "https://gw-napi.kotaksecurities.com";
+      }
+      const iRaw = safeGetStorage(STORAGE_KEY_INDMONEY, "");
+      if (iRaw) {
+        indMoneyConfig = { ...indMoneyConfig, ...JSON.parse(iRaw) };
+        if (document.getElementById("ind-access-token")) document.getElementById("ind-access-token").value = indMoneyConfig.accessToken || "";
+        if (document.getElementById("ind-client-id")) document.getElementById("ind-client-id").value = indMoneyConfig.clientId || "";
       }
     } catch (e) {}
   }
@@ -1072,6 +1318,7 @@
 
   async function handleAddHoldingSubmit(e) {
     e.preventDefault();
+    const broker = normalizeBrokerTag((document.getElementById("add-broker") && document.getElementById("add-broker").value) || "Kotak");
     const name = document.getElementById("add-name").value.trim();
     const sec = document.getElementById("add-sec").value.trim() || "Equity";
     const qty = parseFloat(document.getElementById("add-qty").value) || 1;
@@ -1079,8 +1326,12 @@
     const ltpInp = parseFloat(document.getElementById("add-ltp").value);
     const ltp = (!isNaN(ltpInp) && ltpInp > 0) ? ltpInp : avg;
 
-    const newItem = { n: name, sec, qty, avg, ltp, inv: qty * avg, cur: qty * ltp, today: 0 };
-    holdings.push(newItem);
+    const newItem = { n: name, broker, sec, qty, avg, ltp, inv: qty * avg, cur: qty * ltp, today: 0 };
+    if (isInstrumentETF(name, name, sec, "")) {
+      etfs.push(newItem);
+    } else {
+      holdings.push(newItem);
+    }
     e.target.reset();
     toggleAddHoldingForm();
     await fetchFastStockQuote(newItem);
@@ -1090,6 +1341,8 @@
     calculateTaxHarvest();
     calculateWealthProjection();
   }
+
+
 
   function resolveDhanSecurityId(h) {
     if (h.dhanSecId) return h.dhanSecId;
@@ -1101,26 +1354,23 @@
     return null;
   }
 
-  async function dhanApiRequest(endpoint, method = "GET", bodyObj = null, timeoutMs = FEED_TIMEOUT_MS) {
-    if (!dhanConfig || !dhanConfig.accessToken) return null;
-    const targetUrl = `https://api.dhan.co${endpoint}`;
-    const headers = {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-      "access-token": dhanConfig.accessToken,
-      "client-id": dhanConfig.clientId || ""
-    };
-    const opts = { method, headers, body: bodyObj ? JSON.stringify(bodyObj) : undefined };
-    const workerUrl = (dhanConfig.proxyUrl || safeGetStorage(STORAGE_KEY_WORKER, "")).trim();
+  // Universal Multi-Broker Relay Request (supports DhanHQ, Kotak Neo, INDmoney/INDstocks)
+  async function brokerRelayRequest(targetUrl, method = "GET", headers = {}, bodyStr = undefined, queryParamHeaders = {}, timeoutMs = FEED_TIMEOUT_MS) {
+    const opts = { method, headers, body: bodyStr };
+    const workerUrl = ((document.getElementById("dhan-proxy-url") && document.getElementById("dhan-proxy-url").value) || dhanConfig.proxyUrl || safeGetStorage(STORAGE_KEY_WORKER, "")).trim();
     if (workerUrl) {
       const baseW = workerUrl.includes("?url=") ? workerUrl : workerUrl.replace(/\/$/, "") + "/?url=";
-      const wTarget = `${baseW}${encodeURIComponent(targetUrl)}&dhan_cid=${encodeURIComponent(dhanConfig.clientId || "")}&dhan_tok=${encodeURIComponent(dhanConfig.accessToken || "")}`;
+      const qp = Object.entries(queryParamHeaders)
+        .filter(([, v]) => v !== undefined && v !== null && v !== "")
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join("&");
+      const wTarget = `${baseW}${encodeURIComponent(targetUrl)}${qp ? "&" + qp : ""}`;
       try {
         const r = await fetchOneProxy(wTarget, false, "Cloudflare Worker", timeoutMs, opts);
         if (r) return r;
       } catch (e) {
         try {
-          const simpleOpts = { method, headers: { "Accept": "application/json" }, body: bodyObj ? JSON.stringify(bodyObj) : undefined };
+          const simpleOpts = { method, headers: { "Accept": "application/json" }, body: bodyStr };
           const r2 = await fetchOneProxy(wTarget, false, "Cloudflare Worker", timeoutMs, simpleOpts);
           if (r2) return r2;
         } catch (e2) {}
@@ -1133,6 +1383,25 @@
     }
   }
 
+  async function dhanApiRequest(endpoint, method = "GET", bodyObj = null, timeoutMs = FEED_TIMEOUT_MS) {
+    if (!dhanConfig || !dhanConfig.accessToken) return null;
+    const targetUrl = `https://api.dhan.co${endpoint}`;
+    const headers = {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "access-token": dhanConfig.accessToken,
+      "client-id": dhanConfig.clientId || ""
+    };
+    return await brokerRelayRequest(
+      targetUrl,
+      method,
+      headers,
+      bodyObj ? JSON.stringify(bodyObj) : undefined,
+      { dhan_cid: dhanConfig.clientId || "", dhan_tok: dhanConfig.accessToken || "" },
+      timeoutMs
+    );
+  }
+
   async function saveAndSyncDhanHQ() {
     const cid = document.getElementById("dhan-client-id").value.trim();
     const tok = document.getElementById("dhan-access-token").value.trim();
@@ -1143,69 +1412,63 @@
     if (prx) safeSetStorage(STORAGE_KEY_WORKER, prx);
 
     const msg = document.getElementById("dhan-status-msg");
-    if (msg) msg.textContent = "⏳ Connecting to DhanHQ v2 (8s timeout)...";
+    if (msg) msg.innerHTML = "⏳ Connecting to <strong>DhanHQ v2 API</strong> (<code>GET /v2/holdings</code> &amp; <code>/v2/positions</code>)...";
 
     const [hRes, pRes] = await Promise.all([
       dhanApiRequest("/v2/holdings", "GET", null, FEED_TIMEOUT_MS),
       dhanApiRequest("/v2/positions", "GET", null, FEED_TIMEOUT_MS)
     ]);
 
-    let imported = 0;
     const newEq = [];
+    const newETFs = [];
+    const processDhanItem = (sym, qty, avg, secId, defaultSec) => {
+      const cleanSym = String(sym || "").trim().toUpperCase();
+      if (!cleanSym || qty <= 0) return;
+      const ticker = cleanSym.endsWith(".NS") || cleanSym.endsWith(".BO") ? cleanSym : cleanSym + ".NS";
+      const obj = {
+        n: cleanSym,
+        broker: "Dhan",
+        ticker,
+        dhanSecId: secId ? Number(secId) : null,
+        sec: isInstrumentETF(cleanSym, cleanSym, defaultSec, "") ? "ETF" : defaultSec,
+        qty,
+        avg,
+        ltp: avg,
+        inv: qty * avg,
+        cur: qty * avg,
+        today: 0
+      };
+      if (obj.sec === "ETF") {
+        if (!newETFs.some(e => e.n === cleanSym)) newETFs.push(obj);
+      } else {
+        if (!newEq.some(x => x.n === cleanSym)) newEq.push(obj);
+      }
+    };
+
     if (Array.isArray(hRes)) {
       hRes.forEach(item => {
         const qty = parseFloat(item.totalQty || item.availableQty || 0);
         const avg = parseFloat(item.avgCostPrice || 0);
-        const sym = item.tradingSymbol || "";
-        if (qty > 0 && sym) {
-          newEq.push({
-            n: sym,
-            ticker: sym.toUpperCase() + ".NS",
-            dhanSecId: item.securityId ? Number(item.securityId) : null,
-            sec: "Equity",
-            qty,
-            avg,
-            ltp: avg,
-            inv: qty * avg,
-            cur: qty * avg,
-            today: 0
-          });
-          imported++;
-        }
+        processDhanItem(item.tradingSymbol, qty, avg, item.securityId, "Equity");
       });
     }
     if (Array.isArray(pRes)) {
       pRes.forEach(pos => {
         const qty = Math.abs(parseFloat(pos.netQty || 0));
         const avg = parseFloat(pos.buyAvg || pos.costPrice || 0);
-        const sym = pos.tradingSymbol || "";
-        if (qty > 0 && sym && !newEq.some(x => x.n === sym)) {
-          newEq.push({
-            n: sym,
-            ticker: sym.toUpperCase() + ".NS",
-            dhanSecId: pos.securityId ? Number(pos.securityId) : null,
-            sec: "Position",
-            qty,
-            avg,
-            ltp: avg,
-            inv: qty * avg,
-            cur: qty * avg,
-            today: 0
-          });
-          imported++;
-        }
+        processDhanItem(pos.tradingSymbol, qty, avg, pos.securityId, "Position");
       });
     }
 
-    if (imported > 0) {
-      holdings = newEq;
-      persistState();
-      runPortfolioIntelligenceEngine();
-      if (msg) msg.innerHTML = `<span style="color:var(--emerald);">✅ Imported ${imported} holdings/positions from DhanHQ! Syncing live LTP...</span>`;
+    const totalImported = newEq.length + newETFs.length;
+    if (totalImported > 0) {
+      mergeBrokerPortfolio("Dhan", newEq, newETFs);
+      if (msg) {
+        msg.innerHTML = `<span style="color:var(--emerald);">✅ <strong>DhanHQ Synced:</strong> Imported <strong>${newEq.length} stocks</strong> &amp; <strong>${newETFs.length} ETFs</strong> into your <code>⚡ Dhan</code> slice (all Kotak &amp; INDmoney holdings preserved!). Syncing live LTP...</span>`;
+      }
       syncLiveNSEPrices(true);
     } else {
-      if (msg) msg.innerHTML = `<span style="color:var(--amber);">⚠️ Saved settings (0 holdings returned or token disconnected — run Verify below).</span>`;
-      syncLiveNSEPrices(true);
+      if (msg) msg.innerHTML = `<span style="color:var(--amber);">⚠️ DhanHQ returned 0 holdings/positions (or token disconnected — click Verify above). Existing holdings were NOT overwritten.</span>`;
     }
   }
 
@@ -1214,9 +1477,305 @@
     safeSetStorage(STORAGE_KEY_DHAN, "");
     document.getElementById("dhan-client-id").value = "";
     document.getElementById("dhan-access-token").value = "";
-    document.getElementById("dhan-status-msg").textContent = "Disconnected.";
+    document.getElementById("dhan-status-msg").textContent = "Disconnected DhanHQ credentials (existing holdings preserved).";
   }
 
+  // ============================================================================
+  // KOTAK NEO / SECURITIES FREE TRADE API V2 INTEGRATION (Stocks & ETFs)
+  // Official Endpoints:
+  // 1. POST https://mis.kotaksecurities.com/login/1.0/tradeApiLogin
+  // 2. POST https://mis.kotaksecurities.com/login/1.0/tradeApiValidate
+  // 3. GET  <baseUrl>/portfolio/v1/holdings  &  GET <baseUrl>/quick/user/positions
+  // ============================================================================
+  async function loginAndSyncKotakNeo(runTotpLogin = true) {
+    const consumerKey = (document.getElementById("kotak-consumer-key").value || "").trim().replace(/^Bearer\s+/i, "");
+    let mobile = (document.getElementById("kotak-mobile").value || "").trim();
+    if (/^\d{10}$/.test(mobile)) mobile = "+91" + mobile;
+    const ucc = (document.getElementById("kotak-ucc").value || "").trim().toUpperCase();
+    const mpin = (document.getElementById("kotak-mpin").value || "").trim();
+    const totp = (document.getElementById("kotak-totp").value || "").trim();
+    let sessionAuth = (document.getElementById("kotak-session-auth").value || "").trim();
+    let sessionSid = (document.getElementById("kotak-session-sid").value || "").trim();
+    let baseUrl = ((document.getElementById("kotak-base-url").value || "").trim() || "https://gw-napi.kotaksecurities.com").replace(/\/$/, "");
+    const prx = (document.getElementById("dhan-proxy-url").value || "").trim();
+    if (prx) safeSetStorage(STORAGE_KEY_WORKER, prx);
+
+    const msg = document.getElementById("dhan-status-msg");
+    if (!consumerKey && !sessionAuth) {
+      if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 Enter your <strong>Kotak Consumer Key (Plain Token)</strong> from Kotak Neo → More/Invest → Trade API → Generate Application (or paste an active Session <code>Auth</code> + <code>Sid</code>).</span>`;
+      return;
+    }
+
+    if (runTotpLogin && consumerKey && mobile && ucc && totp && mpin) {
+      if (msg) msg.innerHTML = `⏳ Step 1/3: Validating Kotak Neo TOTP (<code>POST /login/1.0/tradeApiLogin</code>)...`;
+      const loginUrl = "https://mis.kotaksecurities.com/login/1.0/tradeApiLogin";
+      const loginHeaders = {
+        "Content-Type": "application/json",
+        "Authorization": consumerKey,
+        "neo-fin-key": "neotradeapi"
+      };
+      const loginBody = JSON.stringify({ mobileNumber: mobile, ucc, totp });
+      const step1 = await brokerRelayRequest(
+        loginUrl,
+        "POST",
+        loginHeaders,
+        loginBody,
+        { hdr_authorization: consumerKey, hdr_neokey: "neotradeapi" },
+        FEED_TIMEOUT_MS
+      );
+      const s1Data = (step1 && step1.data) ? step1.data : step1;
+      if (!s1Data || !s1Data.token || !s1Data.sid) {
+        if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 Kotak TOTP Login (Step 1) failed. Check Consumer Key, Mobile (+91...), UCC, 6-digit TOTP, and ensure your Cloudflare Worker URL is updated with the Multi-Broker Worker script.</span>`;
+        return;
+      }
+
+      if (msg) msg.innerHTML = `⏳ Step 2/3: Validating Kotak Neo MPIN (<code>POST /login/1.0/tradeApiValidate</code>)...`;
+      const valUrl = "https://mis.kotaksecurities.com/login/1.0/tradeApiValidate";
+      const valHeaders = {
+        "Content-Type": "application/json",
+        "Authorization": consumerKey,
+        "neo-fin-key": "neotradeapi",
+        "sid": s1Data.sid,
+        "Auth": s1Data.token
+      };
+      const valBody = JSON.stringify({ mpin });
+      const step2 = await brokerRelayRequest(
+        valUrl,
+        "POST",
+        valHeaders,
+        valBody,
+        { hdr_authorization: consumerKey, hdr_neokey: "neotradeapi", hdr_sid: s1Data.sid, hdr_auth: s1Data.token },
+        FEED_TIMEOUT_MS
+      );
+      const s2Data = (step2 && step2.data) ? step2.data : step2;
+      if (!s2Data || !s2Data.token) {
+        if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 Kotak MPIN Validation (Step 2) failed. Verify your 6-digit trading MPIN.</span>`;
+        return;
+      }
+      sessionAuth = s2Data.token;
+      sessionSid = s2Data.sid || s1Data.sid;
+      if (s2Data.baseUrl) baseUrl = String(s2Data.baseUrl).replace(/\/$/, "");
+      document.getElementById("kotak-session-auth").value = sessionAuth;
+      document.getElementById("kotak-session-sid").value = sessionSid;
+      document.getElementById("kotak-base-url").value = baseUrl;
+    }
+
+    kotakConfig = { consumerKey, mobile, ucc, sessionAuth, sessionSid, baseUrl };
+    safeSetStorage(STORAGE_KEY_KOTAK, JSON.stringify(kotakConfig));
+
+    if (!sessionAuth || !sessionSid) {
+      if (msg) msg.innerHTML = `<span style="color:var(--amber);">⚠️ Enter Mobile + UCC + MPIN + live 6-digit TOTP and click "🔐 Authenticate TOTP+MPIN", or paste an active Session <code>Auth</code> &amp; <code>Sid</code>.</span>`;
+      return;
+    }
+
+    if (msg) msg.innerHTML = `⏳ Step 3/3: Fetching Kotak Neo Holdings &amp; ETFs (<code>GET ${baseUrl}/portfolio/v1/holdings</code>)...`;
+    const kHeaders = {
+      "accept": "application/json",
+      "Auth": sessionAuth,
+      "Sid": sessionSid,
+      "neo-fin-key": "neotradeapi"
+    };
+    if (consumerKey) kHeaders["Authorization"] = consumerKey;
+    const qParams = { hdr_auth: sessionAuth, hdr_sid: sessionSid, hdr_neokey: "neotradeapi", hdr_authorization: consumerKey };
+
+    const [hRes, pRes] = await Promise.all([
+      brokerRelayRequest(`${baseUrl}/portfolio/v1/holdings`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS),
+      brokerRelayRequest(`${baseUrl}/quick/user/positions`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS)
+    ]);
+
+    const hList = (hRes && Array.isArray(hRes.data)) ? hRes.data : (Array.isArray(hRes) ? hRes : []);
+    const pList = (pRes && Array.isArray(pRes.data)) ? pRes.data : (Array.isArray(pRes) ? pRes : []);
+
+    const newEq = [];
+    const newETFs = [];
+    hList.forEach(item => {
+      const qty = parseFloat(item.quantity || item.sellableQuantity || item.holdQty || 0);
+      if (qty <= 0) return;
+      const rawSym = String(item.displaySymbol || item.symbol || item.commonScripCode || item.tradingSymbol || "").trim().replace(/-EQ$/i, "");
+      const name = String(item.instrumentName || rawSym || "Kotak Security").trim();
+      const cost = parseFloat(item.holdingCost || 0);
+      const avg = parseFloat(item.averagePrice || (cost > 0 ? cost / qty : 0) || 0);
+      const closeP = parseFloat(item.closingPrice || item.ltp || avg || 0);
+      const exSeg = String(item.exchangeSegment || "nse_cm").toLowerCase();
+      const suffix = exSeg.includes("bse") ? ".BO" : ".NS";
+      const ticker = rawSym ? (rawSym.toUpperCase() + suffix) : guessLocalNSETicker(name);
+      const isEtf = isInstrumentETF(rawSym, name, item.instrumentType || item.securityType, item.securitySubType || item.subType);
+      const sec = isEtf ? "ETF" : (item.sector || item.instrumentType || "Equity");
+
+      const entry = {
+        n: rawSym || name,
+        broker: "Kotak",
+        ticker,
+        sec,
+        qty,
+        avg,
+        ltp: closeP > 0 ? closeP : avg,
+        inv: qty * avg,
+        cur: qty * (closeP > 0 ? closeP : avg),
+        today: 0
+      };
+      if (isEtf) newETFs.push(entry);
+      else newEq.push(entry);
+    });
+
+    pList.forEach(pos => {
+      const qty = Math.abs(parseFloat(pos.qty || pos.netQty || 0));
+      if (qty <= 0) return;
+      const rawSym = String(pos.sym || pos.trdSym || "").trim().replace(/-EQ$/i, "");
+      if (!rawSym || newEq.some(x => x.n === rawSym) || newETFs.some(x => x.n === rawSym)) return;
+      const avg = parseFloat(pos.avgPrc || pos.buyAvg || 0);
+      const ltp = parseFloat(pos.ltp || avg || 0);
+      const isEtf = isInstrumentETF(rawSym, rawSym, pos.prod, "");
+      const entry = {
+        n: rawSym,
+        broker: "Kotak",
+        ticker: rawSym.toUpperCase() + ".NS",
+        sec: isEtf ? "ETF" : "Position",
+        qty,
+        avg,
+        ltp: ltp > 0 ? ltp : avg,
+        inv: qty * avg,
+        cur: qty * (ltp > 0 ? ltp : avg),
+        today: 0
+      };
+      if (isEtf) newETFs.push(entry);
+      else newEq.push(entry);
+    });
+
+    if (newEq.length + newETFs.length > 0) {
+      mergeBrokerPortfolio("Kotak", newEq, newETFs);
+      if (msg) {
+        msg.innerHTML = `<span style="color:var(--emerald);">✅ <strong>Kotak Neo Synced:</strong> Imported <strong>${newEq.length} stocks</strong> &amp; <strong>${newETFs.length} ETFs</strong> into your <code>🏦 Kotak</code> slice (all Dhan &amp; INDmoney holdings preserved!). Syncing live LTP...</span>`;
+      }
+      syncLiveNSEPrices(true);
+    } else {
+      if (msg) {
+        msg.innerHTML = `<span style="color:var(--amber);">⚠️ Kotak Neo API returned 0 holdings (or session expired — re-enter live 6-digit TOTP &amp; click Authenticate). Existing holdings were NOT overwritten.</span>`;
+      }
+    }
+  }
+
+  // ============================================================================
+  // INDMONEY / INDSTOCKS FREE TRADING API INTEGRATION (Stocks & ETFs)
+  // Official Endpoints (https://api-docs.indstocks.com):
+  // 1. Optional TOTP Token Gen: POST https://api.indstocks.com/generate/token (Header: x-api-key)
+  // 2. Holdings: GET https://api.indstocks.com/portfolio/holdings (Header: Authorization)
+  // 3. Positions: GET https://api.indstocks.com/portfolio/positions?segment=equity&product=cnc
+  // ============================================================================
+  async function saveAndSyncIndMoney(generateTokenViaTotp = false) {
+    let token = (document.getElementById("ind-access-token").value || "").trim();
+    const clientId = (document.getElementById("ind-client-id").value || "").trim();
+    const mpin = (document.getElementById("ind-mpin").value || "").trim();
+    const totp = (document.getElementById("ind-totp").value || "").trim();
+    const prx = (document.getElementById("dhan-proxy-url").value || "").trim();
+    if (prx) safeSetStorage(STORAGE_KEY_WORKER, prx);
+
+    const msg = document.getElementById("dhan-status-msg");
+    if (generateTokenViaTotp) {
+      if (!clientId || !mpin || !totp) {
+        if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 To generate an INDmoney token via TOTP, enter your static <strong>Client ID (<code>x-api-key</code>)</strong>, <strong>MPIN</strong>, and live <strong>6-digit TOTP</strong>. Or paste your Access Token directly from <code>indstocks.com/app/api-trading/access-tokens</code>.</span>`;
+        return;
+      }
+      if (msg) msg.innerHTML = `⏳ Generating 24h INDmoney Access Token via <code>POST https://api.indstocks.com/generate/token</code>...`;
+      const tokRes = await brokerRelayRequest(
+        "https://api.indstocks.com/generate/token",
+        "POST",
+        { "Content-Type": "application/json", "x-api-key": clientId },
+        JSON.stringify({ mpin, totp }),
+        { hdr_xapikey: clientId },
+        FEED_TIMEOUT_MS
+      );
+      const genTok = (tokRes && tokRes.token) ? tokRes.token : (tokRes && tokRes.data && tokRes.data.token ? tokRes.data.token : "");
+      if (!genTok) {
+        if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 INDmoney TOTP token generation failed. Check your Client ID (<code>x-api-key</code>), MPIN, 6-digit TOTP, and Cloudflare Worker URL.</span>`;
+        return;
+      }
+      token = genTok;
+      document.getElementById("ind-access-token").value = token;
+    }
+
+    if (!token) {
+      if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 Paste your <strong>INDmoney / INDstocks Access Token</strong> from <code>indstocks.com/app/api-trading/access-tokens</code> (or use TOTP generation).</span>`;
+      return;
+    }
+
+    indMoneyConfig = { accessToken: token, clientId };
+    safeSetStorage(STORAGE_KEY_INDMONEY, JSON.stringify(indMoneyConfig));
+
+    if (msg) msg.innerHTML = `⏳ Fetching INDmoney Demat Holdings &amp; ETFs (<code>GET https://api.indstocks.com/portfolio/holdings</code>)...`;
+    const indHeaders = { "Accept": "application/json", "Content-Type": "application/json", "Authorization": token };
+    const qParams = { hdr_authorization: token };
+
+    const [hRes, pRes] = await Promise.all([
+      brokerRelayRequest("https://api.indstocks.com/portfolio/holdings", "GET", indHeaders, undefined, qParams, FEED_TIMEOUT_MS),
+      brokerRelayRequest("https://api.indstocks.com/portfolio/positions?segment=equity&product=cnc", "GET", indHeaders, undefined, qParams, FEED_TIMEOUT_MS)
+    ]);
+
+    const hList = (hRes && Array.isArray(hRes.data)) ? hRes.data : (hRes && Array.isArray(hRes.holdings) ? hRes.holdings : (Array.isArray(hRes) ? hRes : []));
+    const pList = (pRes && Array.isArray(pRes.data)) ? pRes.data : (pRes && Array.isArray(pRes.positions) ? pRes.positions : (Array.isArray(pRes) ? pRes : []));
+
+    const newEq = [];
+    const newETFs = [];
+    hList.forEach(item => {
+      const qty = parseFloat(item.total_qty ?? item.quantity ?? ((parseFloat(item.dp_qty || 0) + parseFloat(item.t1_qty || 0))) ?? 0);
+      if (qty <= 0) return;
+      const rawSym = String(item.trading_symbol || item.symbol || item.instrument_name || "").trim().replace(/-EQ$/i, "");
+      if (!rawSym) return;
+      const avg = parseFloat(item.avg_price ?? item.dp_avg_price ?? item.average_price ?? 0);
+      const ltp = parseFloat(item.ltp ?? item.last_price ?? item.current_price ?? avg ?? 0);
+      const isEtf = isInstrumentETF(rawSym, item.instrument_name || rawSym, item.instrument_type || item.segment, "");
+      const entry = {
+        n: rawSym.toUpperCase(),
+        broker: "INDmoney",
+        ticker: rawSym.toUpperCase().endsWith(".NS") || rawSym.toUpperCase().endsWith(".BO") ? rawSym.toUpperCase() : rawSym.toUpperCase() + ".NS",
+        sec: isEtf ? "ETF" : "Equity",
+        qty,
+        avg,
+        ltp: ltp > 0 ? ltp : avg,
+        inv: qty * avg,
+        cur: qty * (ltp > 0 ? ltp : avg),
+        today: 0
+      };
+      if (isEtf) newETFs.push(entry);
+      else newEq.push(entry);
+    });
+
+    pList.forEach(pos => {
+      const qty = Math.abs(parseFloat(pos.net_qty ?? pos.quantity ?? 0));
+      if (qty <= 0) return;
+      const rawSym = String(pos.trading_symbol || pos.symbol || "").trim().replace(/-EQ$/i, "");
+      if (!rawSym || newEq.some(x => x.n === rawSym.toUpperCase()) || newETFs.some(x => x.n === rawSym.toUpperCase())) return;
+      const avg = parseFloat(pos.avg_price ?? pos.buy_avg_price ?? 0);
+      const ltp = parseFloat(pos.ltp ?? avg ?? 0);
+      const isEtf = isInstrumentETF(rawSym, rawSym, pos.instrument_type, "");
+      const entry = {
+        n: rawSym.toUpperCase(),
+        broker: "INDmoney",
+        ticker: rawSym.toUpperCase() + ".NS",
+        sec: isEtf ? "ETF" : "Position",
+        qty,
+        avg,
+        ltp: ltp > 0 ? ltp : avg,
+        inv: qty * avg,
+        cur: qty * (ltp > 0 ? ltp : avg),
+        today: 0
+      };
+      if (isEtf) newETFs.push(entry);
+      else newEq.push(entry);
+    });
+
+    if (newEq.length + newETFs.length > 0) {
+      mergeBrokerPortfolio("INDmoney", newEq, newETFs);
+      if (msg) {
+        msg.innerHTML = `<span style="color:var(--emerald);">✅ <strong>INDmoney Synced:</strong> Imported <strong>${newEq.length} stocks</strong> &amp; <strong>${newETFs.length} ETFs</strong> into your <code>🟣 INDmoney</code> slice (all Kotak &amp; Dhan holdings preserved!). Syncing live LTP...</span>`;
+      }
+      syncLiveNSEPrices(true);
+    } else {
+      if (msg) {
+        msg.innerHTML = `<span style="color:var(--amber);">⚠️ INDmoney API returned 0 holdings (verify your Access Token from <code>indstocks.com/app/api-trading/access-tokens</code> and ensure your Cloudflare Worker is updated). Existing holdings were NOT overwritten.</span>`;
+      }
+    }
+  }
   function openReliabilityModal() {
     document.getElementById("cf-worker-url-input").value = safeGetStorage(STORAGE_KEY_WORKER, dhanConfig.proxyUrl || "");
     updateTelemetryUI();
@@ -1238,19 +1797,41 @@
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Accept, access-token, client-id, Authorization, X-Requested-With"
+      "Access-Control-Allow-Headers": "Content-Type, Accept, access-token, client-id, Authorization, Auth, Sid, sid, neo-fin-key, x-api-key, X-Requested-With"
     };
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
     const reqUrl = new URL(request.url);
     const url = reqUrl.searchParams.get("url");
-    if (!url) return new Response(JSON.stringify({ error: "Missing ?url=" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!url) {
+      return new Response(JSON.stringify({ error: "Missing ?url=" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const upstreamHeaders = {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "application/json",
+      "Content-Type": request.headers.get("Content-Type") || reqUrl.searchParams.get("hdr_ct") || "application/json"
+    };
     const dhanToken = request.headers.get("access-token") || reqUrl.searchParams.get("dhan_tok") || "";
     const dhanClient = request.headers.get("client-id") || reqUrl.searchParams.get("dhan_cid") || "";
-    const upstreamHeaders = { "User-Agent": "Mozilla/5.0", "Accept": "application/json", "Content-Type": "application/json" };
     if (dhanToken) upstreamHeaders["access-token"] = dhanToken;
     if (dhanClient) upstreamHeaders["client-id"] = dhanClient;
+
+    const authHdr = request.headers.get("Authorization") || reqUrl.searchParams.get("hdr_authorization") || "";
+    const kotakAuth = request.headers.get("Auth") || reqUrl.searchParams.get("hdr_auth") || "";
+    const kotakSid = request.headers.get("Sid") || request.headers.get("sid") || reqUrl.searchParams.get("hdr_sid") || "";
+    const neoFinKey = request.headers.get("neo-fin-key") || reqUrl.searchParams.get("hdr_neokey") || "";
+    const xApiKey = request.headers.get("x-api-key") || reqUrl.searchParams.get("hdr_xapikey") || "";
+
+    if (authHdr) upstreamHeaders["Authorization"] = authHdr;
+    if (kotakAuth) upstreamHeaders["Auth"] = kotakAuth;
+    if (kotakSid) {
+      upstreamHeaders["Sid"] = kotakSid;
+      upstreamHeaders["sid"] = kotakSid;
+    }
+    if (neoFinKey) upstreamHeaders["neo-fin-key"] = neoFinKey;
+    if (xApiKey) upstreamHeaders["x-api-key"] = xApiKey;
+
     const resp = await fetch(url, {
       method: request.method,
       headers: upstreamHeaders,
@@ -1334,6 +1915,19 @@
       }
     } else {
       results.push(`🟡 <strong>DhanHQ v2 API:</strong> No Client ID / JWT Token entered (optional if using CSV upload).`);
+    }
+
+    const kKey = (document.getElementById("kotak-consumer-key") && document.getElementById("kotak-consumer-key").value || kotakConfig.consumerKey || "").trim();
+    const kAuth = (document.getElementById("kotak-session-auth") && document.getElementById("kotak-session-auth").value || kotakConfig.sessionAuth || "").trim();
+    if (kKey || kAuth) {
+      results.push(kAuth
+        ? `🟢 <strong>Kotak Neo Trade API v2:</strong> Session <code>Auth</code> &amp; <code>Sid</code> ready (Gateway: <code>${kotakConfig.baseUrl || "https://gw-napi.kotaksecurities.com"}</code>).`
+        : `🟡 <strong>Kotak Neo Trade API v2:</strong> Consumer Key saved — enter 6-digit TOTP &amp; MPIN in the Kotak tab to authenticate session.`);
+    }
+
+    const iTok = (document.getElementById("ind-access-token") && document.getElementById("ind-access-token").value || indMoneyConfig.accessToken || "").trim();
+    if (iTok) {
+      results.push(`🟢 <strong>INDmoney / INDstocks API:</strong> Access Token configured for <code>GET https://api.indstocks.com/portfolio/holdings</code>.`);
     }
 
     el.innerHTML = results.join("<br>");
@@ -1758,20 +2352,31 @@
     document.getElementById("edit-item-modal-backdrop").classList.add("open");
   }
 
-  function promptManualLTP(stockName) {
-    const h = holdings.find(item => item.n === stockName);
+  function promptManualLTP(holdingKey, isEtf = false) {
+    const pool = isEtf ? etfs : holdings;
+    const h = pool.find(item => getHoldingKey(item) === holdingKey || item.n === holdingKey);
     if (!h) return;
     const curTicker = h.ticker || guessLocalNSETicker(h.n) || "";
-    editModalContext = { type: "STOCK", stockName };
-    document.getElementById("edit-modal-title").textContent = `✏️ Edit Ticker / LTP / Qty — ${h.n}`;
+    const curBroker = normalizeBrokerTag(h.broker);
+    editModalContext = { type: isEtf ? "ETF" : "STOCK", holdingKey: getHoldingKey(h) };
+    document.getElementById("edit-modal-title").textContent = `✏️ Edit ${curBroker} Position — ${h.n}`;
     document.getElementById("edit-modal-fields").innerHTML = `
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Broker Account</label>
+        <select id="modal-edit-broker" class="watchlist-input">
+          <option value="Kotak" ${curBroker === "Kotak" ? "selected" : ""}>🏦 Kotak Securities</option>
+          <option value="Dhan" ${curBroker === "Dhan" ? "selected" : ""}>⚡ DhanHQ</option>
+          <option value="INDmoney" ${curBroker === "INDmoney" ? "selected" : ""}>🟣 INDmoney</option>
+          <option value="Custom" ${curBroker === "Custom" ? "selected" : ""}>📁 Other / Custom</option>
+        </select>
+      </div>
       <div>
         <label style="font-size:0.7rem; color:var(--text-muted);">NSE/BSE Ticker (e.g. RELIANCE.NS)</label>
         <input type="text" id="modal-edit-ticker" class="watchlist-input" value="${curTicker}">
       </div>
       <div>
         <label style="font-size:0.7rem; color:var(--text-muted);">Latest Market LTP (₹)</label>
-        <input type="number" id="modal-edit-ltp" class="watchlist-input" step="any" value="${h.ltp.toFixed(2)}">
+        <input type="number" id="modal-edit-ltp" class="watchlist-input" step="any" value="${(h.ltp || h.avg || 0).toFixed(2)}">
       </div>
       <div>
         <label style="font-size:0.7rem; color:var(--text-muted);">Quantity</label>
@@ -1814,14 +2419,17 @@
         persistState();
         updateBenchmarkUI();
       }
-    } else if (editModalContext.type === "STOCK") {
-      const h = holdings.find(item => item.n === editModalContext.stockName);
+    } else if (editModalContext.type === "STOCK" || editModalContext.type === "ETF") {
+      const pool = editModalContext.type === "ETF" ? etfs : holdings;
+      const h = pool.find(item => getHoldingKey(item) === editModalContext.holdingKey || item.n === editModalContext.holdingKey);
       if (!h) { closeEditItemModal(); return; }
+      const newBroker = document.getElementById("modal-edit-broker") ? normalizeBrokerTag(document.getElementById("modal-edit-broker").value) : normalizeBrokerTag(h.broker);
       const newTicker = document.getElementById("modal-edit-ticker").value.trim().toUpperCase();
       const newLtp = parseFloat(document.getElementById("modal-edit-ltp").value);
       const newQty = parseFloat(document.getElementById("modal-edit-qty").value);
       closeEditItemModal();
 
+      h.broker = newBroker;
       if (!isNaN(newQty) && newQty > 0) {
         h.qty = newQty;
         h.inv = h.qty * h.avg;
@@ -2138,15 +2746,45 @@
       }
     }
 
+    // Compute Broker-Wise Summary across Equities + ETFs
+    const brokerStats = {};
+    holdings.forEach(h => {
+      const b = normalizeBrokerTag(h.broker);
+      if (!brokerStats[b]) brokerStats[b] = { eqCount: 0, etfCount: 0, inv: 0, cur: 0, today: 0 };
+      brokerStats[b].eqCount++;
+      brokerStats[b].inv += (h.inv || 0);
+      brokerStats[b].cur += (h.cur || 0);
+      brokerStats[b].today += (h.today || 0);
+    });
+    etfs.forEach(e => {
+      const b = normalizeBrokerTag(e.broker);
+      if (!brokerStats[b]) brokerStats[b] = { eqCount: 0, etfCount: 0, inv: 0, cur: 0, today: 0 };
+      brokerStats[b].etfCount++;
+      brokerStats[b].inv += (e.inv || 0);
+      brokerStats[b].cur += (e.cur || 0);
+      brokerStats[b].today += (e.today || 0);
+    });
+    const brokerRowsHtml = Object.keys(brokerStats).map(b => {
+      const st = brokerStats[b];
+      const bStyle = getBrokerBadgeStyle(b);
+      const bPnl = st.cur - st.inv;
+      const bPct = st.inv > 0 ? (bPnl / st.inv) * 100 : 0;
+      return `<div class="data-row" style="background:rgba(15,23,42,0.55); padding:6px 8px; border-radius:6px; margin-top:4px;">
+        <span><strong style="color:${bStyle.color};">${bStyle.label}</strong> <span style="font-size:0.72rem; color:var(--text-muted);">(${st.eqCount} Stocks · ${st.etfCount} ETFs)</span></span>
+        <span class="${bPnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(st.cur)}</strong> (${fmt(bPnl)} / ${bPct >= 0 ? '+':''}${bPct.toFixed(1)}%)</span>
+      </div>`;
+    }).join("");
+
     document.getElementById("dash-asset-breakdown").innerHTML = `
       <div class="data-row"><span>📈 Direct Equities (${holdings.length})</span><span class="${eqPnL >= 0 ? 'pos':'neg'}"><strong>${fmtVal(eqCur)}</strong> (${fmt(eqPnL)} / ${eqInv > 0 ? (eqPnL/eqInv*100).toFixed(1) : '0.0'}%)</span></div>
       <div class="data-row"><span>🏦 Mutual Funds (${mfs.length})</span><span class="${mfPnL >= 0 ? 'pos':'neg'}"><strong>${fmtVal(mfCur)}</strong> (${fmt(mfPnL)} / ${mfInv > 0 ? (mfPnL/mfInv*100).toFixed(1) : '0.0'}%)</span></div>
-      <div class="data-row"><span>🌍 ETFs (${etfs.length})</span><span class="${etfPnL >= 0 ? 'pos':'neg'}"><strong>${fmtVal(etfCur)}</strong> (${fmt(etfPnL)} / ${etfInv > 0 ? (etfPnL/etfInv*100).toFixed(1) : '0.0'}%)</span></div>
+      <div class="data-row"><span>🌍 ETFs (${etfs.length})</span><span class="${etfPnL >= 0 ? 'pos':'neg'}"><strong>${fmtVal(etfCur)}</strong> (${fmt(etfPnL)} / ${etfInv > 0 ? (etfInv/etfInv && (etfPnL/etfInv*100).toFixed(1)) : '0.0'}%)</span></div>
       <div class="data-row"><span>🏅 Bonds / InvIT / SGB (${bonds.length})</span><span class="${bondPnL >= 0 ? 'pos':'neg'}"><strong>${fmtVal(bondCur)}</strong> (${fmt(bondPnL)} / ${bondInv > 0 ? (bondPnL/bondInv*100).toFixed(1) : '0.0'}%)</span></div>
+      ${brokerRowsHtml ? `<div style="margin-top:8px; padding-top:6px; border-top:1px dashed #334155; font-size:0.72rem; color:#94a3b8; font-weight:700;">BROKER-WISE HOLDINGS BREAKDOWN (STOCKS + ETFs)</div>${brokerRowsHtml}` : ''}
     `;
 
-    const exitList = holdings.filter(h => h.act.includes("EXIT")).map(h => `${h.n} (${h.pct.toFixed(1)}%)`).slice(0, 6).join(", ");
-    const bookList = holdings.filter(h => h.act.includes("BOOK")).map(h => `${h.n} (+${h.pct.toFixed(1)}%)`).slice(0, 6).join(", ");
+    const exitList = holdings.filter(h => h.act.includes("EXIT")).map(h => `${h.n} [${normalizeBrokerTag(h.broker)}] (${h.pct.toFixed(1)}%)`).slice(0, 6).join(", ");
+    const bookList = holdings.filter(h => h.act.includes("BOOK")).map(h => `${h.n} [${normalizeBrokerTag(h.broker)}] (+${h.pct.toFixed(1)}%)`).slice(0, 6).join(", ");
     document.getElementById("dash-priority-actions").innerHTML = `
       <div class="action-item act-critical"><span>🚨</span><div><strong>Flagged Exits (${ruleExitDrawdown}% threshold):</strong> <code>${exitList || 'None — no holdings breach your drawdown rule'}</code></div></div>
       <div class="action-item act-book"><span>🟣</span><div><strong>Profit Booking Candidates (+${ruleProfitBook}% threshold):</strong> <code>${bookList || 'None — no holdings exceed your profit-booking rule'}</code></div></div>
@@ -2155,10 +2793,10 @@
     const sortedG = [...holdings].filter(h => h.pnl > 0).sort((a,b) => b.pnl - a.pnl).slice(0, 5);
     const sortedL = [...holdings].filter(h => h.pnl < 0).sort((a,b) => a.pnl - b.pnl).slice(0, 5);
     document.getElementById("dash-top-gainers").innerHTML = sortedG.length
-      ? sortedG.map(h => `<div class="data-row"><span>${h.n}</span><span class="pos"><strong>${fmt(h.pnl)}</strong> (+${h.pct.toFixed(1)}%)</span></div>`).join("")
+      ? sortedG.map(h => `<div class="data-row"><span>${h.n} <span style="font-size:0.68rem; color:#94a3b8;">[${normalizeBrokerTag(h.broker)}]</span></span><span class="pos"><strong>${fmt(h.pnl)}</strong> (+${h.pct.toFixed(1)}%)</span></div>`).join("")
       : `<div class="empty-state" style="padding:12px;">No gainers to display yet</div>`;
     document.getElementById("dash-top-losers").innerHTML = sortedL.length
-      ? sortedL.map(h => `<div class="data-row"><span>${h.n}</span><span class="neg"><strong>${fmt(h.pnl)}</strong> (${h.pct.toFixed(1)}%)</span></div>`).join("")
+      ? sortedL.map(h => `<div class="data-row"><span>${h.n} <span style="font-size:0.68rem; color:#94a3b8;">[${normalizeBrokerTag(h.broker)}]</span></span><span class="neg"><strong>${fmt(h.pnl)}</strong> (${h.pct.toFixed(1)}%)</span></div>`).join("")
       : `<div class="empty-state" style="padding:12px;">No drawdowns to display</div>`;
 
     renderStocksView();
@@ -2167,9 +2805,140 @@
     updateBenchmarkUI();
   }
 
+  function setBrokerFilter(brokerKey) {
+    activeBrokerFilter = brokerKey;
+    renderStocksView();
+  }
+
+  function toggleBrokerGroupingMode() {
+    groupStocksByBroker = !groupStocksByBroker;
+    const btn = document.getElementById("btn-toggle-broker-group");
+    if (btn) {
+      btn.textContent = `🗂️ Grouped by Broker: ${groupStocksByBroker ? "ON" : "OFF"}`;
+      btn.classList.toggle("active", groupStocksByBroker);
+    }
+    renderStocksView();
+  }
+
+  function renderSingleStockCardHtml(h) {
+    const hKey = getHoldingKey(h);
+    const safeKey = hKey.replace(/'/g, "\\'");
+    const isOpen = !!expandedCards[hKey];
+    const actBadge = h.act.includes("EXIT") ? "badge-red" : h.act.includes("BOOK") ? "badge-purple" : "badge-emerald";
+    const bStyle = getBrokerBadgeStyle(h.broker);
+    return `
+      <div class="stock-card ${h.act.includes('EXIT') ? 'critical-border' : 'winner-border'}">
+        <div class="stock-summary" onclick="expandedCards['${safeKey}']=!expandedCards['${safeKey}'];renderStocksView()">
+          <div class="stock-top">
+            <div>
+              <div class="stock-name">
+                ${h.n}
+                ${h.ticker ? `<span style="font-size:0.68rem; color:#60a5fa;">(${h.ticker})</span>` : ''}
+                <span style="display:inline-block; font-size:0.66rem; padding:1px 7px; border-radius:999px; background:${bStyle.bg}; border:1px solid ${bStyle.border}; color:${bStyle.color}; margin-left:4px; font-weight:700;">${bStyle.short}</span>
+              </div>
+              <div class="stock-meta">${h.sec || 'Equity'} · Qty: ${h.qty} · Avg: ₹${h.avg.toFixed(2)} · Inv: ${fmtVal(h.inv)}</div>
+            </div>
+            <div class="stock-price">
+              <div class="stock-ltp">LTP ₹${h.ltp.toFixed(2)}</div>
+              <div class="stock-pct ${h.pct >= 0 ? 'pos':'neg'}">${h.pct >= 0 ? '+':''}${h.pct.toFixed(2)}%</div>
+            </div>
+          </div>
+          <div class="stock-bottom">
+            <span>
+              <strong class="${h.pnl >= 0 ? 'pos':'neg'}">${fmt(h.pnl)}</strong>
+              <span style="color:var(--text-muted); margin-left:6px;">Cur: ${fmtVal(h.cur)}</span>
+              ${h.today ? `<span style="color:${h.today>=0?'var(--emerald)':'var(--red)'}; margin-left:6px;">Today: ${fmt(h.today)}</span>` : ''}
+            </span>
+            <span class="badge ${actBadge}">${h.act}</span>
+          </div>
+        </div>
+        ${isOpen ? `
+          <div class="stock-expanded">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <span style="color:#e2e8f0;"><strong>Health ${h.h}/100:</strong> ${h.note} (Stop-Loss: ₹${h.sl} · 25% Target: ₹${h.tgt})</span>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); promptManualLTP('${safeKey}', false)">✏️ Edit Broker / LTP / Qty</button>
+                <button type="button" class="btn-danger" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); removeHolding('${safeKey}', false)">🗑️ Delete</button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  function renderEtfRowsHtml(etfList) {
+    if (!etfList || etfList.length === 0) {
+      return `<div class="empty-state" style="padding:12px;">No ETF holdings loaded for this filter.</div>`;
+    }
+    return etfList.map(e => {
+      const pnl = (e.cur || 0) - (e.inv || 0);
+      const pct = e.inv > 0 ? (pnl / e.inv) * 100 : 0;
+      const bStyle = getBrokerBadgeStyle(e.broker);
+      const eKey = getHoldingKey(e).replace(/'/g, "\\'");
+      return `<div class="data-row" style="align-items:center; gap:8px; flex-wrap:wrap;">
+        <span>
+          <strong>${e.n}</strong>
+          ${e.ticker ? `<span style="font-size:0.68rem; color:#60a5fa;">(${e.ticker})</span>` : ''}
+          <span style="display:inline-block; font-size:0.65rem; padding:1px 7px; border-radius:999px; background:${bStyle.bg}; border:1px solid ${bStyle.border}; color:${bStyle.color}; margin-left:4px; font-weight:700;">${bStyle.short}</span>
+          <span style="font-size:0.72rem; color:var(--text-muted); margin-left:6px;">Qty: ${e.qty || 1} · Avg: ₹${(e.avg || 0).toFixed(2)} · LTP: ₹${(e.ltp || e.avg || 0).toFixed(2)} · Inv: ${fmtVal(e.inv)}</span>
+        </span>
+        <span style="display:inline-flex; align-items:center; gap:8px;">
+          <span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(e.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span>
+          <button type="button" class="btn-secondary" style="padding:2px 6px; font-size:0.68rem;" onclick="promptManualLTP('${eKey}', true)">✏️</button>
+          <button type="button" class="btn-danger" style="padding:2px 6px; font-size:0.68rem;" onclick="removeHolding('${eKey}', true)">🗑️</button>
+        </span>
+      </div>`;
+    }).join("");
+  }
+
   function renderStocksView() {
+    // 1. Render Broker Filter Pills
+    const pillBox = document.getElementById("broker-summary-pills");
+    if (pillBox) {
+      const brokerMap = {};
+      ["Kotak", "Dhan", "INDmoney"].forEach(b => { brokerMap[b] = { eq: 0, etf: 0, cur: 0, inv: 0 }; });
+      holdings.forEach(h => {
+        const b = normalizeBrokerTag(h.broker);
+        if (!brokerMap[b]) brokerMap[b] = { eq: 0, etf: 0, cur: 0, inv: 0 };
+        brokerMap[b].eq++;
+        brokerMap[b].cur += (h.cur || 0);
+        brokerMap[b].inv += (h.inv || 0);
+      });
+      etfs.forEach(e => {
+        const b = normalizeBrokerTag(e.broker);
+        if (!brokerMap[b]) brokerMap[b] = { eq: 0, etf: 0, cur: 0, inv: 0 };
+        brokerMap[b].etf++;
+        brokerMap[b].cur += (e.cur || 0);
+        brokerMap[b].inv += (e.inv || 0);
+      });
+      const pills = [
+        `<button type="button" class="filter-chip ${activeBrokerFilter === 'ALL' ? 'active' : ''}" onclick="setBrokerFilter('ALL')">🌐 All Brokers (${holdings.length} Stocks · ${etfs.length} ETFs)</button>`
+      ];
+      Object.keys(brokerMap).forEach(b => {
+        const st = brokerMap[b];
+        if (st.eq > 0 || st.etf > 0 || ["Kotak", "Dhan", "INDmoney"].includes(b)) {
+          const bStyle = getBrokerBadgeStyle(b);
+          pills.push(
+            `<button type="button" class="filter-chip ${activeBrokerFilter === b ? 'active' : ''}" style="${activeBrokerFilter === b ? `border-color:${bStyle.border}; color:${bStyle.color};` : ''}" onclick="setBrokerFilter('${b}')">${bStyle.short}: ${st.eq} Stocks${st.etf > 0 ? ` + ${st.etf} ETFs` : ''} (${fmtVal(st.cur)})</button>`
+          );
+        }
+      });
+      pillBox.innerHTML = pills.join("");
+    }
+
     let list = [...holdings];
-    if (searchQuery) list = list.filter(h => h.n.toLowerCase().includes(searchQuery) || (h.sec && h.sec.toLowerCase().includes(searchQuery)) || (h.ticker && h.ticker.toLowerCase().includes(searchQuery)));
+    if (activeBrokerFilter !== "ALL") {
+      list = list.filter(h => normalizeBrokerTag(h.broker) === activeBrokerFilter);
+    }
+    if (searchQuery) {
+      list = list.filter(h =>
+        h.n.toLowerCase().includes(searchQuery) ||
+        (h.sec && h.sec.toLowerCase().includes(searchQuery)) ||
+        (h.ticker && h.ticker.toLowerCase().includes(searchQuery)) ||
+        normalizeBrokerTag(h.broker).toLowerCase().includes(searchQuery)
+      );
+    }
     if (activeStockFilter === 'WINNERS') list = list.filter(h => h.pnl > 0);
     else if (activeStockFilter === 'LOSERS') list = list.filter(h => h.pnl < 0);
     else if (activeStockFilter === 'EXIT') list = list.filter(h => h.act.includes("EXIT"));
@@ -2177,55 +2946,73 @@
 
     document.getElementById("tab-stocks-count").textContent = `(${holdings.length})`;
     const container = document.getElementById("stocks-list-container");
+
+    // Also render Broker-Wise ETFs in the Stocks tab sub-card
+    const stockTabEtfEl = document.getElementById("stocks-tab-etf-container");
+    if (stockTabEtfEl) {
+      const filteredEtfs = activeBrokerFilter === "ALL"
+        ? etfs
+        : etfs.filter(e => normalizeBrokerTag(e.broker) === activeBrokerFilter);
+      stockTabEtfEl.innerHTML = renderEtfRowsHtml(filteredEtfs);
+    }
+
     if (list.length === 0) {
-      container.innerHTML = `<div class="empty-state">No equity holdings match this view. Upload your broker CSV or click <strong>➕ Add Position</strong>.</div>`;
+      container.innerHTML = `<div class="empty-state">No equity holdings match this broker/filter view. Upload a Broker CSV, connect DhanHQ / Kotak Neo / INDmoney API above, or click <strong>➕ Add Position</strong>.</div>`;
       return;
     }
 
-    container.innerHTML = list.map(h => {
-      const isOpen = !!expandedCards[h.n];
-      const actBadge = h.act.includes("EXIT") ? "badge-red" : h.act.includes("BOOK") ? "badge-purple" : "badge-emerald";
-      const safe = h.n.replace(/'/g, "\\'");
+    if (!groupStocksByBroker || activeBrokerFilter !== "ALL") {
+      container.innerHTML = list.map(h => renderSingleStockCardHtml(h)).join("");
+      return;
+    }
+
+    // Group stocks by Broker so Kotak, Dhan, and INDmoney are clearly listed broker-wise
+    const brokerOrder = ["Kotak", "Dhan", "INDmoney"];
+    const groups = {};
+    list.forEach(h => {
+      const b = normalizeBrokerTag(h.broker);
+      if (!groups[b]) groups[b] = [];
+      groups[b].push(h);
+    });
+    const orderedBrokers = [
+      ...brokerOrder.filter(b => groups[b] && groups[b].length > 0),
+      ...Object.keys(groups).filter(b => !brokerOrder.includes(b))
+    ];
+
+    container.innerHTML = orderedBrokers.map(b => {
+      const bItems = groups[b];
+      const bStyle = getBrokerBadgeStyle(b);
+      const bInv = bItems.reduce((s, h) => s + (h.inv || 0), 0);
+      const bCur = bItems.reduce((s, h) => s + (h.cur || 0), 0);
+      const bPnl = bCur - bInv;
+      const bPct = bInv > 0 ? (bPnl / bInv) * 100 : 0;
+      const bToday = bItems.reduce((s, h) => s + (h.today || 0), 0);
       return `
-        <div class="stock-card ${h.act.includes('EXIT') ? 'critical-border' : 'winner-border'}">
-          <div class="stock-summary" onclick="expandedCards['${safe}']=!expandedCards['${safe}'];renderStocksView()">
-            <div class="stock-top">
-              <div>
-                <div class="stock-name">${h.n} ${h.ticker ? `<span style="font-size:0.68rem; color:#60a5fa;">(${h.ticker})</span>` : ''}</div>
-                <div class="stock-meta">${h.sec || 'Equity'} · Qty: ${h.qty} · Avg: ₹${h.avg.toFixed(2)} · Inv: ${fmtVal(h.inv)}</div>
-              </div>
-              <div class="stock-price">
-                <div class="stock-ltp">LTP ₹${h.ltp.toFixed(2)}</div>
-                <div class="stock-pct ${h.pct >= 0 ? 'pos':'neg'}">${h.pct >= 0 ? '+':''}${h.pct.toFixed(2)}%</div>
-              </div>
+        <div style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 12px; margin-bottom:8px; border-radius:10px; background:${bStyle.bg}; border:1px solid ${bStyle.border};">
+            <div>
+              <span style="font-size:0.9rem; font-weight:800; color:${bStyle.color};">${bStyle.label}</span>
+              <span style="font-size:0.74rem; color:#e2e8f0; margin-left:8px;"><strong>${bItems.length}</strong> Stock${bItems.length === 1 ? '' : 's'} Listed</span>
             </div>
-            <div class="stock-bottom">
-              <span>
-                <strong class="${h.pnl >= 0 ? 'pos':'neg'}">${fmt(h.pnl)}</strong>
-                <span style="color:var(--text-muted); margin-left:6px;">Cur: ${fmtVal(h.cur)}</span>
-                ${h.today ? `<span style="color:${h.today>=0?'var(--emerald)':'var(--red)'}; margin-left:6px;">Today: ${fmt(h.today)}</span>` : ''}
-              </span>
-              <span class="badge ${actBadge}">${h.act}</span>
+            <div style="font-size:0.76rem; color:#f8fafc;">
+              Inv: <strong>${fmtVal(bInv)}</strong> &nbsp;·&nbsp;
+              Cur: <strong>${fmtVal(bCur)}</strong> &nbsp;·&nbsp;
+              P&amp;L: <strong class="${bPnl >= 0 ? 'pos' : 'neg'}">${fmt(bPnl)} (${bPct >= 0 ? '+' : ''}${bPct.toFixed(2)}%)</strong>
+              ${bToday ? ` &nbsp;·&nbsp; Today: <strong style="color:${bToday >= 0 ? 'var(--emerald)' : 'var(--red)'};">${fmt(bToday)}</strong>` : ''}
             </div>
           </div>
-          ${isOpen ? `
-            <div class="stock-expanded">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <span style="color:#e2e8f0;"><strong>Health ${h.h}/100:</strong> ${h.note} (Stop-Loss: ₹${h.sl} · 25% Target: ₹${h.tgt})</span>
-                <div style="display:flex; gap:6px;">
-                  <button type="button" class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); promptManualLTP('${safe}')">✏️ Edit LTP / Qty</button>
-                  <button type="button" class="btn-danger" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); removeHolding('${safe}')">🗑️ Delete</button>
-                </div>
-              </div>
-            </div>
-          ` : ''}
+          ${bItems.map(h => renderSingleStockCardHtml(h)).join("")}
         </div>
       `;
     }).join("");
   }
 
-  function removeHolding(stockName) {
-    holdings = holdings.filter(h => h.n !== stockName);
+  function removeHolding(holdingKey, isEtf = false) {
+    if (isEtf) {
+      etfs = etfs.filter(e => getHoldingKey(e) !== holdingKey && e.n !== holdingKey);
+    } else {
+      holdings = holdings.filter(h => getHoldingKey(h) !== holdingKey && h.n !== holdingKey);
+    }
     persistState();
     runPortfolioIntelligenceEngine();
     runSimulation();
@@ -2241,23 +3028,19 @@
       ? mfs.map(m => {
           const pnl = m.cur - m.inv;
           const pct = m.inv > 0 ? (pnl / m.inv) * 100 : 0;
-          return `<div class="data-row"><span><strong>${m.n}</strong> (Inv: ${fmtVal(m.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(m.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
+          const bStyle = getBrokerBadgeStyle(m.broker);
+          return `<div class="data-row"><span><strong>${m.n}</strong> <span style="font-size:0.65rem; padding:1px 6px; border-radius:999px; background:${bStyle.bg}; color:${bStyle.color}; border:1px solid ${bStyle.border};">${bStyle.short}</span> (Inv: ${fmtVal(m.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(m.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
         }).join("")
       : `<div class="empty-state" style="padding:12px;">No mutual fund holdings loaded</div>`;
 
-    document.getElementById("etf-list-container").innerHTML = etfs.length
-      ? etfs.map(e => {
-          const pnl = e.cur - e.inv;
-          const pct = e.inv > 0 ? (pnl / e.inv) * 100 : 0;
-          return `<div class="data-row"><span><strong>${e.n}</strong> (Inv: ${fmtVal(e.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(e.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
-        }).join("")
-      : `<div class="empty-state" style="padding:12px;">No ETF holdings loaded</div>`;
+    document.getElementById("etf-list-container").innerHTML = renderEtfRowsHtml(etfs);
 
     document.getElementById("bond-list-container").innerHTML = bonds.length
       ? bonds.map(b => {
           const pnl = b.cur - b.inv;
           const pct = b.inv > 0 ? (pnl / b.inv) * 100 : 0;
-          return `<div class="data-row"><span><strong>${b.n}</strong> (Inv: ${fmtVal(b.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(b.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
+          const bStyle = getBrokerBadgeStyle(b.broker);
+          return `<div class="data-row"><span><strong>${b.n}</strong> <span style="font-size:0.65rem; padding:1px 6px; border-radius:999px; background:${bStyle.bg}; color:${bStyle.color}; border:1px solid ${bStyle.border};">${bStyle.short}</span> (Inv: ${fmtVal(b.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(b.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
         }).join("")
       : `<div class="empty-state" style="padding:12px; color:#fde68a;">No Bonds / InvIT / SGB holdings loaded</div>`;
   }
@@ -2857,23 +3640,26 @@
           else if (/^\d{6}$/.test(cleanSym)) explicitTicker = cleanSym + ".BO";
         }
 
+        const selBrokerEl = document.getElementById("csv-broker-select");
+        let csvBroker = selBrokerEl ? selBrokerEl.value : "Kotak";
+        const lowFile = (file.name || "").toLowerCase();
+        if (lowFile.includes("dhan")) csvBroker = "Dhan";
+        else if (lowFile.includes("indmoney") || lowFile.includes("indstocks")) csvBroker = "INDmoney";
+        else if (lowFile.includes("kotak")) csvBroker = "Kotak";
+
         if (cat.includes("mutual fund") || (cat.includes("fund") && !cat.includes("etf") && !cat.includes("invit"))) {
-          newMFs.push({ n: name, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
-        } else if (cat.includes("etf") || cat.includes("bees")) {
-          newETFs.push({ n: name, ticker: explicitTicker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
+          newMFs.push({ n: name, broker: csvBroker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
+        } else if (cat.includes("etf") || cat.includes("bees") || isInstrumentETF(explicitTicker || name, name, typeStr, secStr)) {
+          newETFs.push({ n: name, broker: csvBroker, ticker: explicitTicker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else if (cat.includes("bond") || cat.includes("sgb") || cat.includes("invit") || cat.includes("gold bond")) {
-          newBonds.push({ n: name, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
+          newBonds.push({ n: name, broker: csvBroker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else {
-          newEq.push({ n: name, ticker: explicitTicker, sec: secStr, qty, avg: fAvg, ltp: fLtp, inv: fInv, cur: fCur, today: 0 });
+          newEq.push({ n: name, broker: csvBroker, ticker: explicitTicker, sec: secStr, qty, avg: fAvg, ltp: fLtp, inv: fInv, cur: fCur, today: 0 });
         }
       }
 
-      holdings = newEq; mfs = newMFs; etfs = newETFs; bonds = newBonds;
-      persistState();
-      runPortfolioIntelligenceEngine();
-      runSimulation();
-      calculateTaxHarvest();
-      calculateWealthProjection();
+      const targetBroker = (newEq[0] && newEq[0].broker) || (newETFs[0] && newETFs[0].broker) || (newMFs[0] && newMFs[0].broker) || ((document.getElementById("csv-broker-select") && document.getElementById("csv-broker-select").value) || "Kotak");
+      mergeBrokerPortfolio(targetBroker, newEq, newETFs, newMFs, newBonds);
       syncLiveNSEPrices(true);
       e.target.value = "";
     };
