@@ -434,6 +434,7 @@
       <button type="button" class="btn-emerald" onclick="saveDhanAndWorkerConfig()">💾 Save Credentials</button>
       <button type="button" class="btn-primary" id="btn-verify-feeds" onclick="verifyWorkerAndDhanFeeds()">🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)</button>
       <button type="button" class="btn-secondary" onclick="fetchDynamicExpiriesForUnderlying(true)">📅 Test /v2/optionchain/expirylist Now</button>
+      <button type="button" class="btn-secondary" onclick="copyOptionsCloudflareWorkerCode()">📋 Copy Cloudflare Worker Script (Dhan POST + CORS)</button>
       <span id="lbl-quota-status" style="font-size:0.74rem; color:#7dd3fc; margin-left:auto;">Worker Quota: 0 / 100,000 today (0.00%)</span>
     </div>
     <div id="dhan-diag-result" style="margin-top:10px; padding:10px; border-radius:8px; background:#070b14; border:1px solid #1e293b; font-size:0.75rem; color:#cbd5e1; display:none;"></div>
@@ -1034,6 +1035,96 @@
     });
   }
 
+  function copyOptionsCloudflareWorkerCode() {
+    const code = `export default {
+  async fetch(request) {
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Accept, access-token, client-id, Authorization, X-Requested-With"
+    };
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+    const reqUrl = new URL(request.url);
+    const targetUrl = reqUrl.searchParams.get("url");
+    if (!targetUrl) {
+      return new Response(JSON.stringify({ error: "Missing ?url= parameter" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const dhanToken = request.headers.get("access-token") || reqUrl.searchParams.get("dhan_tok") || "";
+    const dhanClient = request.headers.get("client-id") || reqUrl.searchParams.get("dhan_cid") || "";
+    const upstreamHeaders = {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    };
+    if (dhanToken) upstreamHeaders["access-token"] = dhanToken;
+    if (dhanClient) upstreamHeaders["client-id"] = dhanClient;
+
+    const bodyText = (request.method !== "GET" && request.method !== "HEAD") ? await request.text() : undefined;
+    const resp = await fetch(targetUrl, {
+      method: request.method,
+      headers: upstreamHeaders,
+      body: bodyText
+    });
+    const respBody = await resp.text();
+    return new Response(respBody, {
+      status: resp.status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+};`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code);
+    }
+    showToast("✅ Copied Cloudflare Worker Script (supports Dhan POST + Auth Headers)!");
+    const diagBox = document.getElementById("dhan-diag-result");
+    if (diagBox) {
+      diagBox.style.display = "block";
+      diagBox.innerHTML = `<span style="color:var(--emerald);">✅ <strong>Copied Updated Cloudflare Worker Script to clipboard!</strong> Paste it into your Cloudflare Worker editor (workers.cloudflare.com) and click <strong>Deploy</strong> so <code>POST /v2/optionchain/expirylist</code> and <code>access-token</code> / <code>client-id</code> headers are forwarded cleanly.</span>`;
+    }
+  }
+
+  function extractDhanErrorSummary(res) {
+    if (!res) return "CORS / Network blocked (Ensure your Cloudflare Worker URL is set & updated with the POST+Headers Worker script)";
+    if (typeof res === "string") return res.slice(0, 180);
+    const parts = [];
+    if (res._httpStatus) parts.push(`HTTP ${res._httpStatus}`);
+    if (res.errorCode) parts.push(`Code ${res.errorCode}`);
+    if (res.errorType) parts.push(res.errorType);
+    if (res.errorMessage) parts.push(res.errorMessage);
+    if (res.remarks) {
+      parts.push(typeof res.remarks === "object" ? JSON.stringify(res.remarks) : String(res.remarks));
+    }
+    if (res.data && typeof res.data === "object" && !Array.isArray(res.data)) {
+      const dataStr = JSON.stringify(res.data);
+      if (dataStr.includes("806") || dataStr.toLowerCase().includes("not subscribed")) {
+        parts.push("Error 806: Data APIs (₹499/mo) not subscribed on this token");
+      } else if (dataStr.includes("807")) {
+        parts.push("Error 807: Access Token expired (regenerate on web.dhan.co)");
+      } else if (dataStr.includes("808")) {
+        parts.push("Error 808: Authentication Failed — verify Client ID & Access Token");
+      } else {
+        parts.push(dataStr.slice(0, 160));
+      }
+    }
+    if (res.rawError && parts.length <= 1) parts.push(String(res.rawError).slice(0, 140));
+    return parts.length > 0 ? parts.join(" · ") : JSON.stringify(res).slice(0, 180);
+  }
+
+  function isDhanDataPlanUnsubscribedError(res) {
+    if (!res) return false;
+    const raw = JSON.stringify(res).toLowerCase();
+    return (
+      raw.includes("806") ||
+      raw.includes("dh-902") ||
+      raw.includes("rs-9005") ||
+      raw.includes("not subscribed") ||
+      raw.includes("data api") ||
+      raw.includes("subscribe")
+    );
+  }
+
   // Dynamically fetches active expiries from DhanHQ POST /v2/optionchain/expirylist on every underlying switch
   async function fetchDynamicExpiriesForUnderlying(showToastFlag = false) {
     const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
@@ -1047,12 +1138,17 @@
       return;
     }
 
+    if (creds.dataPlanActive === false && !showToastFlag) {
+      renderExpiryDropdownOptions(calItems, "Exchange Calendar (Free ₹0 Tier)");
+      return;
+    }
+
     const reqBody = {
       UnderlyingScrip: Number(spec.dhanUnderId),
       UnderlyingSeg: spec.dhanUnderSeg || "IDX_I"
     };
     const res = await dhanFnoRequest("/v2/optionchain/expirylist", "POST", reqBody, FEED_TIMEOUT_MS);
-    const list = (res && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : null);
+    const list = (res && !res._httpError && Array.isArray(res.data)) ? res.data : (Array.isArray(res) ? res : null);
     if (list && list.length > 0) {
       const istTodayStr = getISTTodayIso();
       const validIsos = list
@@ -1060,6 +1156,8 @@
         .filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x) && x >= istTodayStr)
         .slice(0, 6);
       if (validIsos.length > 0) {
+        creds.dataPlanActive = true;
+        safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify(creds));
         const dhanItems = validIsos.map(iso => ({ iso, tag: "DhanHQ Live Expiry" }));
         renderExpiryDropdownOptions(dhanItems, "DhanHQ API Live");
         recomputeAllOptionModels();
@@ -1067,8 +1165,17 @@
         return;
       }
     }
+    if (isDhanDataPlanUnsubscribedError(res) || creds.dataPlanActive === false) {
+      creds.dataPlanActive = false;
+      safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify(creds));
+      renderExpiryDropdownOptions(calItems, "Exchange Calendar (Free ₹0 Tier)");
+      if (showToastFlag) {
+        showToast("ℹ️ Dhan Data API (₹499/mo) not active on token — using verified 2026 Exchange Calendar Expiries (₹0/mo Free Mode)!");
+      }
+      return;
+    }
     if (showToastFlag) {
-      showToast("⚠️ Dhan /v2/optionchain/expirylist returned no dates — check token/worker in Diagnostics");
+      showToast(`⚠️ /v2/optionchain/expirylist: ${extractDhanErrorSummary(res)} — using Exchange Calendar Expiries`);
     }
   }
 
@@ -1096,6 +1203,28 @@
     }
   }
 
+  async function fetchDhanRelayWithErrorBody(url, opts = {}, timeoutMs = 4500) {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, { ...opts, signal: ctrl.signal, cache: "no-store" });
+      clearTimeout(tid);
+      const txt = await r.text();
+      let parsed = null;
+      try { parsed = JSON.parse(txt); } catch (e) {}
+      if (!r.ok) {
+        if (parsed && typeof parsed === "object") {
+          return { _httpError: true, _httpStatus: r.status, ...parsed };
+        }
+        return { _httpError: true, _httpStatus: r.status, rawError: txt.slice(0, 240) };
+      }
+      return parsed !== null ? parsed : { _httpError: true, _httpStatus: r.status, rawError: txt.slice(0, 240) };
+    } catch (e) {
+      clearTimeout(tid);
+      throw e;
+    }
+  }
+
   async function dhanFnoRequest(endpoint, method = "POST", bodyObj = null, timeoutMs = FEED_TIMEOUT_MS) {
     let creds = {};
     try { creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
@@ -1111,19 +1240,35 @@
     const fetchOpts = { method, headers, body: bodyObj ? JSON.stringify(bodyObj) : undefined };
 
     const workerUrl = safeGetStorage(STORAGE_KEY_WORKER, "").trim();
+    let lastErrRes = null;
     if (workerUrl) {
+      const baseW = workerUrl.includes("?url=") ? workerUrl : workerUrl.replace(/\/$/, "") + "/?url=";
+      const workerTarget = `${baseW}${encodeURIComponent(targetUrl)}&dhan_cid=${encodeURIComponent(creds.clientId)}&dhan_tok=${encodeURIComponent(creds.accessToken)}`;
       try {
-        const baseW = workerUrl.includes("?url=") ? workerUrl : workerUrl.replace(/\/$/, "") + "/?url=";
         bumpWorkerQuota();
-        const res = await fetchOneRelay(baseW + encodeURIComponent(targetUrl), fetchOpts, timeoutMs);
-        if (res) return res;
-      } catch (e) {}
+        const res = await fetchDhanRelayWithErrorBody(workerTarget, fetchOpts, timeoutMs);
+        if (res && !res._httpError) return res;
+        if (res && res._httpError) lastErrRes = res;
+      } catch (e) {
+        // Fallback: if an older Worker rejected custom headers on OPTIONS preflight, send without custom headers using query params
+        try {
+          const simpleOpts = {
+            method,
+            headers: { "Accept": "application/json" },
+            body: bodyObj ? JSON.stringify(bodyObj) : undefined
+          };
+          const res2 = await fetchDhanRelayWithErrorBody(workerTarget, simpleOpts, timeoutMs);
+          if (res2 && !res2._httpError) return res2;
+          if (res2 && res2._httpError) lastErrRes = res2;
+        } catch (e2) {}
+      }
     }
     try {
-      return await fetchOneRelay(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, fetchOpts, timeoutMs);
-    } catch (e) {
-      return null;
-    }
+      const proxyRes = await fetchDhanRelayWithErrorBody(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, fetchOpts, timeoutMs);
+      if (proxyRes && !proxyRes._httpError) return proxyRes;
+      if (proxyRes && proxyRes._httpError && !lastErrRes) lastErrRes = proxyRes;
+    } catch (e) {}
+    return lastErrRes;
   }
 
   // Requirement 1: Fetch real historical 5-minute OHLC candles from DhanHQ POST /v2/charts/intraday
@@ -1296,10 +1441,10 @@
         JSON.stringify({ UnderlyingScrip: spec.dhanUnderId, UnderlyingSeg: spec.dhanUnderSeg }, null, 2);
     }
 
-    // Step 1: Try DhanHQ POST /v2/charts/intraday if user has configured DhanHQ credentials
+    // Step 1: Try DhanHQ POST /v2/charts/intraday if user has configured DhanHQ credentials and Data API is not marked inactive
     let creds = {};
     try { creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
-    if (creds.accessToken && creds.clientId) {
+    if (creds.accessToken && creds.clientId && creds.dataPlanActive !== false) {
       const dhanRaw = await dhanFnoRequest(dhanReq.endpoint, "POST", dhanReq.body, 4500);
       const dhanParsed = parseDhanIntradayCandles(dhanRaw, spec);
       if (dhanParsed && isSpotWithinValidBounds(spec, dhanParsed.ltp) && dhanParsed.candles.length >= 10) {
@@ -1521,8 +1666,23 @@
       logs.push(`🟡 <strong>Cloudflare Worker URL:</strong> Not configured (using public fallback proxies with 8s timeout).`);
     }
 
-    // 2. Test DhanHQ v2 Token against /v2/optionchain/expirylist & /v2/charts/intraday
+    // 2. Two-Stage DhanHQ v2 Verification: Stage A = Free Profile/Trading API (/v2/profile), Stage B = Data API (/v2/optionchain/expirylist)
     if (creds.accessToken && creds.clientId) {
+      const tProf = Date.now();
+      const profRes = await dhanFnoRequest("/v2/profile", "GET", null, FEED_TIMEOUT_MS);
+      const profMs = Date.now() - tProf;
+      let tokenVerifiedFreeTier = false;
+      let profileDataPlanActive = null;
+
+      if (profRes && !profRes._httpError && profRes.dhanClientId) {
+        tokenVerifiedFreeTier = true;
+        const dp = String(profRes.dataPlan || "Deactive");
+        profileDataPlanActive = dp.toLowerCase() === "active";
+        logs.push(
+          `🟢 <strong>DhanHQ v2 Token Verified (<code>GET /v2/profile</code> — Free Tier):</strong> Authenticated (${profMs} ms) · Client ID: <code>${profRes.dhanClientId}</code> · Valid Until: <strong>${profRes.tokenValidity || "24h"}</strong> · Segments: <code>${profRes.activeSegment || "E,D"}</code> · Data API Plan: <strong>${dp}</strong>`
+        );
+      }
+
       const spec = UNDERLYING_SPECS[activeUnderlying] || UNDERLYING_SPECS.NIFTY;
       const tDhan = Date.now();
       const expRes = await dhanFnoRequest("/v2/optionchain/expirylist", "POST", {
@@ -1530,12 +1690,37 @@
         UnderlyingSeg: spec.dhanUnderSeg || "IDX_I"
       }, FEED_TIMEOUT_MS);
       const dhanMs = Date.now() - tDhan;
-      if (expRes && (Array.isArray(expRes.data) || Array.isArray(expRes))) {
-        const arr = expRes.data || expRes;
-        logs.push(`🟢 <strong>DhanHQ <code>/v2/optionchain/expirylist</code>:</strong> Authenticated (${dhanMs} ms) — ${arr.length} active expiries returned.`);
+      const expList = (expRes && !expRes._httpError && Array.isArray(expRes.data)) ? expRes.data : (Array.isArray(expRes) ? expRes : null);
+
+      if (expList && expList.length > 0) {
+        creds.dataPlanActive = true;
+        safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify(creds));
+        logs.push(`🟢 <strong>DhanHQ Data API (<code>POST /v2/optionchain/expirylist</code>):</strong> Authenticated (${dhanMs} ms) — ${expList.length} live expiries returned.`);
+        fetchDynamicExpiriesForUnderlying(false);
+      } else if (tokenVerifiedFreeTier && (!profileDataPlanActive || isDhanDataPlanUnsubscribedError(expRes) || (expRes && expRes._httpError))) {
+        creds.dataPlanActive = false;
+        safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify(creds));
+        const reason = extractDhanErrorSummary(expRes);
+        logs.push(
+          `🟡 <strong>DhanHQ Data API (<code>/v2/optionchain/expirylist</code> — ₹499/mo Plan):</strong> Not active on this token (${dhanMs} ms — <code>${reason}</code>).<br>` +
+          `🟢 <strong>PIAI ₹0/mo Free Hybrid Mode Activated:</strong> Your DhanHQ JWT token is <strong>100% valid</strong> for Trading &amp; Portfolio APIs, and PIAI has automatically switched Option Expiries &amp; 5m Intraday OHLC to the <strong>2026 Exchange Calendar + Live Market Relay</strong>! <em>(Note: If you recently subscribed to Dhan's ₹499/mo Data API on web.dhan.co, revoke and generate a fresh Access Token so Dhan activates Data API permissions on the new JWT.)</em>`
+        );
+        fetchDynamicExpiriesForUnderlying(false);
+      } else if (isDhanDataPlanUnsubscribedError(expRes)) {
+        creds.dataPlanActive = false;
+        safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify(creds));
+        const reason = extractDhanErrorSummary(expRes);
+        logs.push(
+          `🟡 <strong>DhanHQ Data API (<code>/v2/optionchain/expirylist</code>):</strong> ${reason} (${dhanMs} ms).<br>` +
+          `🟢 <strong>PIAI ₹0/mo Free Hybrid Mode Activated:</strong> DhanHQ charges ₹499/mo for Data APIs (<code>/v2/optionchain/expirylist</code> &amp; <code>/v2/charts/intraday</code>). PIAI has automatically enabled verified <strong>2026 Exchange Calendar Expiries + Live 5m Intraday OHLC Relay</strong> at ₹0/mo! <em>(If you already subscribed to Data APIs on web.dhan.co, click Revoke &amp; Generate a new Access Token.)</em>`
+        );
+        fetchDynamicExpiriesForUnderlying(false);
       } else {
-        const errCode = (expRes && (expRes.errorCode || expRes.errorMessage || expRes.remarks)) ? JSON.stringify(expRes) : "Auth/CORS/Subscription error";
-        logs.push(`🔴 <strong>DhanHQ <code>/v2/optionchain/expirylist</code>:</strong> Failed (${dhanMs} ms) — ${errCode}. Verify JWT token & Data API plan.`);
+        const errDetail = extractDhanErrorSummary(expRes || profRes);
+        const workerHint = !workerUrl
+          ? ` <strong>Fix:</strong> Browser calls to <code>api.dhan.co</code> require a Cloudflare Worker relay because public <code>corsproxy.io</code> blocks custom <code>access-token</code> headers. Click <strong>"📋 Copy Cloudflare Worker Script (Dhan POST + CORS)"</strong> above, deploy it to Cloudflare Workers, and paste your Worker URL.`
+          : ` <strong>Fix:</strong> Click <strong>"📋 Copy Cloudflare Worker Script (Dhan POST + CORS)"</strong> above and update your Cloudflare Worker so it forwards <code>POST</code> requests and <code>access-token</code> / <code>client-id</code> headers, and verify your Client ID &amp; 24h JWT Token on <code>web.dhan.co</code>.`;
+        logs.push(`🔴 <strong>DhanHQ <code>/v2/optionchain/expirylist</code>:</strong> Failed (${dhanMs} ms) — <code>${errDetail}</code>.${workerHint}`);
       }
     } else {
       logs.push(`🟡 <strong>DhanHQ v2 Credentials:</strong> Client ID or JWT Access Token not entered yet.`);
@@ -2089,6 +2274,9 @@
     try { creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
     if (!creds.accessToken || !creds.clientId) {
       if (showToastFlag) showToast("ℹ️ Connect DhanHQ Token in '🛡️ DhanHQ API & Worker' to pull live /v2/optionchain");
+      return;
+    }
+    if (creds.dataPlanActive === false && !showToastFlag) {
       return;
     }
 
