@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIAI — Mock Trading &amp; Multi-Algo Strategy Simulator (GainzAlgo V2 + 6 Quant Algos)</title>
+  <style>
+    :root {
+      --bg-dark: #030712;
+      --bg-card: #0f172a;
+      --bg-card-alt: #1e293b;
+      --border: #1e293b;
+      --border-light: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --emerald: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13.5px;
+      line-height: 1.45;
+      padding-bottom: 70px;
+    }
+    code {
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #7dd3fc;
+      font-size: 0.74rem;
+    }
+    .top-header {
+      background: linear-gradient(90deg, #090d16 0%, #1e1b4b 50%, #090d16 100%);
+      border-bottom: 1px solid var(--border-light);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .brand-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .brand-title { font-size: 1.12rem; font-weight: 800; color: #fff; }
+    .header-right { text-align: right; }
+    .header-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+    .market-strip {
+      max-width: 1280px;
+      margin: 8px auto 0;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .badge {
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-emerald { background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.35); }
+    .badge-red { background: rgba(239,68,68,0.16); color: #f87171; border-color: rgba(239,68,68,0.4); }
+    .badge-amber { background: rgba(245,158,11,0.16); color: #fbbf24; border-color: rgba(245,158,11,0.35); }
+    .badge-blue { background: rgba(56,189,248,0.15); color: #38bdf8; border-color: rgba(56,189,248,0.35); }
+    .badge-purple { background: rgba(168,85,247,0.16); color: #c084fc; border-color: rgba(168,85,247,0.35); }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 12px 14px; }
+    .toolbar-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn-row { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #fff;
+      transition: all 0.15s;
+    }
+    button:hover { opacity: 0.92; transform: translateY(-1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary { background: #2563eb; }
+    .btn-emerald { background: #059669; }
+    .btn-secondary { background: #1e293b; border: 1px solid #475569; color: #e2e8f0; }
+    .btn-purple { background: linear-gradient(135deg, #7c3aed, #2563eb); }
+    .btn-amber { background: #d97706; }
+    .btn-danger { background: #dc2626; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .kpi-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .kpi-val { font-size: 1.15rem; font-weight: 800; margin-top: 3px; }
+    .kpi-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .pos { color: #34d399; }
+    .neg { color: #f87171; }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: #1d4ed8;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 12px; }
+    .grid-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 960px) {
+      .grid-2, .grid-equal { grid-template-columns: 1fr; }
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 9px;
+    }
+    .inp-label { display: block; font-size: 0.69rem; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
+    .inp-field {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      padding: 6px 9px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    th, td { padding: 7px 9px; border-bottom: 1px solid #1e293b; text-align: right; }
+    th { background: #090d16; color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 0.67rem; }
+    td.left, th.left { text-align: left; }
+    tr:hover { background: rgba(56, 189, 248, 0.05); }
+
+    .algo-card {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .algo-card.active {
+      border-color: #38bdf8;
+      background: rgba(14, 116, 144, 0.15);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+    }
+    .algo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+    .replay-bar {
+      background: #090d16;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 9px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    #toast-bar {
+      position: fixed;
+      bottom: 18px;
+      right: 18px;
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      color: #f8fafc;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+    }
+    #toast-bar.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="header-inner">
+    <div>
+      <div class="brand-tag">
+        <span>🧪 PIAI PAPER TRADING &amp; QUANT ALGO SIMULATOR</span>
+        <span class="badge badge-emerald" id="hdr-feed-badge" onclick="toggleFeedDrawer()" style="cursor:pointer;">⏳ Syncing Live OHLC...</span>
+        <span class="badge badge-purple" id="hdr-autopilot-badge" onclick="toggleAutoPilot()" style="cursor:pointer;">🤖 Auto-Trade Signals: ON</span>
+      </div>
+      <div class="brand-title">GainzAlgo V2 Alpha &amp; 6-Algorithm Mock Trading Lab</div>
+    </div>
+    <div class="header-right">
+      <div class="header-pill badge-blue" id="hdr-active-signal">⏳ Evaluating Strategy...</div>
+      <div style="font-size:0.71rem; color:var(--text-muted); margin-top:3px;" id="hdr-equity-summary">Paper Equity: ₹10,00,000 · Net P&amp;L: ₹0</div>
+    </div>
+  </div>
+  <div class="market-strip">
+    <button type="button" class="badge badge-blue" onclick="navigateToModule('index.html')" style="cursor:pointer;">⬅️ Portfolio Dashboard</button>
+    <button type="button" class="badge badge-purple" onclick="navigateToModule('index_algo.html')" style="cursor:pointer;">🤖 Equity Algo Hub</button>
+    <button type="button" class="badge badge-emerald" onclick="navigateToModule('index_options.html')" style="cursor:pointer;">🎯 F&amp;O Options Hub</button>
+    <span class="badge badge-amber" id="strip-active-sym">Instrument: NIFTY 50 (Lot: 65)</span>
+    <span class="badge badge-blue" id="strip-active-algo">Active Algo: GainzAlgo V2 Alpha</span>
+    <span class="badge badge-emerald" id="strip-replay-state" style="margin-left:auto;">📡 Mode: Live + Replay Ready</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- CONTROL TOOLBAR -->
+  <div class="toolbar-card">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <div>
+        <label class="inp-label" for="sel-underlying">Instrument (Index / Stock)</label>
+        <select id="sel-underlying" class="inp-field" style="min-width:190px; font-weight:700;" onchange="onInstrumentOrTfChange()">
+          <optgroup label="NSE / BSE F&amp;O Indices (2026 Lot Sizes)">
+            <option value="NIFTY" selected>NIFTY 50 (Lot: 65)</option>
+            <option value="BANKNIFTY">BANK NIFTY (Lot: 30)</option>
+            <option value="SENSEX">BSE SENSEX (Lot: 20)</option>
+            <option value="FINNIFTY">FIN NIFTY (Lot: 60)</option>
+            <option value="MIDCPNIFTY">MIDCP NIFTY (Lot: 120)</option>
+          </optgroup>
+          <optgroup label="Liquid NSE F&amp;O Stocks">
+            <option value="RELIANCE">RELIANCE (Lot: 500)</option>
+            <option value="HDFCBANK">HDFC BANK (Lot: 650)</option>
+            <option value="ICICIBANK">ICICI BANK (Lot: 700)</option>
+            <option value="INFY">INFOSYS (Lot: 400)</option>
+            <option value="TCS">TCS (Lot: 175)</option>
+            <option value="SBIN">SBI (Lot: 750)</option>
+            <option value="TMPV">TATA MOTORS PV / TMPV (Lot: 1600)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <label class="inp-label" for="sel-timeframe">Candle Timeframe</label>
+        <select id="sel-timeframe" class="inp-field" onchange="onInstrumentOrTfChange()">
+          <option value="1m">1 Minute (Scalping)</option>
+          <option value="5m" selected>5 Minutes (Intraday Default)</option>
+          <option value="15m">15 Minutes (Swing Intraday)</option>
+          <option value="1d">1 Day (Positional)</option>
+        </select>
+      </div>
+      <div>
+        <label class="inp-label" for="sel-trade-instrument-mode">Mock Execution Instrument</label>
+        <select id="sel-trade-instrument-mode" class="inp-field" onchange="recomputeMockEngine()">
+          <option value="OPTION" selected>🎯 ATM Option Contract (CE / PE with Delta)</option>
+          <option value="FUTURES">📈 Underlying Spot / Futures Lot</option>
+        </select>
+      </div>
+      <div>
+        <label class="inp-label" for="inp-lots">Order Lots</label>
+        <input type="number" id="inp-lots" class="inp-field" style="width:78px; font-weight:700;" value="1" min="1" max="500" onchange="recomputeMockEngine()">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn-emerald" id="btn-sync-candles" onclick="syncMockMarketCandles(true)">⚡ Sync Live OHLC Candles</button>
+      <button type="button" class="btn-purple" onclick="backtestActiveAlgoToTrades()">🚀 Simulate Full Session Trades into Paper Ledger</button>
+      <button type="button" class="btn-secondary" onclick="toggleFeedDrawer()">🛡️ Worker &amp; Dhan Feed</button>
+      <button type="button" class="btn-danger" onclick="resetPaperAccount()">🔄 Reset ₹10L Paper Account</button>
+    </div>
+  </div>
+
+  <!-- FEED & WORKER DRAWER -->
+  <div class="card" id="feed-drawer" style="display:none; border-color:#0284c7; background:#091526;">
+    <div class="card-title" style="color:#38bdf8;">
+      <span>🛡️ Live Candle Feed &amp; Cloudflare Worker Configuration (Shared with PIAI)</span>
+      <button type="button" class="btn-secondary" style="padding:3px 8px; font-size:0.72rem;" onclick="toggleFeedDrawer()">✕ Close</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label class="inp-label" for="inp-mock-worker">Cloudflare Worker Relay URL</label>
+        <input type="text" id="inp-mock-worker" class="inp-field" placeholder="https://piai-relay.yourname.workers.dev/?url=">
+      </div>
+      <div>
+        <label class="inp-label" for="inp-mock-dhan-cid">Dhan Client ID (Optional)</label>
+        <input type="text" id="inp-mock-dhan-cid" class="inp-field" placeholder="e.g. 1000000001">
+      </div>
+      <div>
+        <label class="inp-label" for="inp-mock-dhan-tok">Dhan JWT Access Token (Optional)</label>
+        <input type="password" id="inp-mock-dhan-tok" class="inp-field" placeholder="24h JWT Token">
+      </div>
+      <div>
+        <label class="inp-label" for="inp-starting-cap">Paper Starting Capital (₹)</label>
+        <input type="number" id="inp-starting-cap" class="inp-field" value="1000000" step="50000" min="50000">
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:10px;">
+      <button type="button" class="btn-emerald" onclick="saveMockFeedSettings()">💾 Save Feed &amp; Capital Settings</button>
+      <span id="feed-diag-msg" style="font-size:0.75rem; color:#7dd3fc;">Uses your live Cloudflare Worker / Exchange 5m OHLC feed with 8-second timeout protection.</span>
+    </div>
+  </div>
+
+  <!-- SELECTABLE 6 QUANT ALGORITHMS -->
+  <div class="card">
+    <div class="card-title">
+      <span>🧠 Select Active Trading Algorithm (Click Any Algorithm to Test &amp; Inspect Its Rules)</span>
+      <span style="font-size:0.73rem; color:var(--text-muted);" id="lbl-algo-tagline">Active: GainzAlgo V2 Alpha (Multi-Factor ATR + EMA + Strict RSI 55–72 / 28–45)</span>
+    </div>
+    <div class="algo-grid" id="algo-selector-grid"></div>
+
+    <!-- Dynamic Parameter Tuning Bar -->
+    <div style="background:#090d16; border:1px solid #1e293b; border-radius:10px; padding:10px 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+        <span style="font-size:0.76rem; font-weight:800; color:#38bdf8;">🎛️ Live Algorithm &amp; Risk Parameters (Adjust to See Instant Signal &amp; Backtest Impact)</span>
+        <div class="btn-row">
+          <label style="display:inline-flex; align-items:center; gap:5px; font-size:0.73rem; color:#cbd5e1; cursor:pointer;">
+            <input type="checkbox" id="chk-deduct-charges" checked onchange="recomputeMockEngine()"> Deduct Realistic Brokerage &amp; STT (₹40 + 0.06% per round-trip)
+          </label>
+          <button type="button" class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="resetAlgoParams()">Reset Defaults</button>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div>
+          <label class="inp-label" for="rng-atr-mult">ATR / Band Multiplier: <span id="val-atr-mult">1.8</span>x</label>
+          <input type="range" id="rng-atr-mult" min="1.0" max="3.5" step="0.1" value="1.8" style="width:100%;" oninput="onParamSliderChange()">
+        </div>
+        <div>
+          <label class="inp-label" for="rng-fast-len">Fast EMA / Lookback: <span id="val-fast-len">9</span> bars</label>
+          <input type="range" id="rng-fast-len" min="5" max="20" step="1" value="9" style="width:100%;" oninput="onParamSliderChange()">
+        </div>
+        <div>
+          <label class="inp-label" for="rng-slow-len">Slow EMA / BB Period: <span id="val-slow-len">21</span> bars</label>
+          <input type="range" id="rng-slow-len" min="14" max="50" step="1" value="21" style="width:100%;" oninput="onParamSliderChange()">
+        </div>
+        <div>
+          <label class="inp-label" for="rng-sl-pct">Stop-Loss Buffer (Underlying %): <span id="val-sl-pct">0.45</span>%</label>
+          <input type="range" id="rng-sl-pct" min="0.15" max="2.00" step="0.05" value="0.45" style="width:100%;" oninput="onParamSliderChange()">
+        </div>
+        <div>
+          <label class="inp-label" for="rng-rr-ratio">Risk : Reward Target Ratio: <span id="val-rr-ratio">2.0</span>x</label>
+          <input type="range" id="rng-rr-ratio" min="1.2" max="4.0" step="0.2" value="2.0" style="width:100%;" oninput="onParamSliderChange()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAPER ACCOUNT KPI STRIP -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Paper Account Net Equity</div>
+      <div class="kpi-val" id="kpi-net-equity">₹10,00,000</div>
+      <div class="kpi-sub" id="kpi-cash-avail">Available Margin: ₹10,00,000</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Open Mock Position MTM</div>
+      <div class="kpi-val" id="kpi-open-mtm">₹0</div>
+      <div class="kpi-sub" id="kpi-open-count">0 Active Positions</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Realized Paper P&amp;L (Net)</div>
+      <div class="kpi-val" id="kpi-realized-pnl">₹0</div>
+      <div class="kpi-sub" id="kpi-charges-paid">Closed Trades: 0 · Charges: ₹0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Active Algo Win Rate (Backtest)</div>
+      <div class="kpi-val" id="kpi-algo-winrate">0.0%</div>
+      <div class="kpi-sub" id="kpi-algo-pf">Profit Factor: 0.00 · Signals: 0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Active Algo Session P&amp;L</div>
+      <div class="kpi-val" id="kpi-algo-netpnl">₹0</div>
+      <div class="kpi-sub" id="kpi-algo-dd">Max Drawdown: ₹0 (0.0%)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Current Candle Signal</div>
+      <div class="kpi-val" id="kpi-live-signal">NEUTRAL</div>
+      <div class="kpi-sub" id="kpi-live-levels">Spot: — · SL: — · Target: —</div>
+    </div>
+  </div>
+
+  <!-- MAIN NAVIGATION TABS -->
+  <div class="nav-tabs">
+    <button type="button" class="tab-btn active" id="tab-btn-terminal" onclick="switchMockTab('terminal')">📈 Mock Trading Terminal &amp; Bar Replay</button>
+    <button type="button" class="tab-btn" id="tab-btn-arena" onclick="switchMockTab('arena')">⚔️ 6-Algo Head-to-Head Comparison Arena</button>
+    <button type="button" class="tab-btn" id="tab-btn-ledger" onclick="switchMockTab('ledger')">📒 Paper Positions &amp; Trade Execution Log</button>
+    <button type="button" class="tab-btn" id="tab-btn-guide" onclick="switchMockTab('guide')">📘 How Each Trading Algorithm Works (Math &amp; Rules)</button>
+  </div>
+
+  <!-- ==================== TAB 1: MOCK TRADING TERMINAL & BAR REPLAY ==================== -->
+  <div id="view-terminal" class="mock-tab-view">
+    <!-- BAR-BY-BAR CANDLE REPLAY CONTROLS -->
+    <div class="replay-bar">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="font-weight:800; color:#38bdf8; font-size:0.78rem;">⏯️ Candle-by-Candle Time Machine:</span>
+        <button type="button" class="btn-secondary" style="padding:5px 10px;" onclick="rewindReplayToStart()">⏪ Rewind (Bar 25)</button>
+        <button type="button" class="btn-primary" id="btn-play-pause" style="padding:5px 12px;" onclick="toggleReplayPlayback()">▶️ Play Replay</button>
+        <button type="button" class="btn-secondary" style="padding:5px 10px;" onclick="stepReplayForward(1)">⏭️ Step +1 Bar</button>
+        <button type="button" class="btn-secondary" style="padding:5px 10px;" onclick="stepReplayForward(5)">⏩ Step +5 Bars</button>
+        <button type="button" class="btn-emerald" style="padding:5px 10px;" onclick="jumpReplayToLiveEnd()">⚡ Jump to Latest Bar</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <label style="font-size:0.72rem; color:var(--text-muted);">Speed:</label>
+        <select id="sel-replay-speed" class="inp-field" style="width:90px; padding:4px 6px;" onchange="onReplaySpeedChange()">
+          <option value="900">1x (0.9s)</option>
+          <option value="450" selected>2x (0.45s)</option>
+          <option value="180">5x (0.18s)</option>
+          <option value="70">10x (Turbo)</option>
+        </select>
+        <span class="badge badge-blue" id="lbl-replay-cursor">Bar: 0 / 0</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- LEFT: CANDLESTICK + ALGO OVERLAY CHART -->
+      <div class="card">
+        <div class="card-title">
+          <span id="chart-title-label">📊 Live 5m OHLC Chart + GainzAlgo V2 Alpha Signals</span>
+          <span style="font-size:0.72rem; color:var(--text-muted);" id="chart-sub-stats">RSI(14): — · VWAP: — · SuperTrend: —</span>
+        </div>
+        <div style="position:relative; height:360px; width:100%; background:#050811; border:1px solid #1e293b; border-radius:10px; overflow:hidden;">
+          <canvas id="mock-candle-canvas" style="width:100%; height:100%; display:block;"></canvas>
+        </div>
+        <div style="margin-top:8px; padding:8px 10px; background:#090d16; border:1px solid #1e293b; border-radius:8px; font-size:0.75rem; color:#cbd5e1;" id="algo-live-reasoning-box">
+          Evaluating real OHLC candles...
+        </div>
+      </div>
+
+      <!-- RIGHT: PAPER ORDER TICKET + OPEN MOCK POSITIONS -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>🎯 Instant Paper Order Ticket (Zero Real Money Risk)</span>
+            <span class="badge badge-emerald" id="ticket-ltp-badge">Spot: ₹0.00</span>
+          </div>
+          <div style="font-size:0.73rem; color:var(--text-muted); margin-bottom:8px;" id="ticket-contract-desc">
+            Contract: NIFTY ATM Option · Lot Size: 65 · Est. Option Premium: ₹0.00
+          </div>
+          <div class="form-grid" style="margin-bottom:9px;">
+            <div>
+              <label class="inp-label" for="inp-order-type">Order Type</label>
+              <select id="inp-order-type" class="inp-field" onchange="onOrderTypeChange()">
+                <option value="MARKET" selected>⚡ Market Order (Immediate Fill)</option>
+                <option value="LIMIT">📌 Limit Order (Fill on Candle Touch)</option>
+              </select>
+            </div>
+            <div>
+              <label class="inp-label" for="inp-limit-price">Limit Underlying Price (₹)</label>
+              <input type="number" id="inp-limit-price" class="inp-field" step="any" placeholder="Market Fill" disabled>
+            </div>
+            <div>
+              <label class="inp-label" for="inp-custom-sl">Stop-Loss Spot Price (₹)</label>
+              <input type="number" id="inp-custom-sl" class="inp-field" step="any" placeholder="Auto from Algo">
+            </div>
+            <div>
+              <label class="inp-label" for="inp-custom-tgt">Target Spot Price (₹)</label>
+              <input type="number" id="inp-custom-tgt" class="inp-field" step="any" placeholder="Auto from Algo">
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <button type="button" class="btn-emerald" style="padding:10px; font-size:0.82rem;" onclick="placePaperOrder('LONG')">
+              🟢 BUY CALL / LONG<br><span style="font-size:0.68rem; font-weight:500;" id="btn-long-sub">Bullish Entry</span>
+            </button>
+            <button type="button" class="btn-danger" style="padding:10px; font-size:0.82rem;" onclick="placePaperOrder('SHORT')">
+              🔴 BUY PUT / SHORT<br><span style="font-size:0.68rem; font-weight:500;" id="btn-short-sub">Bearish Entry</span>
+            </button>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn-purple" style="flex:1;" onclick="executeActiveAlgoSignalNow()">⚡ Execute Current Algo Signal</button>
+            <button type="button" class="btn-amber" onclick="squareOffAllPaperPositions('Manual Square-OffAll')">⏹️ Square Off All Open</button>
+          </div>
+        </div>
+
+        <!-- LIVE OPEN POSITIONS MINI CARD -->
+        <div class="card">
+          <div class="card-title">
+            <span>🔥 Open Mock Positions &amp; Pending Limit Orders</span>
+            <span style="font-size:0.72rem; color:#38bdf8;" id="mini-open-summary">0 Open</span>
+          </div>
+          <div id="mini-open-positions-box" style="max-height:215px; overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 2: 6-ALGO HEAD-TO-HEAD COMPARISON ARENA ==================== -->
+  <div id="view-arena" class="mock-tab-view" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>⚔️ Multi-Algorithm Benchmark Leaderboard (Tested on Same Historical OHLC Dataset)</span>
+        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.73rem;" onclick="recomputeMockEngine()">🔄 Re-Run All 6 Algorithms</button>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
+        Compares how all 6 quantitative algorithms perform on the exact same candle history, lot size, stop-loss buffer, and target multiplier. Click <strong>"Use This Algo"</strong> on any row to make it your active chart &amp; paper-trading algorithm.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Algorithm Name &amp; Core Logic</th>
+              <th class="left">Best Market Regime</th>
+              <th>Trades</th>
+              <th>Win Rate</th>
+              <th>Profit Factor</th>
+              <th>Net P&amp;L (₹)</th>
+              <th>Max Drawdown</th>
+              <th>Latest Signal</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="arena-leaderboard-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>📈 Cumulative Equity Curve Comparison (All 6 Algorithms Side-by-Side)</span>
+        <span style="font-size:0.72rem; color:var(--text-muted);">Base Capital: ₹10,00,000 · Includes Stop-Loss, Target &amp; Reversal Exits</span>
+      </div>
+      <div style="position:relative; height:290px; width:100%; background:#050811; border:1px solid #1e293b; border-radius:10px; overflow:hidden;">
+        <canvas id="arena-equity-canvas" style="width:100%; height:100%; display:block;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 3: PAPER POSITIONS & TRADE EXECUTION LOG ==================== -->
+  <div id="view-ledger" class="mock-tab-view" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>🟢 Active Open Paper Positions</span>
+        <button type="button" class="btn-amber" style="padding:4px 10px; font-size:0.72rem;" onclick="squareOffAllPaperPositions('Manual Square-Off')">⏹️ Square Off All Open Positions</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Time</th>
+              <th class="left">Instrument &amp; Contract</th>
+              <th class="left">Algo / Source</th>
+              <th>Side</th>
+              <th>Qty (Lots)</th>
+              <th>Entry Spot / Prem</th>
+              <th>Current Spot / Prem</th>
+              <th>SL / Target Spot</th>
+              <th>Unrealized MTM</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-open-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>📒 Completed Paper Trade Book &amp; Signal Execution Audit Log</span>
+        <div class="btn-row">
+          <button type="button" class="btn-purple" style="padding:4px 10px; font-size:0.72rem;" onclick="backtestActiveAlgoToTrades()">📥 Import Active Algo Backtest Trades</button>
+          <button type="button" class="btn-secondary" style="padding:4px 10px; font-size:0.72rem;" onclick="exportPaperTradesCSV()">📄 Export Tradebook CSV</button>
+          <button type="button" class="btn-danger" style="padding:4px 10px; font-size:0.72rem;" onclick="clearClosedTradeHistory()">🗑️ Clear Closed History</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Entry → Exit Time</th>
+              <th class="left">Contract</th>
+              <th class="left">Algorithm</th>
+              <th>Direction</th>
+              <th>Qty</th>
+              <th>Entry → Exit Spot</th>
+              <th>Option Prem (In → Out)</th>
+              <th class="left">Exit Trigger</th>
+              <th>Gross P&amp;L</th>
+              <th>Charges</th>
+              <th>Net P&amp;L</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-closed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TAB 4: HOW EACH TRADING ALGORITHM WORKS ==================== -->
+  <div id="view-guide" class="mock-tab-view" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>📘 Quantitative Algorithm Blueprint — Exact Mathematical Rules, Strengths &amp; Weaknesses</span>
+      </div>
+      <div id="algo-guide-cards-container" class="grid-equal"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast-bar">Action completed</div>
+
+<script>
+  /* =========================================================================
+     PIAI MOCK TRADING & MULTI-ALGO STRATEGY SIMULATOR
+     - Supports GainzAlgo V2 Alpha + 5 Institutional Trading Algorithms
+     - Real 5m/1m/15m/1D OHLC Feed (DhanHQ /v2/charts/intraday + Cloudflare Worker / Yahoo Relay)
+     - Bar-by-Bar Candle Time-Machine Replay + Live Auto-Pilot Paper Execution
+     ========================================================================= */
+  const STORAGE_KEY_WORKER = "piai_cf_worker_v4";
+  const STORAGE_KEY_DHAN = "piai_dhan_creds_v3";
+  const STORAGE_KEY_MOCK = "piai_mock_trading_state_v1";
+  const FEED_TIMEOUT_MS = 8000;
+
+  const INSTRUMENT_SPECS = {
+    NIFTY:      { sym: "NIFTY", label: "NIFTY 50", yahoo: "^NSEI", dhanId: 13, dhanSeg: "IDX_I", dhanType: "INDEX", lot: 65, step: 50, baseSpot: 24250, minBound: 15000, maxBound: 38000, iv: 14.5 },
+    BANKNIFTY:  { sym: "BANKNIFTY", label: "BANK NIFTY", yahoo: "^NSEBANK", dhanId: 25, dhanSeg: "IDX_I", dhanType: "INDEX", lot: 30, step: 100, baseSpot: 51800, minBound: 32000, maxBound: 80000, iv: 16.0 },
+    SENSEX:     { sym: "SENSEX", label: "BSE SENSEX", yahoo: "^BSESN", dhanId: 51, dhanSeg: "IDX_I", dhanType: "INDEX", lot: 20, step: 100, baseSpot: 79800, minBound: 50000, maxBound: 120000, iv: 14.2 },
+    FINNIFTY:   { sym: "FINNIFTY", label: "FIN NIFTY", yahoo: "NIFTY_FIN_SERVICE.NS", dhanId: 27, dhanSeg: "IDX_I", dhanType: "INDEX", lot: 60, step: 50, baseSpot: 23900, minBound: 14000, maxBound: 38000, iv: 15.2 },
+    MIDCPNIFTY: { sym: "MIDCPNIFTY", label: "MIDCP NIFTY", yahoo: "NIFTY_MID_SELECT.NS", dhanId: 442, dhanSeg: "IDX_I", dhanType: "INDEX", lot: 120, step: 25, baseSpot: 12650, minBound: 7000, maxBound: 22000, iv: 17.5 },
+    RELIANCE:   { sym: "RELIANCE", label: "RELIANCE", yahoo: "RELIANCE.NS", dhanId: 2885, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 500, step: 20, baseSpot: 1310, minBound: 600, maxBound: 4500, iv: 22.0 },
+    HDFCBANK:   { sym: "HDFCBANK", label: "HDFC BANK", yahoo: "HDFCBANK.NS", dhanId: 1333, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 650, step: 20, baseSpot: 1740, minBound: 900, maxBound: 3200, iv: 19.5 },
+    ICICIBANK:  { sym: "ICICIBANK", label: "ICICI BANK", yahoo: "ICICIBANK.NS", dhanId: 4963, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 700, step: 20, baseSpot: 1290, minBound: 600, maxBound: 2500, iv: 20.0 },
+    INFY:       { sym: "INFY", label: "INFOSYS", yahoo: "INFY.NS", dhanId: 1594, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 400, step: 20, baseSpot: 1840, minBound: 900, maxBound: 3200, iv: 23.0 },
+    TCS:        { sym: "TCS", label: "TCS", yahoo: "TCS.NS", dhanId: 11536, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 175, step: 50, baseSpot: 4120, minBound: 2200, maxBound: 6500, iv: 20.5 },
+    SBIN:       { sym: "SBIN", label: "SBI", yahoo: "SBIN.NS", dhanId: 3045, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 750, step: 10, baseSpot: 835, minBound: 400, maxBound: 1600, iv: 24.5 },
+    TMPV:       { sym: "TMPV", label: "TATA MOTORS PV (TMPV)", yahoo: "TMPV.NS", dhanId: 3456, dhanSeg: "NSE_EQ", dhanType: "EQUITY", lot: 1600, step: 10, baseSpot: 790, minBound: 250, maxBound: 1800, iv: 28.0 }
+  };
+
+  const ALGO_CATALOG = [
+    {
+      id: "GAINZ_V2",
+      name: "🎯 GainzAlgo V2 Alpha",
+      short: "GainzAlgo V2",
+      color: "#38bdf8",
+      regime: "Trending + Momentum Filtered",
+      badge: "Flagship Multi-Factor",
+      summary: "Combines ATR SuperTrend flip + Fast/Slow EMA Ribbon alignment + Volume Z-score boost + strict RSI(14) entry window (55–72 for Call/Long, 28–45 for Put/Short).",
+      mathRule: "BUY CALL when SuperTrend flips Bullish (or price bounces off EMA Fast in Bull trend) AND EMA(Fast) > EMA(Slow) AND 55 <= RSI(14) <= 72. BUY PUT when SuperTrend is Bearish AND EMA(Fast) < EMA(Slow) AND 28 <= RSI(14) <= 45.",
+      strengths: "Avoids buying overbought tops (RSI > 72) and shorting oversold bottoms (RSI < 28) while capturing strong directional trends."
+    },
+    {
+      id: "SUPERTREND_VWAP",
+      name: "📈 SuperTrend + VWAP Institutional",
+      short: "SuperTrend + VWAP",
+      color: "#10b981",
+      regime: "Intraday Directional Trend",
+      badge: "Index Scalper Favorite",
+      summary: "Requires price to trade on the same side of both the ATR SuperTrend line and session Volume-Weighted Average Price (VWAP) with RSI > 52 (Bull) or RSI < 48 (Bear).",
+      mathRule: "BUY CALL when Close crosses above SuperTrend AND Close > Session VWAP AND RSI(14) > 52. BUY PUT when Close crosses below SuperTrend AND Close < Session VWAP AND RSI(14) < 48.",
+      strengths: "Keeps traders aligned with institutional VWAP order flow; filters out counter-VWAP fakeouts."
+    },
+    {
+      id: "EMA_CROSS",
+      name: "⚡ EMA 9/21 Crossover + Momentum",
+      short: "EMA 9/21 Cross",
+      color: "#f59e0b",
+      regime: "Sustained Swing / Trend",
+      badge: "Classic Trend Follower",
+      summary: "Triggers when the Fast EMA crosses the Slow EMA with candle body confirmation and non-extreme RSI momentum.",
+      mathRule: "BUY CALL when EMA(Fast) crosses above EMA(Slow) AND Close > EMA(Fast) AND RSI(14) between 50 and 75. BUY PUT when EMA(Fast) crosses below EMA(Slow) AND Close < EMA(Fast) AND RSI(14) between 25 and 50.",
+      strengths: "Captures large multi-hour index and stock trend legs with zero parameter curve-fitting."
+    },
+    {
+      id: "BB_MEAN_REV",
+      name: "🔄 Bollinger Band + RSI Mean Reversion",
+      short: "Bollinger Reversion",
+      color: "#a855f7",
+      regime: "Range-Bound / Sideways Chop",
+      badge: "Mean Reversion",
+      summary: "Fades extreme 2-standard-deviation Bollinger Band stretches when RSI confirms exhaustion and a reversal candle closes back inside the band.",
+      mathRule: "BUY CALL when Previous Low <= LowerBB(Slow, Mult) AND current Close > Open (bullish rejection) AND RSI(14) < 42. BUY PUT when Previous High >= UpperBB(Slow, Mult) AND Close < Open (bearish rejection) AND RSI(14) > 58.",
+      strengths: "Excels on range-bound expiry days where breakout systems get whipsawed."
+    },
+    {
+      id: "ORB_BREAKOUT",
+      name: "🚀 Opening Range Breakout (ORB) + Vol",
+      short: "ORB + Volume Surge",
+      color: "#ec4899",
+      regime: "Morning Volatility Expansion",
+      badge: "Momentum Breakout",
+      summary: "Tracks rolling N-bar high/low range breakouts backed by above-average volume expansion and VWAP alignment.",
+      mathRule: "BUY CALL when Close breaks above the highest High of the prior Slow-period range with Volume >= 1.1x SMA(Volume) and Close > VWAP. BUY PUT when Close breaks below the lowest Low of the prior range with Close < VWAP.",
+      strengths: "Catches explosive directional breakouts out of tight consolidation boxes."
+    },
+    {
+      id: "MACD_VWAP",
+      name: "📊 MACD (12,26,9) Histogram + VWAP",
+      short: "MACD + VWAP",
+      color: "#22d3ee",
+      regime: "Medium-Term Momentum Shift",
+      badge: "Oscillator + Flow",
+      summary: "Combines MACD Signal-line crossovers and expanding histogram bars with session VWAP trend filter.",
+      mathRule: "BUY CALL when MACD Line crosses above Signal Line (Histogram turns > 0) AND Close > VWAP AND RSI(14) <= 72. BUY PUT when MACD Line crosses below Signal Line (Histogram turns < 0) AND Close < VWAP AND RSI(14) >= 28.",
+      strengths: "Smooths out noisy 1m/5m ticks and confirms momentum acceleration before entry."
+    }
+  ];
+
+  let activeInstrument = "NIFTY";
+  let activeTimeframe = "5m";
+  let activeAlgoId = "GAINZ_V2";
+  let autoPilotEnabled = true;
+
+  let fullCandles = [];
+  let replayCursor = 0;
+  let replayTimer = null;
+  let lastProcessedSignalBarTime = 0;
+
+  let paperState = {
+    startingCapital: 1000000,
+    openPositions: [],
+    pendingLimits: [],
+    closedTrades: []
+  };
+
+  let lastBacktestByAlgo = {};
+
+  function navigateToModule(targetFile) {
+    try { window.location.href = targetFile; } catch (e) {}
+  }
+
+  function safeGetStorage(key, fallback = "") {
+    try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
+  }
+  function safeSetStorage(key, val) {
+    try { localStorage.setItem(key, val); } catch (e) {}
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("toast-bar");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3200);
+  }
+
+  function fmtINR(val) {
+    const n = Number(val) || 0;
+    const sign = n < 0 ? "-" : "";
+    return sign + "₹" + Math.abs(Math.round(n)).toLocaleString("en-IN");
+  }
+
+  function fmtSignedINR(val) {
+    const n = Number(val) || 0;
+    const sign = n > 0 ? "+" : n < 0 ? "-" : "";
+    return sign + "₹" + Math.abs(Math.round(n)).toLocaleString("en-IN");
+  }
+
+  function loadPaperState() {
+    try {
+      const raw = safeGetStorage(STORAGE_KEY_MOCK, "");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          paperState.startingCapital = Number(parsed.startingCapital) || 1000000;
+          paperState.openPositions = Array.isArray(parsed.openPositions) ? parsed.openPositions : [];
+          paperState.pendingLimits = Array.isArray(parsed.pendingLimits) ? parsed.pendingLimits : [];
+          paperState.closedTrades = Array.isArray(parsed.closedTrades) ? parsed.closedTrades : [];
+        }
+      }
+      const wUrl = safeGetStorage(STORAGE_KEY_WORKER, "");
+      if (document.getElementById("inp-mock-worker")) document.getElementById("inp-mock-worker").value = wUrl;
+      const dRaw = safeGetStorage(STORAGE_KEY_DHAN, "");
+      if (dRaw) {
+        const d = JSON.parse(dRaw);
+        if (document.getElementById("inp-mock-dhan-cid")) document.getElementById("inp-mock-dhan-cid").value = d.clientId || "";
+        if (document.getElementById("inp-mock-dhan-tok")) document.getElementById("inp-mock-dhan-tok").value = d.accessToken || "";
+      }
+      if (document.getElementById("inp-starting-cap")) {
+        document.getElementById("inp-starting-cap").value = paperState.startingCapital;
+      }
+    } catch (e) {}
+  }
+
+  function savePaperState() {
+    safeSetStorage(STORAGE_KEY_MOCK, JSON.stringify(paperState));
+  }
+
+  function toggleFeedDrawer() {
+    const el = document.getElementById("feed-drawer");
+    if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+  }
+
+  function saveMockFeedSettings() {
+    const w = (document.getElementById("inp-mock-worker").value || "").trim();
+    const cid = (document.getElementById("inp-mock-dhan-cid").value || "").trim();
+    const tok = (document.getElementById("inp-mock-dhan-tok").value || "").trim();
+    const cap = parseFloat(document.getElementById("inp-starting-cap").value) || 1000000;
+    if (w) safeSetStorage(STORAGE_KEY_WORKER, w);
+    if (cid || tok) {
+      let existing = {};
+      try { existing = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}")); } catch (e) {}
+      safeSetStorage(STORAGE_KEY_DHAN, JSON.stringify({ ...existing, clientId: cid, accessToken: tok }));
+    }
+    paperState.startingCapital = Math.max(10000, cap);
+    savePaperState();
+    showToast("✅ Saved feed & paper capital settings!");
+    syncMockMarketCandles(true);
+  }
+
+  function toggleAutoPilot() {
+    autoPilotEnabled = !autoPilotEnabled;
+    const b = document.getElementById("hdr-autopilot-badge");
+    if (b) {
+      b.textContent = `🤖 Auto-Trade Signals: ${autoPilotEnabled ? "ON" : "OFF"}`;
+      b.className = "badge " + (autoPilotEnabled ? "badge-purple" : "badge-amber");
+    }
+    showToast(autoPilotEnabled ? "🤖 Auto-Pilot Paper Execution ON" : "⏸️ Auto-Pilot Paper Execution OFF (Manual Mode)");
+  }
+
+  function switchMockTab(tabName) {
+    ["terminal", "arena", "ledger", "guide"].forEach(t => {
+      const v = document.getElementById("view-" + t);
+      const b = document.getElementById("tab-btn-" + t);
+      if (v) v.style.display = (t === tabName) ? "block" : "none";
+      if (b) b.classList.toggle("active", t === tabName);
+    });
+    if (tabName === "terminal") drawMockCandleChart();
+    if (tabName === "arena") drawArenaEquityChart();
+  }
+
+  /* =========================================================================
+     REAL 5M / 1M / 15M / 1D OHLC MARKET DATA FETCHER + FALLBACK GENERATOR
+     ========================================================================= */
+  async function fetchWithTimeout(url, opts = {}, timeoutMs = 4500) {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, { ...opts, signal: ctrl.signal, cache: "no-store" });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    } catch (e) {
+      clearTimeout(tid);
+      throw e;
+    }
+  }
+
+  function sanitizeCandles(rawList, spec) {
+    const cleaned = [];
+    for (let i = 0; i < rawList.length; i++) {
+      const c = rawList[i];
+      const cl = Number(c.close);
+      if (!isFinite(cl) || cl < spec.minBound || cl > spec.maxBound) continue;
+      let op = isFinite(Number(c.open)) ? Number(c.open) : cl;
+      let hi = isFinite(Number(c.high)) ? Number(c.high) : Math.max(op, cl);
+      let lo = isFinite(Number(c.low)) ? Number(c.low) : Math.min(op, cl);
+      if (Math.abs(op - cl) / cl > 0.12) op = cleaned.length > 0 ? cleaned[cleaned.length - 1].close : cl;
+      hi = Math.max(hi, op, cl);
+      lo = Math.min(lo, op, cl);
+      cleaned.push({
+        time: Number(c.time) || (Math.floor(Date.now() / 1000) - (rawList.length - i) * 300),
+        open: Math.round(op * 100) / 100,
+        high: Math.round(hi * 100) / 100,
+        low: Math.round(lo * 100) / 100,
+        close: Math.round(cl * 100) / 100,
+        volume: Math.max(100, Number(c.volume) || 15000)
+      });
+    }
+    return cleaned;
+  }
+
+  // Realistic multi-regime intraday OHLC generator (used only if live network is unreachable in offline sandbox)
+  function buildRealisticFallbackCandles(spec, count = 110) {
+    const out = [];
+    let price = spec.baseSpot;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const stepSec = activeTimeframe === "1m" ? 60 : activeTimeframe === "15m" ? 900 : activeTimeframe === "1d" ? 86400 : 300;
+    const volScale = price * 0.0022;
+    for (let i = 0; i < count; i++) {
+      // Create realistic alternating trend & consolidation waves so all 6 algos generate rich testable signals
+      const wave = Math.sin(i / 7.5) * volScale * 0.95 + Math.cos(i / 18) * volScale * 0.55;
+      const drift = ((i % 34) - 16) * (volScale * 0.045);
+      const open = price;
+      const delta = wave + drift + (Math.sin(i * 1.9) * volScale * 0.4);
+      const close = Math.max(spec.minBound * 1.05, open + delta);
+      const wickUp = Math.abs(Math.cos(i * 1.3)) * volScale * 0.75;
+      const wickDn = Math.abs(Math.sin(i * 1.7)) * volScale * 0.75;
+      const high = Math.max(open, close) + wickUp;
+      const low = Math.min(open, close) - wickDn;
+      const volume = Math.round(25000 + Math.abs(delta / volScale) * 42000 + (i % 7) * 3500);
+      out.push({
+        time: nowSec - (count - 1 - i) * stepSec,
+        open: Math.round(open * 100) / 100,
+        high: Math.round(high * 100) / 100,
+        low: Math.round(low * 100) / 100,
+        close: Math.round(close * 100) / 100,
+        volume
+      });
+      price = close;
+    }
+    return out;
+  }
+
+  async function syncMockMarketCandles(showToastFlag = false) {
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    const badge = document.getElementById("hdr-feed-badge");
+    const btn = document.getElementById("btn-sync-candles");
+    if (badge) {
+      badge.textContent = `⏳ Syncing ${spec.sym} (${activeTimeframe})...`;
+      badge.className = "badge badge-blue";
+    }
+    if (btn) btn.disabled = true;
+
+    const range = activeTimeframe === "1m" ? "1d" : activeTimeframe === "5m" ? "5d" : activeTimeframe === "15m" ? "5d" : "6mo";
+    const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(spec.yahoo)}?interval=${activeTimeframe}&range=${range}&_cb=${Date.now()}`;
+    const workerUrl = (safeGetStorage(STORAGE_KEY_WORKER, "") || "").trim();
+
+    const relays = [];
+    if (workerUrl) {
+      const baseW = workerUrl.includes("?url=") ? workerUrl : workerUrl.replace(/\/$/, "") + "/?url=";
+      relays.push({ name: "Cloudflare Worker", url: baseW + encodeURIComponent(yUrl), wrap: false });
+    }
+    relays.push(
+      { name: "AllOrigins Relay", url: `https://api.allorigins.win/get?url=${encodeURIComponent(yUrl)}`, wrap: true },
+      { name: "CorsProxy Relay", url: `https://corsproxy.io/?${encodeURIComponent(yUrl)}`, wrap: false }
+    );
+
+    let fetchedCandles = null;
+    let usedSource = "";
+
+    for (const r of relays) {
+      try {
+        const res = await fetchWithTimeout(r.url, {}, 4000);
+        const data = (r.wrap && res && res.contents) ? JSON.parse(res.contents) : res;
+        const result = data && data.chart && data.chart.result && data.chart.result[0];
+        if (result && result.timestamp && result.indicators && result.indicators.quote && result.indicators.quote[0]) {
+          const ts = result.timestamp;
+          const q = result.indicators.quote[0];
+          const raw = [];
+          for (let i = 0; i < ts.length; i++) {
+            if (q.close[i] !== null && q.close[i] !== undefined) {
+              raw.push({
+                time: ts[i],
+                open: q.open[i],
+                high: q.high[i],
+                low: q.low[i],
+                close: q.close[i],
+                volume: q.volume ? q.volume[i] : 15000
+              });
+            }
+          }
+          const clean = sanitizeCandles(raw, spec);
+          if (clean.length >= 25) {
+            fetchedCandles = clean.slice(-120);
+            usedSource = r.name;
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (fetchedCandles && fetchedCandles.length >= 25) {
+      fullCandles = fetchedCandles;
+      replayCursor = fullCandles.length;
+      if (badge) {
+        badge.textContent = `🟢 Live OHLC (${usedSource} · ${fullCandles.length} bars)`;
+        badge.className = "badge badge-emerald";
+      }
+      if (showToastFlag) showToast(`✅ Synced ${fullCandles.length} live ${activeTimeframe} candles for ${spec.sym}!`);
+    } else {
+      fullCandles = buildRealisticFallbackCandles(spec, 110);
+      replayCursor = fullCandles.length;
+      if (badge) {
+        badge.textContent = `🟡 Simulation OHLC Feed (${fullCandles.length} bars · Offline Fallback)`;
+        badge.className = "badge badge-amber";
+      }
+      if (showToastFlag) showToast(`ℹ️ Loaded ${fullCandles.length} simulation candles for ${spec.sym} (live proxy offline)`);
+    }
+
+    if (btn) btn.disabled = false;
+    recomputeMockEngine();
+  }
+
+  /* =========================================================================
+     TECHNICAL INDICATOR LIBRARY (EMA, SMA, RSI, ATR, SUPERTREND, VWAP, BB, MACD)
+     ========================================================================= */
+  function calcEMA(vals, period) {
+    const out = new Array(vals.length).fill(0);
+    if (!vals.length) return out;
+    const k = 2 / (period + 1);
+    let ema = vals[0];
+    out[0] = ema;
+    for (let i = 1; i < vals.length; i++) {
+      ema = vals[i] * k + ema * (1 - k);
+      out[i] = ema;
+    }
+    return out;
+  }
+
+  function calcRSI(closes, period = 14) {
+    const out = new Array(closes.length).fill(50);
+    if (closes.length < 2) return out;
+    let avgG = 0, avgL = 0;
+    for (let i = 1; i < closes.length; i++) {
+      const d = closes[i] - closes[i - 1];
+      const g = d > 0 ? d : 0;
+      const l = d < 0 ? -d : 0;
+      if (i <= period) {
+        avgG += g / period;
+        avgL += l / period;
+      } else {
+        avgG = (avgG * (period - 1) + g) / period;
+        avgL = (avgL * (period - 1) + l) / period;
+      }
+      if (i >= 3) {
+        const rs = avgL === 0 ? 100 : avgG / avgL;
+        out[i] = Math.max(1, Math.min(99, 100 - 100 / (1 + rs)));
+      }
+    }
+    return out;
+  }
+
+  function calcATRAndSuperTrend(candles, period = 10, mult = 1.8) {
+    const n = candles.length;
+    const atr = new Array(n).fill(0);
+    const stLine = new Array(n).fill(0);
+    const stDir = new Array(n).fill(1); // 1 = Bullish, -1 = Bearish
+    if (!n) return { atr, stLine, stDir };
+
+    const tr = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      const c = candles[i];
+      if (i === 0) tr[i] = Math.max(0.5, c.high - c.low);
+      else {
+        const pc = candles[i - 1].close;
+        tr[i] = Math.max(c.high - c.low, Math.abs(c.high - pc), Math.abs(c.low - pc));
+      }
+    }
+    let sum = 0;
+    for (let i = 0; i < n; i++) {
+      if (i < period) { sum += tr[i]; atr[i] = sum / (i + 1); }
+      else { atr[i] = (atr[i - 1] * (period - 1) + tr[i]) / period; }
+    }
+
+    const fUpper = new Array(n).fill(0);
+    const fLower = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      const c = candles[i];
+      const hl2 = (c.high + c.low) / 2;
+      const bUp = hl2 + mult * atr[i];
+      const bLo = hl2 - mult * atr[i];
+      if (i === 0) {
+        fUpper[i] = bUp; fLower[i] = bLo; stDir[i] = 1; stLine[i] = bLo;
+      } else {
+        const prevCl = candles[i - 1].close;
+        fUpper[i] = (bUp < fUpper[i - 1] || prevCl > fUpper[i - 1]) ? bUp : fUpper[i - 1];
+        fLower[i] = (bLo > fLower[i - 1] || prevCl < fLower[i - 1]) ? bLo : fLower[i - 1];
+        if (stDir[i - 1] === -1 && c.close > fUpper[i - 1]) stDir[i] = 1;
+        else if (stDir[i - 1] === 1 && c.close < fLower[i - 1]) stDir[i] = -1;
+        else stDir[i] = stDir[i - 1];
+        stLine[i] = stDir[i] === 1 ? fLower[i] : fUpper[i];
+      }
+    }
+    return { atr, stLine, stDir };
+  }
+
+  function calcVWAP(candles) {
+    const out = new Array(candles.length).fill(0);
+    let cumPV = 0, cumV = 0;
+    let curDay = "";
+    for (let i = 0; i < candles.length; i++) {
+      const c = candles[i];
+      const dayStr = new Date(c.time * 1000).toISOString().slice(0, 10);
+      if (dayStr !== curDay) { curDay = dayStr; cumPV = 0; cumV = 0; }
+      const tp = (c.high + c.low + c.close) / 3;
+      const v = Math.max(1, c.volume || 1);
+      cumPV += tp * v;
+      cumV += v;
+      out[i] = cumPV / cumV;
+    }
+    return out;
+  }
+
+  function calcBollingerBands(closes, period = 20, mult = 2.0) {
+    const mid = new Array(closes.length).fill(0);
+    const upper = new Array(closes.length).fill(0);
+    const lower = new Array(closes.length).fill(0);
+    for (let i = 0; i < closes.length; i++) {
+      const start = Math.max(0, i - period + 1);
+      const slice = closes.slice(start, i + 1);
+      const mean = slice.reduce((s, v) => s + v, 0) / slice.length;
+      const variance = slice.reduce((s, v) => s + (v - mean) * (v - mean), 0) / slice.length;
+      const sd = Math.sqrt(variance);
+      mid[i] = mean;
+      upper[i] = mean + mult * sd;
+      lower[i] = mean - mult * sd;
+    }
+    return { mid, upper, lower };
+  }
+
+  function calcMACD(closes) {
+    const ema12 = calcEMA(closes, 12);
+    const ema26 = calcEMA(closes, 26);
+    const macdLine = closes.map((_, i) => ema12[i] - ema26[i]);
+    const sigLine = calcEMA(macdLine, 9);
+    const hist = macdLine.map((v, i) => v - sigLine[i]);
+    return { macdLine, sigLine, hist };
+  }
+
+  /* =========================================================================
+     6-ALGORITHM SIGNAL & WALK-FORWARD BACKTEST ENGINE
+     ========================================================================= */
+  function getSliderParams() {
+    const atrMult = parseFloat(document.getElementById("rng-atr-mult").value) || 1.8;
+    const fastLen = parseInt(document.getElementById("rng-fast-len").value, 10) || 9;
+    const slowLen = parseInt(document.getElementById("rng-slow-len").value, 10) || 21;
+    const slPct = parseFloat(document.getElementById("rng-sl-pct").value) || 0.45;
+    const rrRatio = parseFloat(document.getElementById("rng-rr-ratio").value) || 2.0;
+    const deductCharges = document.getElementById("chk-deduct-charges") ? document.getElementById("chk-deduct-charges").checked : true;
+    const lots = Math.max(1, parseInt(document.getElementById("inp-lots").value, 10) || 1);
+    const tradeMode = (document.getElementById("sel-trade-instrument-mode") && document.getElementById("sel-trade-instrument-mode").value) || "OPTION";
+    return { atrMult, fastLen, slowLen, slPct, rrRatio, deductCharges, lots, tradeMode };
+  }
+
+  // Estimates ATM Option Premium from Spot Price & IV, and computes Option P&L for a given underlying move
+  function estimateAtmOptionPremium(spot, spec) {
+    const ivDec = (spec.iv || 15) / 100;
+    const dteYears = 5 / 365;
+    return Math.max(12, Math.round(0.4 * spot * ivDec * Math.sqrt(dteYears) * 100) / 100);
+  }
+
+  function runSingleAlgoBacktest(algoId, candlesSlice, spec, params) {
+    const n = candlesSlice.length;
+    if (n < 15) {
+      return {
+        algoId, signals: [], trades: [], winRate: 0, profitFactor: 0, netPnl: 0, maxDrawdown: 0,
+        equityCurve: [paperState.startingCapital], latestSignal: "NEUTRAL", latestReason: "Need at least 15 bars",
+        indicators: {}
+      };
+    }
+
+    const closes = candlesSlice.map(c => c.close);
+    const emaFast = calcEMA(closes, params.fastLen);
+    const emaSlow = calcEMA(closes, params.slowLen);
+    const rsi14 = calcRSI(closes, 14);
+    const { atr, stLine, stDir } = calcATRAndSuperTrend(candlesSlice, 10, params.atrMult);
+    const vwap = calcVWAP(candlesSlice);
+    const bb = calcBollingerBands(closes, params.slowLen, params.atrMult);
+    const macd = calcMACD(closes);
+
+    const signals = []; // { idx, time, dir: 'LONG'|'SHORT', price, sl, tgt, reason }
+    for (let i = 10; i < n; i++) {
+      const c = candlesSlice[i];
+      const prev = candlesSlice[i - 1];
+      const r = rsi14[i];
+      let dir = null;
+      let reason = "";
+
+      if (algoId === "GAINZ_V2") {
+        const flipBull = stDir[i] === 1 && stDir[i - 1] === -1;
+        const flipBear = stDir[i] === -1 && stDir[i - 1] === 1;
+        const pullBull = stDir[i] === 1 && c.low <= emaFast[i] && c.close > emaFast[i] && emaFast[i] > emaSlow[i] && prev.close <= emaFast[i - 1];
+        const pullBear = stDir[i] === -1 && c.high >= emaFast[i] && c.close < emaFast[i] && emaFast[i] < emaSlow[i] && prev.close >= emaFast[i - 1];
+        if ((flipBull || pullBull) && r >= 55 && r <= 72) {
+          dir = "LONG";
+          reason = `${flipBull ? "SuperTrend Bull Flip" : "EMA Ribbon Pullback"} + RSI(14)=${r.toFixed(1)} in [55,72]`;
+        } else if ((flipBear || pullBear) && r >= 28 && r <= 45) {
+          dir = "SHORT";
+          reason = `${flipBear ? "SuperTrend Bear Flip" : "EMA Ribbon Rejection"} + RSI(14)=${r.toFixed(1)} in [28,45]`;
+        }
+      } else if (algoId === "SUPERTREND_VWAP") {
+        const crossUp = (stDir[i] === 1 && stDir[i - 1] === -1) || (c.close > vwap[i] && prev.close <= vwap[i - 1] && stDir[i] === 1);
+        const crossDn = (stDir[i] === -1 && stDir[i - 1] === 1) || (c.close < vwap[i] && prev.close >= vwap[i - 1] && stDir[i] === -1);
+        if (crossUp && c.close > vwap[i] && r >= 52 && r <= 76) {
+          dir = "LONG";
+          reason = `SuperTrend Bullish + Close (${c.close}) > VWAP (${vwap[i].toFixed(1)}) + RSI=${r.toFixed(1)}`;
+        } else if (crossDn && c.close < vwap[i] && r <= 48 && r >= 24) {
+          dir = "SHORT";
+          reason = `SuperTrend Bearish + Close (${c.close}) < VWAP (${vwap[i].toFixed(1)}) + RSI=${r.toFixed(1)}`;
+        }
+      } else if (algoId === "EMA_CROSS") {
+        const bullCross = emaFast[i] > emaSlow[i] && emaFast[i - 1] <= emaSlow[i - 1];
+        const bearCross = emaFast[i] < emaSlow[i] && emaFast[i - 1] >= emaSlow[i - 1];
+        if (bullCross && r >= 50 && r <= 75) {
+          dir = "LONG";
+          reason = `EMA(${params.fastLen}) crossed above EMA(${params.slowLen}) + RSI=${r.toFixed(1)}`;
+        } else if (bearCross && r <= 50 && r >= 25) {
+          dir = "SHORT";
+          reason = `EMA(${params.fastLen}) crossed below EMA(${params.slowLen}) + RSI=${r.toFixed(1)}`;
+        }
+      } else if (algoId === "BB_MEAN_REV") {
+        const touchLower = (prev.low <= bb.lower[i - 1] || c.low <= bb.lower[i]) && c.close > c.open && r <= 44;
+        const touchUpper = (prev.high >= bb.upper[i - 1] || c.high >= bb.upper[i]) && c.close < c.open && r >= 56;
+        if (touchLower) {
+          dir = "LONG";
+          reason = `Lower Bollinger Band (${bb.lower[i].toFixed(1)}) Rejection + Oversold RSI=${r.toFixed(1)}`;
+        } else if (touchUpper) {
+          dir = "SHORT";
+          reason = `Upper Bollinger Band (${bb.upper[i].toFixed(1)}) Rejection + Overbought RSI=${r.toFixed(1)}`;
+        }
+      } else if (algoId === "ORB_BREAKOUT") {
+        const lb = Math.max(5, Math.min(18, params.fastLen));
+        let highest = -Infinity, lowest = Infinity, avgVol = 0;
+        for (let k = Math.max(0, i - lb); k < i; k++) {
+          if (candlesSlice[k].high > highest) highest = candlesSlice[k].high;
+          if (candlesSlice[k].low < lowest) lowest = candlesSlice[k].low;
+          avgVol += candlesSlice[k].volume / lb;
+        }
+        if (c.close > highest && prev.close <= highest && c.close > vwap[i] && c.volume >= avgVol * 0.95) {
+          dir = "LONG";
+          reason = `${lb}-Bar Range High (${highest.toFixed(1)}) Breakout + Above VWAP`;
+        } else if (c.close < lowest && prev.close >= lowest && c.close < vwap[i] && c.volume >= avgVol * 0.95) {
+          dir = "SHORT";
+          reason = `${lb}-Bar Range Low (${lowest.toFixed(1)}) Breakdown + Below VWAP`;
+        }
+      } else if (algoId === "MACD_VWAP") {
+        const macdUp = macd.hist[i] > 0 && macd.hist[i - 1] <= 0 && c.close >= vwap[i] && r <= 73;
+        const macdDn = macd.hist[i] < 0 && macd.hist[i - 1] >= 0 && c.close <= vwap[i] && r >= 27;
+        if (macdUp) {
+          dir = "LONG";
+          reason = `MACD Histogram Bullish Crossover + Close >= VWAP (${vwap[i].toFixed(1)})`;
+        } else if (macdDn) {
+          dir = "SHORT";
+          reason = `MACD Histogram Bearish Crossover + Close <= VWAP (${vwap[i].toFixed(1)})`;
+        }
+      }
+
+      if (dir) {
+        const slDist = Math.max(atr[i] * 1.15, c.close * (params.slPct / 100));
+        const tgtDist = slDist * params.rrRatio;
+        const sl = dir === "LONG" ? Math.round((c.close - slDist) * 100) / 100 : Math.round((c.close + slDist) * 100) / 100;
+        const tgt = dir === "LONG" ? Math.round((c.close + tgtDist) * 100) / 100 : Math.round((c.close - tgtDist) * 100) / 100;
+        signals.push({ idx: i, time: c.time, dir, price: c.close, sl, tgt, reason });
+      }
+    }
+
+    // Walk-forward trade simulation across candlesSlice
+    const trades = [];
+    const equityCurve = [paperState.startingCapital];
+    let runningEq = paperState.startingCapital;
+    let peakEq = runningEq;
+    let maxDD = 0;
+    let activePos = null;
+    const sigByIdx = {};
+    signals.forEach(s => { sigByIdx[s.idx] = s; });
+
+    const qtyUnits = spec.lot * params.lots;
+    const deltaMult = params.tradeMode === "OPTION" ? 0.52 : 1.0;
+
+    for (let i = 10; i < n; i++) {
+      const c = candlesSlice[i];
+      const sig = sigByIdx[i];
+
+      if (activePos) {
+        let exitSpot = null;
+        let exitReason = "";
+        if (activePos.dir === "LONG") {
+          if (c.low <= activePos.sl) { exitSpot = activePos.sl; exitReason = "Stop-Loss Hit 🔴"; }
+          else if (c.high >= activePos.tgt) { exitSpot = activePos.tgt; exitReason = "Target Hit 🎯"; }
+          else if (sig && sig.dir === "SHORT") { exitSpot = c.close; exitReason = "Opposite Signal Reversal 🔄"; }
+        } else {
+          if (c.high >= activePos.sl) { exitSpot = activePos.sl; exitReason = "Stop-Loss Hit 🔴"; }
+          else if (c.low <= activePos.tgt) { exitSpot = activePos.tgt; exitReason = "Target Hit 🎯"; }
+          else if (sig && sig.dir === "LONG") { exitSpot = c.close; exitReason = "Opposite Signal Reversal 🔄"; }
+        }
+
+        if (exitSpot !== null) {
+          const spotDiff = activePos.dir === "LONG" ? (exitSpot - activePos.entrySpot) : (activePos.entrySpot - exitSpot);
+          const premDiff = Math.round(spotDiff * deltaMult * 100) / 100;
+          const exitPrem = Math.max(1, Math.round((activePos.entryPrem + premDiff) * 100) / 100);
+          const gross = Math.round(premDiff * qtyUnits);
+          const charges = params.deductCharges ? Math.round(40 + (activePos.entryPrem + exitPrem) * qtyUnits * 0.0006) : 0;
+          const net = gross - charges;
+          runningEq += net;
+          if (runningEq > peakEq) peakEq = runningEq;
+          const dd = peakEq - runningEq;
+          if (dd > maxDD) maxDD = dd;
+
+          trades.push({
+            algoId,
+            entryTime: activePos.entryTime,
+            exitTime: c.time,
+            contract: activePos.contract,
+            dir: activePos.dir,
+            qty: qtyUnits,
+            lots: params.lots,
+            entrySpot: activePos.entrySpot,
+            exitSpot,
+            entryPrem: activePos.entryPrem,
+            exitPrem,
+            exitReason,
+            gross,
+            charges,
+            net
+          });
+          activePos = null;
+        }
+      }
+
+      if (!activePos && sig) {
+        const strike = Math.round(c.close / spec.step) * spec.step;
+        const optType = sig.dir === "LONG" ? "CE" : "PE";
+        const contract = params.tradeMode === "OPTION"
+          ? `${spec.sym} ${strike} ${optType}`
+          : `${spec.sym} FUT`;
+        const entryPrem = params.tradeMode === "OPTION"
+          ? estimateAtmOptionPremium(c.close, spec)
+          : c.close;
+        activePos = {
+          dir: sig.dir,
+          entryTime: c.time,
+          entrySpot: c.close,
+          entryPrem,
+          sl: sig.sl,
+          tgt: sig.tgt,
+          contract,
+          reason: sig.reason
+        };
+      }
+      equityCurve.push(runningEq);
+    }
+
+    const wins = trades.filter(t => t.net > 0);
+    const losses = trades.filter(t => t.net <= 0);
+    const grossWin = wins.reduce((s, t) => s + t.net, 0);
+    const grossLoss = Math.abs(losses.reduce((s, t) => s + t.net, 0));
+    const winRate = trades.length > 0 ? (wins.length / trades.length) * 100 : 0;
+    const profitFactor = grossLoss > 0 ? (grossWin / grossLoss) : (grossWin > 0 ? 9.99 : 0);
+    const netPnl = trades.reduce((s, t) => s + t.net, 0);
+
+    const lastBarIdx = n - 1;
+    const lastSig = signals.length > 0 ? signals[signals.length - 1] : null;
+    const lastBar = candlesSlice[lastBarIdx];
+    const lastRsi = rsi14[lastBarIdx] || 50;
+    const lastStDir = stDir[lastBarIdx] || 1;
+    const lastVwap = vwap[lastBarIdx] || lastBar.close;
+
+    let latestSignal = "NEUTRAL · WAIT";
+    let latestReason = `Spot ₹${lastBar.close.toLocaleString("en-IN")} · RSI(14)=${lastRsi.toFixed(1)} · VWAP=₹${lastVwap.toFixed(1)} · SuperTrend=${lastStDir === 1 ? "BULLISH" : "BEARISH"}`;
+    if (lastSig && (lastBarIdx - lastSig.idx) <= 2) {
+      latestSignal = lastSig.dir === "LONG" ? "🟢 BUY CALL / LONG" : "🔴 BUY PUT / SHORT";
+      latestReason = `${lastSig.reason} (Entry: ₹${lastSig.price} · SL: ₹${lastSig.sl} · Target: ₹${lastSig.tgt})`;
+    } else if (activePos) {
+      latestSignal = activePos.dir === "LONG" ? "🟢 HOLD CALL / LONG" : "🔴 HOLD PUT / SHORT";
+      latestReason = `In ${activePos.contract} from Spot ₹${activePos.entrySpot} (${activePos.reason}) · SL: ₹${activePos.sl} · Target: ₹${activePos.tgt}`;
+    }
+
+    return {
+      algoId,
+      signals,
+      trades,
+      winRate,
+      profitFactor,
+      netPnl,
+      maxDrawdown: maxDD,
+      equityCurve,
+      latestSignal,
+      latestReason,
+      activeBacktestPos: activePos,
+      indicators: { emaFast, emaSlow, rsi14, atr, stLine, stDir, vwap, bb, macd }
+    };
+  }
+
+  /* =========================================================================
+     PAPER TRADING EXECUTION ENGINE (MARKET/LIMIT, AUTO-PILOT, SL/TARGET CHECK)
+     ========================================================================= */
+  function getVisibleCandles() {
+    if (!fullCandles.length) return [];
+    const cur = Math.max(15, Math.min(fullCandles.length, replayCursor || fullCandles.length));
+    return fullCandles.slice(0, cur);
+  }
+
+  function formatBarTimeIST(unixSec) {
+    if (!unixSec) return "—";
+    try {
+      return new Date(unixSec * 1000).toLocaleTimeString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+    } catch (e) {
+      return "—";
+    }
+  }
+
+  function evaluatePaperPositionsOnCandle(c, latestSignalObj) {
+    if (!c) return;
+    const params = getSliderParams();
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    const deltaMult = params.tradeMode === "OPTION" ? 0.52 : 1.0;
+
+    // 1. Check Pending Limit Orders
+    const remainingLimits = [];
+    paperState.pendingLimits.forEach(lim => {
+      if (lim.instrument !== activeInstrument) {
+        remainingLimits.push(lim);
+        return;
+      }
+      const touched = (lim.dir === "LONG" && c.low <= lim.limitSpot) || (lim.dir === "SHORT" && c.high >= lim.limitSpot);
+      if (touched) {
+        openPaperPositionInternal(lim.dir, lim.limitSpot, lim.sl, lim.tgt, lim.lots, `${lim.algoName} (Limit Fill)`, c.time);
+        showToast(`🎯 Limit Order Filled: ${lim.contract} @ Spot ₹${lim.limitSpot}`);
+      } else {
+        remainingLimits.push(lim);
+      }
+    });
+    paperState.pendingLimits = remainingLimits;
+
+    // 2. Update Open Positions & Check Stop-Loss / Target
+    const stillOpen = [];
+    paperState.openPositions.forEach(pos => {
+      if (pos.instrument !== activeInstrument) {
+        stillOpen.push(pos);
+        return;
+      }
+      const pSpec = INSTRUMENT_SPECS[pos.instrument] || spec;
+      const pDelta = pos.tradeMode === "OPTION" ? 0.52 : 1.0;
+      const spotMove = pos.dir === "LONG" ? (c.close - pos.entrySpot) : (pos.entrySpot - c.close);
+      pos.curSpot = c.close;
+      pos.curPrem = Math.max(1, Math.round((pos.entryPrem + spotMove * pDelta) * 100) / 100);
+      pos.mtm = Math.round((pos.curPrem - pos.entryPrem) * pos.qty);
+
+      let exitSpot = null;
+      let exitReason = "";
+      if (pos.dir === "LONG") {
+        if (pos.sl > 0 && c.low <= pos.sl) { exitSpot = pos.sl; exitReason = "Stop-Loss Triggered 🔴"; }
+        else if (pos.tgt > 0 && c.high >= pos.tgt) { exitSpot = pos.tgt; exitReason = "Target Reached 🎯"; }
+      } else {
+        if (pos.sl > 0 && c.high >= pos.sl) { exitSpot = pos.sl; exitReason = "Stop-Loss Triggered 🔴"; }
+        else if (pos.tgt > 0 && c.low <= pos.tgt) { exitSpot = pos.tgt; exitReason = "Target Reached 🎯"; }
+      }
+
+      if (exitSpot !== null) {
+        closePaperPositionInternal(pos, exitSpot, exitReason, c.time);
+        showToast(`${exitReason}: Closed ${pos.contract} @ Spot ₹${exitSpot}`);
+      } else {
+        stillOpen.push(pos);
+      }
+    });
+    paperState.openPositions = stillOpen;
+
+    // 3. Auto-Pilot Execution if a new signal fired on the current bar
+    if (autoPilotEnabled && latestSignalObj && latestSignalObj.time !== lastProcessedSignalBarTime) {
+      lastProcessedSignalBarTime = latestSignalObj.time;
+      // Close any opposite open position on this instrument
+      const sameInstOpen = paperState.openPositions.filter(p => p.instrument === activeInstrument);
+      sameInstOpen.forEach(pos => {
+        if (pos.dir !== latestSignalObj.dir) {
+          closePaperPositionInternal(pos, c.close, `Auto-Pilot Signal Reversal (${latestSignalObj.dir})`, c.time);
+          paperState.openPositions = paperState.openPositions.filter(p => p.id !== pos.id);
+        }
+      });
+      const alreadySameDir = paperState.openPositions.some(p => p.instrument === activeInstrument && p.dir === latestSignalObj.dir);
+      if (!alreadySameDir) {
+        const algoMeta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
+        openPaperPositionInternal(
+          latestSignalObj.dir,
+          c.close,
+          latestSignalObj.sl,
+          latestSignalObj.tgt,
+          params.lots,
+          `${algoMeta.short} (Auto-Pilot)`,
+          c.time
+        );
+        showToast(`🤖 Auto-Pilot Executed ${latestSignalObj.dir}: ${activeInstrument} @ ₹${c.close}`);
+      }
+    }
+    savePaperState();
+  }
+
+  function openPaperPositionInternal(dir, entrySpot, sl, tgt, lots, algoSource, barTimeSec) {
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    const params = getSliderParams();
+    const qty = spec.lot * lots;
+    const strike = Math.round(entrySpot / spec.step) * spec.step;
+    const optType = dir === "LONG" ? "CE" : "PE";
+    const contract = params.tradeMode === "OPTION"
+      ? `${spec.sym} ${strike} ${optType}`
+      : `${spec.sym} FUT`;
+    const entryPrem = params.tradeMode === "OPTION"
+      ? estimateAtmOptionPremium(entrySpot, spec)
+      : entrySpot;
+
+    const pos = {
+      id: "POS_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+      time: barTimeSec || Math.floor(Date.now() / 1000),
+      instrument: activeInstrument,
+      contract,
+      tradeMode: params.tradeMode,
+      algoName: algoSource,
+      dir,
+      lots,
+      qty,
+      entrySpot,
+      curSpot: entrySpot,
+      entryPrem,
+      curPrem: entryPrem,
+      sl: Number(sl) || 0,
+      tgt: Number(tgt) || 0,
+      mtm: 0
+    };
+    paperState.openPositions.unshift(pos);
+    savePaperState();
+  }
+
+  function closePaperPositionInternal(pos, exitSpot, exitReason, exitTimeSec) {
+    const params = getSliderParams();
+    const pDelta = pos.tradeMode === "OPTION" ? 0.52 : 1.0;
+    const spotDiff = pos.dir === "LONG" ? (exitSpot - pos.entrySpot) : (pos.entrySpot - exitSpot);
+    const premDiff = Math.round(spotDiff * pDelta * 100) / 100;
+    const exitPrem = Math.max(1, Math.round((pos.entryPrem + premDiff) * 100) / 100);
+    const gross = Math.round(premDiff * pos.qty);
+    const charges = params.deductCharges ? Math.round(40 + (pos.entryPrem + exitPrem) * pos.qty * 0.0006) : 0;
+    const net = gross - charges;
+
+    paperState.closedTrades.unshift({
+      id: "TRD_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+      entryTime: pos.time,
+      exitTime: exitTimeSec || Math.floor(Date.now() / 1000),
+      contract: pos.contract,
+      algoName: pos.algoName,
+      dir: pos.dir,
+      qty: pos.qty,
+      lots: pos.lots,
+      entrySpot: pos.entrySpot,
+      exitSpot,
+      entryPrem: pos.entryPrem,
+      exitPrem,
+      exitReason,
+      gross,
+      charges,
+      net
+    });
+  }
+
+  function placePaperOrder(dir) {
+    const vis = getVisibleCandles();
+    if (!vis.length) return;
+    const lastBar = vis[vis.length - 1];
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    const params = getSliderParams();
+    const ordType = document.getElementById("inp-order-type").value;
+    const limPrice = parseFloat(document.getElementById("inp-limit-price").value);
+    const customSl = parseFloat(document.getElementById("inp-custom-sl").value);
+    const customTgt = parseFloat(document.getElementById("inp-custom-tgt").value);
+
+    const refSpot = (ordType === "LIMIT" && !isNaN(limPrice) && limPrice > 0) ? limPrice : lastBar.close;
+    const defaultSlDist = refSpot * (params.slPct / 100);
+    const defaultTgtDist = defaultSlDist * params.rrRatio;
+    const sl = (!isNaN(customSl) && customSl > 0)
+      ? customSl
+      : Math.round((dir === "LONG" ? refSpot - defaultSlDist : refSpot + defaultSlDist) * 100) / 100;
+    const tgt = (!isNaN(customTgt) && customTgt > 0)
+      ? customTgt
+      : Math.round((dir === "LONG" ? refSpot + defaultTgtDist : refSpot - defaultTgtDist) * 100) / 100;
+
+    const algoMeta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
+
+    if (ordType === "LIMIT" && !isNaN(limPrice) && limPrice > 0) {
+      const strike = Math.round(limPrice / spec.step) * spec.step;
+      const contract = params.tradeMode === "OPTION"
+        ? `${spec.sym} ${strike} ${dir === "LONG" ? "CE" : "PE"}`
+        : `${spec.sym} FUT`;
+      paperState.pendingLimits.unshift({
+        id: "LIM_" + Date.now(),
+        instrument: activeInstrument,
+        contract,
+        dir,
+        limitSpot: limPrice,
+        sl,
+        tgt,
+        lots: params.lots,
+        algoName: algoMeta.short
+      });
+      savePaperState();
+      recomputeMockEngine();
+      showToast(`📌 Placed Pending Limit Order: ${contract} @ Spot ₹${limPrice}`);
+      return;
+    }
+
+    openPaperPositionInternal(dir, lastBar.close, sl, tgt, params.lots, `${algoMeta.short} (Manual)`, lastBar.time);
+    recomputeMockEngine();
+    showToast(`✅ Executed Paper ${dir === "LONG" ? "BUY CALL / LONG" : "BUY PUT / SHORT"} @ Spot ₹${lastBar.close}`);
+  }
+
+  function executeActiveAlgoSignalNow() {
+    const bt = lastBacktestByAlgo[activeAlgoId];
+    const vis = getVisibleCandles();
+    if (!vis.length) return;
+    const lastBar = vis[vis.length - 1];
+    if (bt && bt.signals && bt.signals.length > 0) {
+      const lastSig = bt.signals[bt.signals.length - 1];
+      const algoMeta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
+      openPaperPositionInternal(lastSig.dir, lastBar.close, lastSig.sl, lastSig.tgt, getSliderParams().lots, `${algoMeta.short} (Signal Trigger)`, lastBar.time);
+      recomputeMockEngine();
+      showToast(`⚡ Executed ${algoMeta.short} ${lastSig.dir} Signal @ ₹${lastBar.close}!`);
+    } else {
+      showToast("ℹ️ No active signal on current parameters — use BUY CALL or BUY PUT above to test manually.");
+    }
+  }
+
+  function closeSinglePaperPosition(posId) {
+    const vis = getVisibleCandles();
+    const curSpot = vis.length ? vis[vis.length - 1].close : 0;
+    const pos = paperState.openPositions.find(p => p.id === posId);
+    if (!pos) return;
+    closePaperPositionInternal(pos, pos.curSpot || curSpot || pos.entrySpot, "Manual Close ✅", vis.length ? vis[vis.length - 1].time : 0);
+    paperState.openPositions = paperState.openPositions.filter(p => p.id !== posId);
+    savePaperState();
+    recomputeMockEngine();
+    showToast(`✅ Closed ${pos.contract} and booked P&L to Paper Ledger!`);
+  }
+
+  function cancelPendingLimit(limId) {
+    paperState.pendingLimits = paperState.pendingLimits.filter(l => l.id !== limId);
+    savePaperState();
+    recomputeMockEngine();
+    showToast("🗑️ Cancelled pending limit order.");
+  }
+
+  function squareOffAllPaperPositions(reasonLabel = "Manual Square-Off") {
+    if (!paperState.openPositions.length && !paperState.pendingLimits.length) {
+      showToast("ℹ️ No open paper positions to square off.");
+      return;
+    }
+    const vis = getVisibleCandles();
+    const exitTime = vis.length ? vis[vis.length - 1].time : Math.floor(Date.now() / 1000);
+    paperState.openPositions.forEach(pos => {
+      closePaperPositionInternal(pos, pos.curSpot || pos.entrySpot, reasonLabel, exitTime);
+    });
+    paperState.openPositions = [];
+    paperState.pendingLimits = [];
+    savePaperState();
+    recomputeMockEngine();
+    showToast("⏹️ Squared off all open paper positions!");
+  }
+
+  function backtestActiveAlgoToTrades() {
+    const bt = lastBacktestByAlgo[activeAlgoId];
+    const algoMeta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
+    if (!bt || !bt.trades || !bt.trades.length) {
+      showToast(`ℹ️ ${algoMeta.short} generated 0 completed trades on this window.`);
+      return;
+    }
+    const imported = bt.trades.map((t, idx) => ({
+      id: `BT_${activeAlgoId}_${idx}_${Date.now()}`,
+      entryTime: t.entryTime,
+      exitTime: t.exitTime,
+      contract: t.contract,
+      algoName: `${algoMeta.short} (Session Sim)`,
+      dir: t.dir,
+      qty: t.qty,
+      lots: t.lots,
+      entrySpot: t.entrySpot,
+      exitSpot: t.exitSpot,
+      entryPrem: t.entryPrem,
+      exitPrem: t.exitPrem,
+      exitReason: t.exitReason,
+      gross: t.gross,
+      charges: t.charges,
+      net: t.net
+    })).reverse();
+
+    paperState.closedTrades = [
+      ...imported,
+      ...paperState.closedTrades.filter(t => !String(t.id).startsWith(`BT_${activeAlgoId}_`))
+    ];
+    savePaperState();
+    recomputeMockEngine();
+    showToast(`🚀 Simulated & logged ${imported.length} trades from ${algoMeta.short} into your Paper Ledger!`);
+  }
+
+  function clearClosedTradeHistory() {
+    paperState.closedTrades = [];
+    savePaperState();
+    recomputeMockEngine();
+    showToast("🗑️ Cleared closed paper trade history.");
+  }
+
+  function resetPaperAccount() {
+    stopReplayTimer();
+    paperState = {
+      startingCapital: parseFloat(document.getElementById("inp-starting-cap").value) || 1000000,
+      openPositions: [],
+      pendingLimits: [],
+      closedTrades: []
+    };
+    savePaperState();
+    recomputeMockEngine();
+    showToast("🔄 Reset Paper Trading Account to fresh capital!");
+  }
+
+  function exportPaperTradesCSV() {
+    if (!paperState.closedTrades.length) {
+      showToast("ℹ️ No closed paper trades to export yet.");
+      return;
+    }
+    const headers = ["EntryTime,ExitTime,Contract,Algorithm,Direction,Qty,EntrySpot,ExitSpot,EntryPrem,ExitPrem,ExitReason,GrossPnL,Charges,NetPnL"];
+    paperState.closedTrades.forEach(t => {
+      headers.push([
+        formatBarTimeIST(t.entryTime),
+        formatBarTimeIST(t.exitTime),
+        `"${t.contract}"`,
+        `"${t.algoName}"`,
+        t.dir,
+        t.qty,
+        t.entrySpot,
+        t.exitSpot,
+        t.entryPrem,
+        t.exitPrem,
+        `"${t.exitReason}"`,
+        t.gross,
+        t.charges,
+        t.net
+      ].join(","));
+    });
+    const blob = new Blob([headers.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `piai_mock_trades_${activeInstrument}_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast("📄 Downloaded Paper Tradebook CSV!");
+  }
+
+  /* =========================================================================
+     BAR-BY-BAR CANDLE REPLAY SIMULATOR CONTROLS
+     ========================================================================= */
+  function stopReplayTimer() {
+    if (replayTimer) {
+      clearInterval(replayTimer);
+      replayTimer = null;
+    }
+    const btn = document.getElementById("btn-play-pause");
+    if (btn) {
+      btn.textContent = "▶️ Play Replay";
+      btn.className = "btn-primary";
+    }
+  }
+
+  function rewindReplayToStart() {
+    stopReplayTimer();
+    if (!fullCandles.length) return;
+    replayCursor = Math.min(25, fullCandles.length);
+    lastProcessedSignalBarTime = 0;
+    document.getElementById("strip-replay-state").textContent = `⏪ Replay Mode: Bar ${replayCursor}/${fullCandles.length}`;
+    recomputeMockEngine();
+    showToast(`⏪ Rewound chart to Bar ${replayCursor} of ${fullCandles.length} — click ▶️ Play Replay or ⏭️ Step +1 Bar!`);
+  }
+
+  function stepReplayForward(bars = 1) {
+    if (!fullCandles.length) return;
+    const target = Math.min(fullCandles.length, replayCursor + bars);
+    while (replayCursor < target) {
+      replayCursor++;
+      const slice = getVisibleCandles();
+      const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+      const bt = runSingleAlgoBacktest(activeAlgoId, slice, spec, getSliderParams());
+      const lastBar = slice[slice.length - 1];
+      const latestSig = (bt.signals && bt.signals.length && bt.signals[bt.signals.length - 1].idx === slice.length - 1)
+        ? bt.signals[bt.signals.length - 1]
+        : null;
+      evaluatePaperPositionsOnCandle(lastBar, latestSig);
+    }
+    document.getElementById("strip-replay-state").textContent = replayCursor < fullCandles.length
+      ? `⏯️ Replay Active: Bar ${replayCursor}/${fullCandles.length}`
+      : `📡 Live End: Bar ${replayCursor}/${fullCandles.length}`;
+    recomputeMockEngine();
+    if (replayCursor >= fullCandles.length) {
+      stopReplayTimer();
+    }
+  }
+
+  function toggleReplayPlayback() {
+    if (replayTimer) {
+      stopReplayTimer();
+      return;
+    }
+    if (replayCursor >= fullCandles.length) {
+      replayCursor = Math.min(25, fullCandles.length);
+      lastProcessedSignalBarTime = 0;
+    }
+    const speedMs = parseInt(document.getElementById("sel-replay-speed").value, 10) || 450;
+    const btn = document.getElementById("btn-play-pause");
+    if (btn) {
+      btn.textContent = "⏸️ Pause Replay";
+      btn.className = "btn-amber";
+    }
+    replayTimer = setInterval(() => {
+      stepReplayForward(1);
+    }, speedMs);
+  }
+
+  function onReplaySpeedChange() {
+    if (replayTimer) {
+      stopReplayTimer();
+      toggleReplayPlayback();
+    }
+  }
+
+  function jumpReplayToLiveEnd() {
+    stopReplayTimer();
+    replayCursor = fullCandles.length;
+    document.getElementById("strip-replay-state").textContent = `📡 Mode: Live End (Bar ${replayCursor}/${fullCandles.length})`;
+    recomputeMockEngine();
+    showToast("⚡ Jumped to latest live candle!");
+  }
+
+  /* =========================================================================
+     UI RENDERING, CANVAS CHARTS & MULTI-ALGO ARENA
+     ========================================================================= */
+  function selectActiveAlgo(algoId) {
+    activeAlgoId = algoId;
+    const meta = ALGO_CATALOG.find(a => a.id === algoId) || ALGO_CATALOG[0];
+    document.getElementById("strip-active-algo").textContent = `Active Algo: ${meta.short}`;
+    document.getElementById("lbl-algo-tagline").textContent = `Active: ${meta.name} — ${meta.summary}`;
+    recomputeMockEngine();
+    showToast(`🧠 Switched active algorithm to ${meta.name}`);
+  }
+
+  function onInstrumentOrTfChange() {
+    stopReplayTimer();
+    activeInstrument = document.getElementById("sel-underlying").value || "NIFTY";
+    activeTimeframe = document.getElementById("sel-timeframe").value || "5m";
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    document.getElementById("strip-active-sym").textContent = `Instrument: ${spec.label} (Lot: ${spec.lot})`;
+    syncMockMarketCandles(false);
+  }
+
+  function onOrderTypeChange() {
+    const isLim = document.getElementById("inp-order-type").value === "LIMIT";
+    const limInp = document.getElementById("inp-limit-price");
+    if (limInp) {
+      limInp.disabled = !isLim;
+      const vis = getVisibleCandles();
+      if (isLim && vis.length && !limInp.value) {
+        limInp.value = vis[vis.length - 1].close;
+      }
+    }
+  }
+
+  function onParamSliderChange() {
+    document.getElementById("val-atr-mult").textContent = parseFloat(document.getElementById("rng-atr-mult").value).toFixed(1);
+    document.getElementById("val-fast-len").textContent = document.getElementById("rng-fast-len").value;
+    document.getElementById("val-slow-len").textContent = document.getElementById("rng-slow-len").value;
+    document.getElementById("val-sl-pct").textContent = parseFloat(document.getElementById("rng-sl-pct").value).toFixed(2);
+    document.getElementById("val-rr-ratio").textContent = parseFloat(document.getElementById("rng-rr-ratio").value).toFixed(1);
+    recomputeMockEngine();
+  }
+
+  function resetAlgoParams() {
+    document.getElementById("rng-atr-mult").value = "1.8";
+    document.getElementById("rng-fast-len").value = "9";
+    document.getElementById("rng-slow-len").value = "21";
+    document.getElementById("rng-sl-pct").value = "0.45";
+    document.getElementById("rng-rr-ratio").value = "2.0";
+    onParamSliderChange();
+    showToast("🎛️ Reset algorithm parameters to institutional defaults.");
+  }
+
+  function recomputeMockEngine() {
+    const vis = getVisibleCandles();
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    const params = getSliderParams();
+
+    document.getElementById("lbl-replay-cursor").textContent = `Bar: ${vis.length} / ${fullCandles.length}`;
+
+    // Run all 6 algorithms on visible candles
+    lastBacktestByAlgo = {};
+    ALGO_CATALOG.forEach(algo => {
+      lastBacktestByAlgo[algo.id] = runSingleAlgoBacktest(algo.id, vis, spec, params);
+    });
+
+    const activeBt = lastBacktestByAlgo[activeAlgoId] || lastBacktestByAlgo.GAINZ_V2;
+    const lastBar = vis.length ? vis[vis.length - 1] : { close: spec.baseSpot, time: 0 };
+
+    // Refresh open paper positions MTM for current instrument
+    paperState.openPositions.forEach(pos => {
+      if (pos.instrument === activeInstrument && vis.length) {
+        const pDelta = pos.tradeMode === "OPTION" ? 0.52 : 1.0;
+        const spotDiff = pos.dir === "LONG" ? (lastBar.close - pos.entrySpot) : (pos.entrySpot - lastBar.close);
+        pos.curSpot = lastBar.close;
+        pos.curPrem = Math.max(1, Math.round((pos.entryPrem + spotDiff * pDelta) * 100) / 100);
+        pos.mtm = Math.round((pos.curPrem - pos.entryPrem) * pos.qty);
+      }
+    });
+
+    renderAlgoSelectorCards();
+    renderKpiStrip(activeBt, lastBar, spec, params);
+    renderOrderTicketAndMiniPositions(activeBt, lastBar, spec, params);
+    renderArenaLeaderboard();
+    renderPaperLedgerTables();
+    renderAlgoGuideCards();
+    drawMockCandleChart();
+    drawArenaEquityChart();
+  }
+
+  function renderAlgoSelectorCards() {
+    const grid = document.getElementById("algo-selector-grid");
+    if (!grid) return;
+    grid.innerHTML = ALGO_CATALOG.map(a => {
+      const bt = lastBacktestByAlgo[a.id];
+      const wr = bt ? bt.winRate.toFixed(1) : "0.0";
+      const pnl = bt ? bt.netPnl : 0;
+      const sigCount = bt && bt.trades ? bt.trades.length : 0;
+      const isAct = a.id === activeAlgoId;
+      return `
+        <div class="algo-card ${isAct ? "active" : ""}" onclick="selectActiveAlgo('${a.id}')">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
+            <span style="font-weight:800; color:${a.color}; font-size:0.8rem;">${a.name}</span>
+            <span class="badge ${isAct ? "badge-emerald" : "badge-blue"}" style="font-size:0.63rem;">${isAct ? "ACTIVE" : a.badge}</span>
+          </div>
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:6px; min-height:30px;">${a.summary.slice(0, 92)}...</div>
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; border-top:1px solid #1e293b; padding-top:5px;">
+            <span>Win: <strong>${wr}%</strong> (${sigCount} trades)</span>
+            <strong class="${pnl >= 0 ? "pos" : "neg"}">${fmtSignedINR(pnl)}</strong>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderKpiStrip(activeBt, lastBar, spec, params) {
+    const realizedPnl = paperState.closedTrades.reduce((s, t) => s + (t.net || 0), 0);
+    const totalCharges = paperState.closedTrades.reduce((s, t) => s + (t.charges || 0), 0);
+    const openMtm = paperState.openPositions.reduce((s, p) => s + (p.mtm || 0), 0);
+    const netEquity = paperState.startingCapital + realizedPnl + openMtm;
+    const usedMargin = paperState.openPositions.reduce((s, p) => s + Math.round(p.entryPrem * p.qty * (p.tradeMode === "OPTION" ? 1 : 0.2)), 0);
+    const availMargin = Math.max(0, netEquity - usedMargin);
+
+    document.getElementById("kpi-net-equity").textContent = fmtINR(netEquity);
+    document.getElementById("kpi-net-equity").className = "kpi-val " + (netEquity >= paperState.startingCapital ? "pos" : "neg");
+    document.getElementById("kpi-cash-avail").textContent = `Available Margin: ${fmtINR(availMargin)}`;
+
+    document.getElementById("kpi-open-mtm").textContent = fmtSignedINR(openMtm);
+    document.getElementById("kpi-open-mtm").className = "kpi-val " + (openMtm >= 0 ? "pos" : "neg");
+    document.getElementById("kpi-open-count").textContent = `${paperState.openPositions.length} Open · ${paperState.pendingLimits.length} Pending Limit`;
+
+    document.getElementById("kpi-realized-pnl").textContent = fmtSignedINR(realizedPnl);
+    document.getElementById("kpi-realized-pnl").className = "kpi-val " + (realizedPnl >= 0 ? "pos" : "neg");
+    document.getElementById("kpi-charges-paid").textContent = `Closed Trades: ${paperState.closedTrades.length} · Charges: ${fmtINR(totalCharges)}`;
+
+    document.getElementById("kpi-algo-winrate").textContent = `${activeBt.winRate.toFixed(1)}%`;
+    document.getElementById("kpi-algo-winrate").className = "kpi-val " + (activeBt.winRate >= 50 ? "pos" : "neg");
+    document.getElementById("kpi-algo-pf").textContent = `Profit Factor: ${activeBt.profitFactor.toFixed(2)} · Trades: ${activeBt.trades.length}`;
+
+    document.getElementById("kpi-algo-netpnl").textContent = fmtSignedINR(activeBt.netPnl);
+    document.getElementById("kpi-algo-netpnl").className = "kpi-val " + (activeBt.netPnl >= 0 ? "pos" : "neg");
+    const ddPct = (activeBt.maxDrawdown / Math.max(1, paperState.startingCapital)) * 100;
+    document.getElementById("kpi-algo-dd").textContent = `Max Drawdown: ${fmtINR(activeBt.maxDrawdown)} (${ddPct.toFixed(2)}%)`;
+
+    document.getElementById("kpi-live-signal").textContent = activeBt.latestSignal;
+    document.getElementById("kpi-live-signal").className = "kpi-val " + (activeBt.latestSignal.includes("CALL") ? "pos" : activeBt.latestSignal.includes("PUT") ? "neg" : "");
+    const slDist = Math.round(lastBar.close * (params.slPct / 100));
+    const tgtDist = Math.round(slDist * params.rrRatio);
+    document.getElementById("kpi-live-levels").textContent = `Spot: ₹${lastBar.close.toLocaleString("en-IN")} · ±SL: ₹${slDist} · ±Tgt: ₹${tgtDist}`;
+
+    const hdrSig = document.getElementById("hdr-active-signal");
+    if (hdrSig) {
+      hdrSig.textContent = `${spec.sym}: ${activeBt.latestSignal}`;
+      hdrSig.className = "header-pill " + (activeBt.latestSignal.includes("CALL") ? "badge-emerald" : activeBt.latestSignal.includes("PUT") ? "badge-red" : "badge-blue");
+    }
+    document.getElementById("hdr-equity-summary").textContent = `Paper Equity: ${fmtINR(netEquity)} · Realized: ${fmtSignedINR(realizedPnl)} · Open MTM: ${fmtSignedINR(openMtm)}`;
+  }
+
+  function renderOrderTicketAndMiniPositions(activeBt, lastBar, spec, params) {
+    const strike = Math.round(lastBar.close / spec.step) * spec.step;
+    const estPrem = estimateAtmOptionPremium(lastBar.close, spec);
+    const qtyUnits = spec.lot * params.lots;
+
+    document.getElementById("ticket-ltp-badge").textContent = `Spot: ₹${lastBar.close.toLocaleString("en-IN")}`;
+    document.getElementById("ticket-contract-desc").innerHTML = params.tradeMode === "OPTION"
+      ? `Contract: <strong>${spec.sym} ${strike} CE / PE</strong> · Qty: <strong>${qtyUnits}</strong> (${params.lots} Lot × ${spec.lot}) · Est. ATM Option Premium: <strong>₹${estPrem.toFixed(2)}</strong>`
+      : `Contract: <strong>${spec.sym} Spot / Futures</strong> · Qty: <strong>${qtyUnits}</strong> (${params.lots} Lot × ${spec.lot}) · Margin Req (~20%): <strong>${fmtINR(lastBar.close * qtyUnits * 0.2)}</strong>`;
+
+    document.getElementById("btn-long-sub").textContent = params.tradeMode === "OPTION"
+      ? `${spec.sym} ${strike} CE @ ~₹${estPrem.toFixed(1)} (${qtyUnits} qty)`
+      : `Buy ${qtyUnits} ${spec.sym} @ ₹${lastBar.close}`;
+    document.getElementById("btn-short-sub").textContent = params.tradeMode === "OPTION"
+      ? `${spec.sym} ${strike} PE @ ~₹${estPrem.toFixed(1)} (${qtyUnits} qty)`
+      : `Short ${qtyUnits} ${spec.sym} @ ₹${lastBar.close}`;
+
+    const meta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
+    document.getElementById("algo-live-reasoning-box").innerHTML =
+      `<strong>${meta.name} Live Diagnostic:</strong> ${activeBt.latestReason}<br>` +
+      `<span style="color:var(--text-muted);">Rule: ${meta.mathRule}</span>`;
+
+    const miniBox = document.getElementById("mini-open-positions-box");
+    document.getElementById("mini-open-summary").textContent = `${paperState.openPositions.length} Open · ${paperState.pendingLimits.length} Limit`;
+    const rows = [];
+    paperState.openPositions.forEach(p => {
+      rows.push(`
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 8px; border-bottom:1px solid #1e293b; font-size:0.74rem;">
+          <div>
+            <strong>${p.contract}</strong> <span class="badge ${p.dir === "LONG" ? "badge-emerald" : "badge-red"}">${p.dir}</span>
+            <div style="font-size:0.69rem; color:var(--text-muted);">Qty: ${p.qty} · Entry Spot: ₹${p.entrySpot} (SL: ₹${p.sl} / Tgt: ₹${p.tgt})</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="${p.mtm >= 0 ? "pos" : "neg"}" style="font-weight:800;">${fmtSignedINR(p.mtm)}</div>
+            <button type="button" class="btn-danger" style="padding:2px 7px; font-size:0.67rem; margin-top:2px;" onclick="closeSinglePaperPosition('${p.id}')">Close</button>
+          </div>
+        </div>
+      `);
+    });
+    paperState.pendingLimits.forEach(l => {
+      rows.push(`
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-bottom:1px solid #1e293b; font-size:0.73rem;">
+          <div>
+            <span class="badge badge-amber">LIMIT</span> <strong>${l.contract}</strong> (${l.dir}) @ Spot ₹${l.limitSpot}
+          </div>
+          <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.67rem;" onclick="cancelPendingLimit('${l.id}')">Cancel</button>
+        </div>
+      `);
+    });
+    miniBox.innerHTML = rows.length ? rows.join("") : `<div style="padding:14px; text-align:center; color:var(--text-muted); font-size:0.75rem;">No open paper positions. Click <strong>BUY CALL / LONG</strong>, <strong>BUY PUT / SHORT</strong>, or <strong>▶️ Play Replay</strong> with Auto-Pilot ON!</div>`;
+  }
+
+  function renderArenaLeaderboard() {
+    const tbody = document.getElementById("arena-leaderboard-tbody");
+    if (!tbody) return;
+    const ranked = [...ALGO_CATALOG].sort((a, b) => {
+      const pa = (lastBacktestByAlgo[a.id] && lastBacktestByAlgo[a.id].netPnl) || 0;
+      const pb = (lastBacktestByAlgo[b.id] && lastBacktestByAlgo[b.id].netPnl) || 0;
+      return pb - pa;
+    });
+    tbody.innerHTML = ranked.map((a, idx) => {
+      const bt = lastBacktestByAlgo[a.id] || { trades: [], winRate: 0, profitFactor: 0, netPnl: 0, maxDrawdown: 0, latestSignal: "NEUTRAL" };
+      const isAct = a.id === activeAlgoId;
+      return `
+        <tr style="${isAct ? "background:rgba(56,189,248,0.1);" : ""}">
+          <td class="left">
+            <strong style="color:${a.color};">#${idx + 1} ${a.name}</strong>
+            <div style="font-size:0.68rem; color:var(--text-muted);">${a.summary.slice(0, 75)}...</div>
+          </td>
+          <td class="left"><span class="badge badge-blue">${a.regime}</span></td>
+          <td><strong>${bt.trades.length}</strong></td>
+          <td class="${bt.winRate >= 50 ? "pos" : "neg"}"><strong>${bt.winRate.toFixed(1)}%</strong></td>
+          <td>${bt.profitFactor.toFixed(2)}</td>
+          <td class="${bt.netPnl >= 0 ? "pos" : "neg"}"><strong>${fmtSignedINR(bt.netPnl)}</strong></td>
+          <td class="neg">${fmtINR(bt.maxDrawdown)}</td>
+          <td><span class="badge ${bt.latestSignal.includes("CALL") ? "badge-emerald" : bt.latestSignal.includes("PUT") ? "badge-red" : "badge-blue"}">${bt.latestSignal}</span></td>
+          <td>
+            <button type="button" class="${isAct ? "btn-emerald" : "btn-primary"}" style="padding:4px 8px; font-size:0.7rem;" onclick="selectActiveAlgo('${a.id}'); switchMockTab('terminal')">
+              ${isAct ? "✓ Active" : "Use This Algo"}
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function renderPaperLedgerTables() {
+    const openTbody = document.getElementById("ledger-open-tbody");
+    if (openTbody) {
+      openTbody.innerHTML = paperState.openPositions.length
+        ? paperState.openPositions.map(p => `
+            <tr>
+              <td class="left">${formatBarTimeIST(p.time)}</td>
+              <td class="left"><strong>${p.contract}</strong></td>
+              <td class="left">${p.algoName}</td>
+              <td><span class="badge ${p.dir === "LONG" ? "badge-emerald" : "badge-red"}">${p.dir}</span></td>
+              <td>${p.qty} (${p.lots}L)</td>
+              <td>₹${p.entrySpot} / ₹${p.entryPrem}</td>
+              <td>₹${p.curSpot} / ₹${p.curPrem}</td>
+              <td>SL: ₹${p.sl} · Tgt: ₹${p.tgt}</td>
+              <td class="${p.mtm >= 0 ? "pos" : "neg"}"><strong>${fmtSignedINR(p.mtm)}</strong></td>
+              <td><button type="button" class="btn-danger" style="padding:3px 8px; font-size:0.7rem;" onclick="closeSinglePaperPosition('${p.id}')">Square Off</button></td>
+            </tr>
+          `).join("")
+        : `<tr><td colspan="10" style="text-align:center; padding:14px; color:var(--text-muted);">No active open paper positions.</td></tr>`;
+    }
+
+    const closedTbody = document.getElementById("ledger-closed-tbody");
+    if (closedTbody) {
+      closedTbody.innerHTML = paperState.closedTrades.length
+        ? paperState.closedTrades.map(t => `
+            <tr>
+              <td class="left">${formatBarTimeIST(t.entryTime)} → ${formatBarTimeIST(t.exitTime)}</td>
+              <td class="left"><strong>${t.contract}</strong></td>
+              <td class="left">${t.algoName}</td>
+              <td><span class="badge ${t.dir === "LONG" ? "badge-emerald" : "badge-red"}">${t.dir}</span></td>
+              <td>${t.qty}</td>
+              <td>₹${t.entrySpot} → ₹${t.exitSpot}</td>
+              <td>₹${t.entryPrem} → ₹${t.exitPrem}</td>
+              <td class="left">${t.exitReason}</td>
+              <td class="${t.gross >= 0 ? "pos" : "neg"}">${fmtSignedINR(t.gross)}</td>
+              <td style="color:var(--text-muted);">${fmtINR(t.charges)}</td>
+              <td class="${t.net >= 0 ? "pos" : "neg"}"><strong>${fmtSignedINR(t.net)}</strong></td>
+            </tr>
+          `).join("")
+        : `<tr><td colspan="11" style="text-align:center; padding:14px; color:var(--text-muted);">No closed paper trades yet. Click <strong>"🚀 Simulate Full Session Trades into Paper Ledger"</strong> above or place a live mock trade!</td></tr>`;
+    }
+  }
+
+  function renderAlgoGuideCards() {
+    const box = document.getElementById("algo-guide-cards-container");
+    if (!box) return;
+    box.innerHTML = ALGO_CATALOG.map(a => `
+      <div style="background:#090d16; border:1px solid #1e293b; border-radius:10px; padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <strong style="color:${a.color}; font-size:0.88rem;">${a.name}</strong>
+          <span class="badge badge-purple">${a.regime}</span>
+        </div>
+        <div style="font-size:0.75rem; color:#e2e8f0; margin-bottom:6px;">${a.summary}</div>
+        <div style="font-size:0.72rem; color:#93c5fd; background:#050811; padding:7px 9px; border-radius:6px; border:1px solid #1e293b; margin-bottom:6px;">
+          <strong>Exact Entry &amp; Filter Formula:</strong><br>${a.mathRule}
+        </div>
+        <div style="font-size:0.72rem; color:#a7f3d0;">
+          <strong>Why &amp; When to Use:</strong> ${a.strengths}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  /* =========================================================================
+     CANVAS CHART 1: CANDLESTICK + ACTIVE ALGO OVERLAYS + BUY/SELL MARKERS
+     ========================================================================= */
+  function drawMockCandleChart() {
+    const canvas = document.getElementById("mock-candle-canvas");
+    if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (rect.width < 20 || rect.height < 20) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const W = rect.width;
+    const H = rect.height;
+
+    ctx.fillStyle = "#050811";
+    ctx.fillRect(0, 0, W, H);
+
+    const vis = getVisibleCandles();
+    if (vis.length < 5) return;
+
+    const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
+    const meta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
+    const bt = lastBacktestByAlgo[activeAlgoId];
+    if (!bt || !bt.indicators) return;
+
+    const showCount = Math.min(65, vis.length);
+    const startIdx = vis.length - showCount;
+    const slice = vis.slice(startIdx);
+
+    document.getElementById("chart-title-label").textContent = `📊 ${spec.label} (${activeTimeframe}) — ${meta.name}`;
+    const lastIdx = vis.length - 1;
+    const lastRsi = bt.indicators.rsi14 ? bt.indicators.rsi14[lastIdx] : 50;
+    const lastVwap = bt.indicators.vwap ? bt.indicators.vwap[lastIdx] : slice[slice.length - 1].close;
+    const lastSt = bt.indicators.stLine ? bt.indicators.stLine[lastIdx] : slice[slice.length - 1].close;
+    document.getElementById("chart-sub-stats").textContent =
+      `RSI(14): ${lastRsi.toFixed(1)} · VWAP: ₹${lastVwap.toFixed(1)} · SuperTrend: ₹${lastSt.toFixed(1)}`;
+
+    let minP = Infinity, maxP = -Infinity;
+    for (let i = startIdx; i < vis.length; i++) {
+      if (vis[i].low < minP) minP = vis[i].low;
+      if (vis[i].high > maxP) maxP = vis[i].high;
+      if (bt.indicators.stLine && bt.indicators.stLine[i]) {
+        minP = Math.min(minP, bt.indicators.stLine[i]);
+        maxP = Math.max(maxP, bt.indicators.stLine[i]);
+      }
+    }
+    const pad = Math.max(1, (maxP - minP) * 0.08);
+    minP -= pad;
+    maxP += pad;
+
+    const padLeft = 12, padRight = 64, padTop = 16, padBot = 24;
+    const plotW = W - padLeft - padRight;
+    const plotH = H - padTop - padBot;
+    const yOf = p => padTop + (1 - (p - minP) / Math.max(0.01, maxP - minP)) * plotH;
+    const xOf = k => padLeft + ((k + 0.5) / showCount) * plotW;
+
+    // Grid lines
+    ctx.strokeStyle = "rgba(51,65,85,0.35)";
+    ctx.lineWidth = 1;
+    ctx.font = "10px Inter, sans-serif";
+    ctx.fillStyle = "#94a3b8";
+    for (let g = 0; g <= 4; g++) {
+      const py = padTop + (g / 4) * plotH;
+      const pv = maxP - (g / 4) * (maxP - minP);
+      ctx.beginPath();
+      ctx.moveTo(padLeft, py);
+      ctx.lineTo(W - padRight, py);
+      ctx.stroke();
+      ctx.fillText(pv.toFixed(1), W - padRight + 5, py + 3);
+    }
+
+    // Draw VWAP (dashed cyan)
+    if (bt.indicators.vwap) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(56,189,248,0.65)";
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (let k = 0; k < showCount; k++) {
+        const v = bt.indicators.vwap[startIdx + k];
+        if (k === 0) ctx.moveTo(xOf(k), yOf(v));
+        else ctx.lineTo(xOf(k), yOf(v));
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Draw EMA Fast & Slow or Bollinger Bands
+    if (activeAlgoId === "BB_MEAN_REV" && bt.indicators.bb) {
+      ["upper", "lower"].forEach(bandKey => {
+        ctx.strokeStyle = "rgba(168,85,247,0.65)";
+        ctx.lineWidth = 1.3;
+        ctx.beginPath();
+        for (let k = 0; k < showCount; k++) {
+          const v = bt.indicators.bb[bandKey][startIdx + k];
+          if (k === 0) ctx.moveTo(xOf(k), yOf(v));
+          else ctx.lineTo(xOf(k), yOf(v));
+        }
+        ctx.stroke();
+      });
+    } else if (bt.indicators.emaFast && bt.indicators.emaSlow) {
+      ctx.strokeStyle = "rgba(251,191,36,0.75)";
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      for (let k = 0; k < showCount; k++) {
+        const v = bt.indicators.emaFast[startIdx + k];
+        if (k === 0) ctx.moveTo(xOf(k), yOf(v));
+        else ctx.lineTo(xOf(k), yOf(v));
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(192,132,252,0.7)";
+      ctx.beginPath();
+      for (let k = 0; k < showCount; k++) {
+        const v = bt.indicators.emaSlow[startIdx + k];
+        if (k === 0) ctx.moveTo(xOf(k), yOf(v));
+        else ctx.lineTo(xOf(k), yOf(v));
+      }
+      ctx.stroke();
+    }
+
+    // Draw SuperTrend Line
+    if (bt.indicators.stLine && bt.indicators.stDir) {
+      ctx.lineWidth = 2;
+      for (let k = 1; k < showCount; k++) {
+        const idx = startIdx + k;
+        ctx.strokeStyle = bt.indicators.stDir[idx] === 1 ? "#10b981" : "#ef4444";
+        ctx.beginPath();
+        ctx.moveTo(xOf(k - 1), yOf(bt.indicators.stLine[idx - 1]));
+        ctx.lineTo(xOf(k), yOf(bt.indicators.stLine[idx]));
+        ctx.stroke();
+      }
+    }
+
+    // Draw Candlesticks
+    const barW = Math.max(3, Math.min(11, (plotW / showCount) * 0.66));
+    for (let k = 0; k < showCount; k++) {
+      const c = slice[k];
+      const cx = xOf(k);
+      const isBull = c.close >= c.open;
+      ctx.strokeStyle = isBull ? "#10b981" : "#ef4444";
+      ctx.fillStyle = isBull ? "#10b981" : "#ef4444";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(cx, yOf(c.high));
+      ctx.lineTo(cx, yOf(c.low));
+      ctx.stroke();
+
+      const topY = yOf(Math.max(c.open, c.close));
+      const botY = yOf(Math.min(c.open, c.close));
+      ctx.fillRect(cx - barW / 2, topY, barW, Math.max(1.5, botY - topY));
+    }
+
+    // Draw Buy/Sell Signal Markers
+    if (bt.signals) {
+      bt.signals.forEach(s => {
+        if (s.idx < startIdx || s.idx >= vis.length) return;
+        const k = s.idx - startIdx;
+        const cx = xOf(k);
+        const c = vis[s.idx];
+        const isLong = s.dir === "LONG";
+        const cy = isLong ? yOf(c.low) + 12 : yOf(c.high) - 12;
+        ctx.fillStyle = isLong ? "#10b981" : "#ef4444";
+        ctx.beginPath();
+        if (isLong) {
+          ctx.moveTo(cx, cy - 8);
+          ctx.lineTo(cx - 6, cy + 4);
+          ctx.lineTo(cx + 6, cy + 4);
+        } else {
+          ctx.moveTo(cx, cy + 8);
+          ctx.lineTo(cx - 6, cy - 4);
+          ctx.lineTo(cx + 6, cy - 4);
+        }
+        ctx.closePath();
+        ctx.fill();
+      });
+    }
+  }
+
+  /* =========================================================================
+     CANVAS CHART 2: 6-ALGO EQUITY CURVE BENCHMARK ARENA
+     ========================================================================= */
+  function drawArenaEquityChart() {
+    const canvas = document.getElementById("arena-equity-canvas");
+    if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (rect.width < 20 || rect.height < 20) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const W = rect.width;
+    const H = rect.height;
+
+    ctx.fillStyle = "#050811";
+    ctx.fillRect(0, 0, W, H);
+
+    let minEq = paperState.startingCapital * 0.995;
+    let maxEq = paperState.startingCapital * 1.005;
+    let maxLen = 2;
+
+    ALGO_CATALOG.forEach(a => {
+      const bt = lastBacktestByAlgo[a.id];
+      if (bt && bt.equityCurve) {
+        if (bt.equityCurve.length > maxLen) maxLen = bt.equityCurve.length;
+        bt.equityCurve.forEach(v => {
+          if (v < minEq) minEq = v;
+          if (v > maxEq) maxEq = v;
+        });
+      }
+    });
+
+    const padL = 16, padR = 85, padT = 18, padB = 24;
+    const plotW = W - padL - padR;
+    const plotH = H - padT - padB;
+    const yOf = v => padT + (1 - (v - minEq) / Math.max(1, maxEq - minEq)) * plotH;
+    const xOf = i => padL + (i / Math.max(1, maxLen - 1)) * plotW;
+
+    ctx.strokeStyle = "rgba(51,65,85,0.35)";
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "10px Inter, sans-serif";
+    for (let g = 0; g <= 4; g++) {
+      const py = padT + (g / 4) * plotH;
+      const val = maxEq - (g / 4) * (maxEq - minEq);
+      ctx.beginPath();
+      ctx.moveTo(padL, py);
+      ctx.lineTo(W - padR, py);
+      ctx.stroke();
+      ctx.fillText(fmtINR(val), W - padR + 6, py + 3);
+    }
+
+    ALGO_CATALOG.forEach((a, aIdx) => {
+      const bt = lastBacktestByAlgo[a.id];
+      if (!bt || !bt.equityCurve || bt.equityCurve.length < 2) return;
+      ctx.strokeStyle = a.color;
+      ctx.lineWidth = a.id === activeAlgoId ? 2.6 : 1.5;
+      ctx.beginPath();
+      bt.equityCurve.forEach((v, idx) => {
+        if (idx === 0) ctx.moveTo(xOf(idx), yOf(v));
+        else ctx.lineTo(xOf(idx), yOf(v));
+      });
+      ctx.stroke();
+
+      // Legend pill at top
+      ctx.fillStyle = a.color;
+      ctx.fillText(`■ ${a.short}`, padL + aIdx * 135, H - 7);
+    });
+  }
+
+  window.addEventListener("resize", () => {
+    drawMockCandleChart();
+    drawArenaEquityChart();
+  });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadPaperState();
+    syncMockMarketCandles(false);
+  });
+</script>
+</body>
+</html>
