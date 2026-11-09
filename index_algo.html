@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PIAI — Portfolio Intelligence AI & DhanHQ v2 Algo Edition</title>
   <style>
     :root {
@@ -52,7 +52,7 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    .header-title { font-size: 1.15rem; font-weight: 800; color: #fff; }
+    .header-title { font-size: 1.15rem; font-weight: 800; color: #0f172a; }
     .header-total { text-align: right; }
     .header-cur-val { font-size: 1.05rem; font-weight: 800; color: var(--emerald); }
     .header-pnl { font-size: 0.75rem; color: var(--text-muted); }
@@ -75,7 +75,7 @@
       font-weight: 600;
       border: 1px solid transparent;
     }
-    .badge-blue { background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); }
+    .badge-blue { background: rgba(56, 189, 248, 0.12); color: #0369a1; border-color: rgba(56, 189, 248, 0.3); }
     .badge-emerald { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; border-color: rgba(52, 211, 153, 0.3); }
     .badge-red { background: rgba(248, 113, 113, 0.16); color: #fca5a5; border-color: rgba(248, 113, 113, 0.45); }
     .badge-amber { background: rgba(251, 191, 36, 0.14); color: #fde68a; border-color: rgba(251, 191, 36, 0.35); }
@@ -106,21 +106,21 @@
       align-items: center;
       gap: 5px;
     }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-emerald { background: #059669; color: #fff; }
+    .btn-primary { background: #2563eb; color: #0f172a; }
+    .btn-emerald { background: #059669; color: #0f172a; }
     .btn-secondary { background: #1f2937; color: #e5e7eb; border: 1px solid #374151; }
     .btn-danger { background: #991b1b; color: #fecaca; }
-    .btn-algo { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: 1px solid #38bdf8; }
+    .btn-algo { background: linear-gradient(135deg, #0284c7, #2563eb); color: #0f172a; border: 1px solid #38bdf8; }
 
     .sync-banner {
       display: none;
-      background: #0c192c;
+      background: #f0f9ff;
       border: 1px solid #0284c7;
       border-radius: 8px;
       padding: 8px 12px;
       margin-bottom: 12px;
       font-size: 0.76rem;
-      color: #7dd3fc;
+      color: #0369a1;
     }
     .sync-banner.active { display: block; }
     .sync-progress-bar { height: 4px; background: #1e293b; border-radius: 999px; margin-top: 6px; overflow: hidden; }
@@ -145,7 +145,7 @@
       font-weight: 600;
       white-space: nowrap;
     }
-    .tab-btn.active { background: #1e3a8a; color: #fff; border-color: #3b82f6; }
+    .tab-btn.active { background: #1e3a8a; color: #0f172a; border-color: #3b82f6; }
 
     .kpi-grid {
       display: grid;
@@ -175,7 +175,7 @@
     .card-title {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #fff;
+      color: #0f172a;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
@@ -211,7 +211,7 @@
     .search-input, .watchlist-input {
       background: #090d16;
       border: 1px solid #374151;
-      color: #fff;
+      color: #0f172a;
       padding: 7px 10px;
       border-radius: 8px;
       font-size: 0.78rem;
@@ -226,7 +226,7 @@
       font-size: 0.73rem;
       cursor: pointer;
     }
-    .filter-chip.active { background: #2563eb; color: #fff; border-color: #60a5fa; }
+    .filter-chip.active { background: #2563eb; color: #0f172a; border-color: #60a5fa; }
 
     .stock-card {
       background: var(--bg-card);
@@ -240,7 +240,7 @@
     .stock-summary { padding: 10px 12px; cursor: pointer; }
     .stock-top, .stock-bottom { display: flex; justify-content: space-between; align-items: center; }
     .stock-bottom { margin-top: 6px; font-size: 0.76rem; }
-    .stock-name { font-weight: 700; color: #fff; font-size: 0.85rem; }
+    .stock-name { font-weight: 700; color: #0f172a; font-size: 0.85rem; }
     .stock-meta { font-size: 0.72rem; color: var(--text-muted); }
     .stock-price { text-align: right; }
     .stock-ltp { font-weight: 700; font-size: 0.82rem; }
@@ -263,7 +263,7 @@
 
     .rec-card { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
     .rec-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; }
-    .rec-name { color: #fff; }
+    .rec-name { color: #0f172a; }
     .rec-size { color: var(--accent); }
     .rec-note { font-size: 0.75rem; color: var(--text-muted); }
     .alert-pill { padding: 10px 12px; border-radius: 8px; font-size: 0.78rem; }
@@ -300,7 +300,7 @@
       bottom: 18px;
       right: 20px;
       background: linear-gradient(135deg, #2563eb, #7c3aed);
-      color: #fff;
+      color: #0f172a;
       border: none;
       border-radius: 999px;
       padding: 11px 18px;
@@ -330,15 +330,331 @@
     .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 0.77rem; }
     .chat-bubble { padding: 8px 11px; border-radius: 10px; max-width: 88%; line-height: 1.45; }
     .chat-bubble-ai { background: #1e293b; color: #e2e8f0; align-self: flex-start; }
-    .chat-bubble-user { background: #2563eb; color: #fff; align-self: flex-end; }
+    .chat-bubble-user { background: #2563eb; color: #0f172a; align-self: flex-end; }
     .chat-prompts { display: flex; gap: 6px; overflow-x: auto; padding: 6px 10px; background: #090d16; }
     .prompt-chip { background: #1e293b; color: #93c5fd; border: 1px solid #334155; border-radius: 999px; padding: 3px 9px; font-size: 0.7rem; white-space: nowrap; cursor: pointer; }
     .chat-input-bar { display: flex; padding: 8px; background: #1e293b; gap: 6px; }
-    .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; color: #fff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem; }
-    .chat-send-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 0 12px; font-weight: 600; cursor: pointer; }
+    .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; color: #0f172a; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem; }
+    .chat-send-btn { background: #2563eb; color: #0f172a; border: none; border-radius: 8px; padding: 0 12px; font-weight: 600; cursor: pointer; }
+  
+    /* =====================================================================
+       PIAI CRISP INSTITUTIONAL LIGHT THEME & MOBILE/LAPTOP RESPONSIVE SYSTEM
+       Compatible with Desktop/Laptop & Mobile (Android Chrome & iOS Safari)
+       ===================================================================== */
+    :root {
+      --bg-dark: #f1f5f9 !important;
+      --bg-card: #ffffff !important;
+      --bg-card-alt: #f8fafc !important;
+      --border: #cbd5e1 !important;
+      --border-light: #94a3b8 !important;
+      --text-main: #0f172a !important;
+      --text-muted: #475569 !important;
+      --accent: #0284c7 !important;
+      --emerald: #059669 !important;
+      --red: #dc2626 !important;
+      --amber: #d97706 !important;
+      --purple: #7c3aed !important;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
+    }
+    body {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+      overflow-x: hidden;
+    }
+    code {
+      background: #e2e8f0 !important;
+      color: #0369a1 !important;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+    /* Unified Global Top App Navigation Bar (All 4 HTML Modules in One Place) */
+    .global-app-bar {
+      background: #ffffff;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 8px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .global-app-bar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .app-module-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+      align-items: center;
+    }
+    .app-nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #334155;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+    .app-nav-tab:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      transform: translateY(-1px);
+    }
+    .app-nav-tab.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
+    }
+    .global-util-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Light Theme Header & Cards */
+    .top-header {
+      background: linear-gradient(90deg, #ffffff 0%, #f0f9ff 50%, #ffffff 100%) !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+      position: relative !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .header-title, .brand-title, .card-title {
+      color: #0f172a !important;
+    }
+    .card, .kpi-card, .stock-card, .upload-card, .control-bar, .toolbar-card, .simple-bar, .strategy-spotlight, details.advanced-drawer {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .strategy-spotlight {
+      background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%) !important;
+      border: 1px solid #38bdf8 !important;
+    }
+    .setup-steps, .replay-bar, .algo-card, .rec-card, .sim-toggle-row, .action-item, .stock-expanded {
+      background: #f8fafc !important;
+      border-color: #334155 !important;
+      color: #0f172a !important;
+    }
+    .algo-card.active {
+      background: #e0f2fe !important;
+      border-color: #0284c7 !important;
+    }
+    .stock-name, .rec-name { color: #0f172a !important; }
+    .data-row { border-bottom: 1px solid #e2e8f0 !important; }
+
+    /* Strict Separation Between Clickable Buttons vs. Read-Only Badges/Pills (Requirement #9) */
+    button, .btn-primary, .btn-secondary, .btn-emerald, .btn-danger, .btn-algo, .btn-purple, .btn-amber {
+      border-radius: 8px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    }
+    .btn-primary { background: #2563eb !important; color: #ffffff !important; border: 1px solid #1d4ed8 !important; }
+    .btn-emerald { background: #059669 !important; color: #ffffff !important; border: 1px solid #047857 !important; }
+    .btn-purple, .btn-algo { background: #7c3aed !important; color: #ffffff !important; border: 1px solid #6d28d9 !important; }
+    .btn-amber { background: #d97706 !important; color: #ffffff !important; border: 1px solid #b45309 !important; }
+    .btn-danger { background: #dc2626 !important; color: #ffffff !important; border: 1px solid #b91c1c !important; }
+    .btn-secondary {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+    }
+    .btn-secondary:hover { background: #e2e8f0 !important; }
+
+    /* Non-Button Informational Badges & Status Pills */
+    span.badge, div.badge, .header-signal-pill, .header-pill {
+      border-radius: 6px !important;
+      box-shadow: none !important;
+      font-weight: 700 !important;
+    }
+    .badge-blue { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #7dd3fc !important; }
+    .badge-emerald { background: #dcfce7 !important; color: #047857 !important; border: 1px solid #6ee7b7 !important; }
+    .badge-red { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important; }
+    .badge-amber { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; }
+    .badge-purple { background: #f3e8ff !important; color: #6d28d9 !important; border: 1px solid #d8b4fe !important; }
+
+    /* Sub-Navigation Tabs & Filter Chips */
+    .nav-tabs {
+      border-bottom: 2px solid #e2e8f0 !important;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .tab-btn {
+      background: #f8fafc !important;
+      color: #475569 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 700 !important;
+    }
+    .tab-btn.active {
+      background: #0f172a !important;
+      color: #ffffff !important;
+      border-color: #0f172a !important;
+    }
+    .filter-chip {
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 600 !important;
+      border-radius: 8px !important;
+    }
+    .filter-chip.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+    }
+
+    /* Inputs, Selects & Tables in Light Theme */
+    .search-input, .watchlist-input, .inp-field, select, input[type="text"], input[type="number"], input[type="password"] {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+    }
+    .search-input:focus, .watchlist-input:focus, .inp-field:focus {
+      outline: 2px solid #38bdf8 !important;
+      border-color: #0284c7 !important;
+    }
+    th {
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+    }
+    td {
+      border-bottom: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .chain-strike-col {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .code-box, pre {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+
+    /* Modals, Top-Right Close Button & Chat Window */
+    .modal-backdrop {
+      background: rgba(15, 23, 42, 0.55) !important;
+      backdrop-filter: blur(3px);
+    }
+    .modal-box {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22) !important;
+    }
+    .close-x-btn {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 0 !important;
+      cursor: pointer;
+    }
+    .close-x-btn:hover {
+      background: #fee2e2 !important;
+      color: #b91c1c !important;
+      border-color: #fca5a5 !important;
+    }
+    .chat-window {
+      background: #ffffff !important;
+      border: 1px solid #94a3b8 !important;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18) !important;
+    }
+    .chat-header {
+      background: #0f172a !important;
+      color: #ffffff !important;
+    }
+    .chat-bubble-ai {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1;
+    }
+    .chat-prompts { background: #f8fafc !important; border-top: 1px solid #e2e8f0; }
+    .prompt-chip { background: #e0f2fe !important; color: #0369a1 !important; border-color: #0369a1 !important; }
+    .chat-input-bar { background: #f1f5f9 !important; border-top: 1px solid #cbd5e1; }
+    .chat-input { background: #ffffff !important; color: #0f172a !important; border-color: #94a3b8 !important; }
+
+    /* Privacy Blur Mode when active on body */
+    body.privacy-masked .mask-sensitive {
+      filter: blur(6px);
+      user-select: none;
+    }
+
+    /* Responsive Laptop & Mobile Rules (Android Chrome & iOS Safari) */
+    @media (max-width: 768px) {
+      .global-app-bar { padding: 6px 10px; }
+      .app-nav-tab { padding: 6px 10px; font-size: 0.74rem; }
+      .container { padding: 0 10px !important; margin: 10px auto !important; }
+      .grid-2, .grid-equal { grid-template-columns: 1fr !important; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+      .header-top, .header-inner { flex-direction: column; align-items: flex-start !important; }
+      .header-total, .header-right { text-align: left !important; width: 100%; }
+      /* Prevent iOS Safari auto-zoom on input focus */
+      input[type="text"], input[type="number"], input[type="password"], select, textarea, .search-input, .watchlist-input, .inp-field, .chat-input {
+        font-size: 16px !important;
+      }
+      .chat-window {
+        right: 10px !important;
+        left: 10px !important;
+        width: auto !important;
+        bottom: 68px !important;
+        height: 68vh !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .kpi-grid { grid-template-columns: 1fr !important; }
+    }
+
   </style>
 </head>
 <body>
+<!-- UNIFIED GLOBAL APP NAVIGATION BAR (ALL 4 MODULES IN ONE PLACE) -->
+<div class="global-app-bar">
+  <div class="global-app-bar-inner">
+    <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
+      <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio Hub</button><button type="button" class="app-nav-tab active" onclick="navigateToModule('index_algo.html')">🤖 Equity Algo Studio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock Trading Lab</button>
+    </div>
+      <div class="global-util-btns">
+        <button type="button" class="btn-secondary" id="btn-privacy-mask" style="padding:5px 10px; font-size:0.73rem;" onclick="togglePrivacyMaskMode()" title="Mask ₹ values and quantities for screen sharing">👁️ Privacy Mask: OFF</button>
+        <button type="button" class="btn-secondary" id="btn-vault-lock-top" style="padding:5px 10px; font-size:0.73rem;" onclick="openOrTriggerVaultLock()" title="Lock or configure Portfolio Security PIN">🔒 Vault Lock</button>
+        <button type="button" class="btn-emerald" id="btn-live-sync" style="padding:5px 11px; font-size:0.74rem;" onclick="syncLiveNSEPrices(true)">⚡ Sync Live Prices</button>
+      </div>
+  </div>
+</div>
+
 
 <div class="top-header">
   <div class="header-top">
@@ -357,26 +673,26 @@
     <span class="badge badge-blue" id="badge-sensex" onclick="promptManualIndex('^BSESN', 'SENSEX')" style="cursor:pointer;" title="Click to refresh or override">SENSEX: Syncing...</span>
     <span class="badge badge-blue" id="badge-banknifty" onclick="promptManualIndex('^NSEBANK', 'BANK NIFTY')" style="cursor:pointer;" title="Click to refresh or override">BANK NIFTY: Syncing...</span>
     <span class="badge badge-amber" id="badge-vix" onclick="promptManualIndex('^INDIAVIX', 'INDIA VIX')" style="cursor:pointer;" title="Click to refresh or override">INDIA VIX: Syncing...</span>
-    <button type="button" class="badge badge-purple" onclick="navigateToModule('index.html')" style="cursor:pointer;">📊 Standard Edition</button>
-    <button type="button" class="badge badge-emerald" onclick="navigateToModule('index_options.html')" style="cursor:pointer; font-weight:700;" title="Open Standalone F&amp;O Options &amp; GainzAlgo V2 Alpha Hub">🎯 F&amp;O Options &amp; GainzAlgo Hub</button>
-    <button type="button" class="badge badge-amber" onclick="navigateToModule('index_mock.html')" style="cursor:pointer; font-weight:700;" title="Open Mock Trading &amp; 6-Algo Strategy Simulator">🧪 Mock Algo Lab</button>
+    
+    
+    
     <span class="badge badge-emerald" id="badge-autosync" onclick="cycleAutoSyncInterval()" style="cursor:pointer; margin-left:auto;" title="Click to change auto-sync frequency">🔄 Auto-Sync: 60s</span>
   </div>
 </div>
 
 <div class="container">
 
-  <div class="upload-card">
+  <div class="upload-card" style="display:none;">
     <div>
-      <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Portfolio Data &amp; Live Market Feed</div>
+      <div style="font-weight: 700; font-size: 0.88rem; color: #0f172a;">Portfolio Data &amp; Live Market Feed</div>
       <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
         100% Dynamic · 8-Second Feed Timeout Guard · Live NSE/BSE Quotes &amp; Universal Broker CSV Parser
       </div>
     </div>
     <div class="upload-btn-group">
-      <div style="display:inline-flex; align-items:center; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:2px 6px; gap:6px;">
+      <div style="display:inline-flex; align-items:center; background:#f1f5f9; border:1px solid #334155; border-radius:8px; padding:2px 6px; gap:6px;">
         <span style="font-size:0.7rem; color:#94a3b8; font-weight:600;">CSV Broker:</span>
-        <select id="csv-broker-select" style="background:#0f172a; color:#f8fafc; border:1px solid #475569; border-radius:6px; padding:4px 6px; font-size:0.74rem; font-weight:600;">
+        <select id="csv-broker-select" style="background:#ffffff; color:#0f172a; border:1px solid #475569; border-radius:6px; padding:4px 6px; font-size:0.74rem; font-weight:600;">
           <option value="Kotak" selected>🏦 Kotak Securities</option>
           <option value="Dhan">⚡ DhanHQ</option>
           <option value="INDmoney">🟣 INDmoney</option>
@@ -387,8 +703,8 @@
           <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
         </label>
       </div>
-      <button type="button" class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices(true)">⚡ Sync Live NSE Prices</button>
-      <button type="button" class="btn-secondary" style="border:1px solid #38bdf8; color:#7dd3fc;" onclick="openReliabilityModal()">🛡️ Feed Diagnostics &amp; Worker</button>
+      <button type="button" class="btn-emerald" onclick="syncLiveNSEPrices(true)">⚡ Sync Live NSE Prices</button>
+      <button type="button" class="btn-secondary" style="border:1px solid #38bdf8; color:#0369a1;" onclick="openReliabilityModal()">🛡️ Feed Diagnostics &amp; Worker</button>
       <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#0284c7,#7c3aed);" onclick="toggleDhanModal()">🔗 Connect Brokers (Dhan · Kotak · INDmoney)</button>
       <button type="button" class="btn-algo" style="padding:7px 13px; font-size:0.78rem;" onclick="switchTab('algo')">🤖 Dhan Algo Hub</button>
       <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#2563eb);" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Algo</button>
@@ -399,19 +715,19 @@
   </div>
 
   <!-- MULTI-BROKER FREE API INTEGRATION HUB (DHANHQ + KOTAK NEO + INDMONEY) -->
-  <div class="card" id="dhan-config-card" style="display: none; margin-bottom: 12px; border: 1px solid #0284c7; background: #0c192c;">
-    <div class="card-title" style="color: #38bdf8;">
+  <div class="card" id="dhan-config-card" style="display: none; margin-bottom: 12px; border: 1px solid #0284c7; background: #f0f9ff;">
+    <div class="card-title" style="color: #0284c7;">
       <span>🔗 Multi-Broker Free API Integration Hub — Non-Destructive Broker-Wise Sync (Stocks &amp; ETFs)</span>
-      <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleDhanModal()">✕ Close</button>
+      <button type="button" class="close-x-btn" onclick="toggleDhanModal()" title="Close">✕</button>
     </div>
-    <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:10px; line-height:1.45;">
+    <div style="font-size:0.75rem; color:#334155; margin-bottom:10px; line-height:1.45;">
       Each broker imports into its own dedicated <strong>Broker Slice</strong> (<code>🏦 Kotak</code>, <code>⚡ Dhan</code>, <code>🟣 INDmoney</code>) so syncing one broker <strong>never overrides</strong> your stocks or ETFs from another broker. All three broker APIs below are <strong>₹0/month Free Tier</strong> for fetching demat holdings, positions, stocks, and ETFs.
     </div>
 
     <!-- Shared Cloudflare Worker Relay Bar -->
-    <div style="background:#070d19; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+    <div style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
       <div style="flex:1; min-width:240px;">
-        <label style="font-size:0.68rem; color:#7dd3fc; font-weight:700;">Cloudflare Worker CORS Relay URL (Shared across Dhan, Kotak Neo &amp; INDmoney)</label>
+        <label style="font-size:0.68rem; color:#0369a1; font-weight:700;">Cloudflare Worker CORS Relay URL (Shared across Dhan, Kotak Neo &amp; INDmoney)</label>
         <input type="text" id="dhan-proxy-url" class="watchlist-input" style="margin-bottom:0; margin-top:3px;" placeholder="https://piai-relay.yourname.workers.dev/?url=">
       </div>
       <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:6px 10px;" onclick="copyCloudflareWorkerCode()">📋 Copy Multi-Broker Worker Script</button>
@@ -419,7 +735,7 @@
     </div>
 
     <!-- Broker Sub-Tabs -->
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; border-bottom:1px solid #1e293b; padding-bottom:8px;">
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
       <button type="button" class="filter-chip active" id="brk-tab-btn-dhan" onclick="switchBrokerApiTab('dhan')">⚡ DhanHQ v2 API (₹0 Free)</button>
       <button type="button" class="filter-chip" id="brk-tab-btn-kotak" onclick="switchBrokerApiTab('kotak')">🏦 Kotak Neo / Securities API (₹0 Free)</button>
       <button type="button" class="filter-chip" id="brk-tab-btn-indmoney" onclick="switchBrokerApiTab('indmoney')">🟣 INDmoney / INDstocks API (₹0 Free)</button>
@@ -453,7 +769,7 @@
 
     <!-- BROKER PANEL 2: KOTAK NEO / SECURITIES (FREE TRADE API V2) -->
     <div id="brk-panel-kotak" class="broker-api-panel" style="display:none;">
-      <div style="font-size:0.72rem; color:#93c5fd; margin-bottom:8px; line-height:1.45;">
+      <div style="font-size:0.72rem; color:#1d4ed8; margin-bottom:8px; line-height:1.45;">
         <strong>Kotak Neo Free Trade API v2 (₹0/mo):</strong> In Kotak Neo App/Web, go to <strong>More / Invest → Trade API → Generate Application</strong> to copy your plain <strong>Consumer Key / Access Token</strong>, and complete one-time <strong>TOTP Registration</strong>. Enter your TOTP + MPIN below to authenticate (or paste an existing Session <code>Auth</code> Token + <code>Sid</code>) and fetch <code>GET /portfolio/v1/holdings</code> &amp; <code>/quick/user/positions</code>.
       </div>
       <div class="form-grid">
@@ -499,7 +815,7 @@
 
     <!-- BROKER PANEL 3: INDMONEY / INDSTOCKS (FREE API) -->
     <div id="brk-panel-indmoney" class="broker-api-panel" style="display:none;">
-      <div style="font-size:0.72rem; color:#d8b4fe; margin-bottom:8px; line-height:1.45;">
+      <div style="font-size:0.72rem; color:#6d28d9; margin-bottom:8px; line-height:1.45;">
         <strong>INDmoney / INDstocks Free Trading API (₹0/mo):</strong> Log in to <code>indstocks.com/app/api-trading/access-tokens</code> (or click <strong>Algo Trading</strong> on INDstocks web) to copy your 24-hour <strong>Access Token</strong> (or generate one via TOTP using your static Client ID <code>x-api-key</code> + MPIN + TOTP). Calls <code>GET https://api.indstocks.com/portfolio/holdings</code> &amp; <code>/portfolio/positions</code> to import your Stocks &amp; ETFs.
       </div>
       <div class="form-grid">
@@ -527,7 +843,7 @@
       </div>
     </div>
 
-    <div id="dhan-status-msg" style="font-size: 0.75rem; color: #7dd3fc; margin-top: 10px; padding: 8px; border-radius: 6px; background: #060b14; border: 1px solid #1e293b;">
+    <div id="dhan-status-msg" style="font-size: 0.75rem; color: #0369a1; margin-top: 10px; padding: 8px; border-radius: 6px; background: #f8fafc; border: 1px solid #cbd5e1;">
       Ready — select a broker tab above (DhanHQ, Kotak Neo, or INDmoney) to sync your Stocks &amp; ETFs without overriding other brokers.
     </div>
   </div>
@@ -579,22 +895,18 @@
     <div class="sync-progress-bar"><div class="sync-progress-fill" id="sync-progress-fill"></div></div>
   </div>
 
-  <!-- NAVIGATION TABS -->
+  <!-- DEDICATED EQUITY ALGO STUDIO NAVIGATION TABS (NO DUPLICATE PORTFOLIO TABS) -->
   <div class="nav-tabs">
-    <button type="button" class="tab-btn active" onclick="switchTab('dashboard')">📊 Overview</button>
-    <button type="button" class="tab-btn" onclick="switchTab('stocks')">📈 Stocks <span id="tab-stocks-count">(0)</span></button>
-    <button type="button" class="tab-btn" onclick="switchTab('mf')">🏦 MF / ETF / Bonds <span id="tab-mf-count">(0)</span></button>
-    <button type="button" class="tab-btn" onclick="switchTab('recs')">🎯 Buy &amp; Scaling Recs</button>
-    <button type="button" class="tab-btn" onclick="switchTab('alerts')">🚨 Exit &amp; Risk Radar <span id="tab-alerts-count">(0)</span></button>
-    <button type="button" class="tab-btn" onclick="switchTab('charts')">📉 Visual Analytics</button>
-    <button type="button" class="tab-btn" onclick="switchTab('sim')">🔮 What-If Simulator</button>
-    <button type="button" class="tab-btn" onclick="switchTab('tax')">🧾 Tax Harvest</button>
-    <button type="button" class="tab-btn" onclick="switchTab('wealth')">🚀 Wealth Projector</button>
-    <button type="button" class="tab-btn" onclick="switchTab('algo')">🤖 Dhan Algo Hub</button>
+    <button type="button" class="tab-btn active" onclick="switchTab('algo')">🤖 Equity Algo Signals, Forever GTT &amp; Webhook Studio</button>
+    <button type="button" class="tab-btn" onclick="toggleDhanModal()">⚙️ Connect Brokers (Dhan · Kotak Neo · INDmoney)</button>
+    <button type="button" class="tab-btn" onclick="openReliabilityModal()">🛡️ Feed &amp; Worker Diagnostics</button>
+    <button type="button" class="tab-btn" onclick="navigateToModule('index.html')">📊 Go to Portfolio Holdings Hub ➔</button>
+    <span id="tab-stocks-count" style="display:none;"></span>
+    <span id="tab-mf-count" style="display:none;"></span>
+    <span id="tab-alerts-count" style="display:none;"></span>
   </div>
-
   <!-- ════ TAB 1: OVERVIEW DASHBOARD ════ -->
-  <div id="view-dashboard" class="tab-view">
+  <div id="view-dashboard" class="tab-view" style="display: none;">
     <div class="kpi-grid">
       <div class="kpi-card"><div class="kpi-label">Total Invested</div><div class="kpi-val" id="dash-invested">₹0</div></div>
       <div class="kpi-card"><div class="kpi-label">Current Value</div><div class="kpi-val" id="dash-current">₹0</div></div>
@@ -602,7 +914,7 @@
       <div class="kpi-card"><div class="kpi-label">Overall Return %</div><div class="kpi-val pos" id="dash-pct">0.00%</div></div>
     </div>
 
-    <div class="card" style="border-color:#38bdf8;">
+    <div class="card" style="border-color:#0284c7;">
       <div class="card-title">
         <span>📌 Daily Delta Scorecard &amp; Pinned Baseline Comparison</span>
         <div style="display:flex; gap:6px;">
@@ -610,13 +922,13 @@
           <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.72rem;" onclick="syncLiveNSEPrices(true)">🔄 Refresh Now</button>
         </div>
       </div>
-      <div id="dash-daily-delta-summary" style="font-size:0.78rem; color:#cbd5e1; line-height:1.55;"></div>
+      <div id="dash-daily-delta-summary" style="font-size:0.78rem; color:#334155; line-height:1.55;"></div>
     </div>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-title"><span>🌐 Live Market Context &amp; Asset Breakdown</span></div>
-        <div id="dash-macro-text" style="font-size:0.78rem; color:#cbd5e1; margin-bottom:10px; line-height:1.5;"></div>
+        <div id="dash-macro-text" style="font-size:0.78rem; color:#334155; margin-bottom:10px; line-height:1.5;"></div>
         <div id="dash-asset-breakdown"></div>
       </div>
       <div class="card">
@@ -625,7 +937,7 @@
           <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="fetchAllLiveBenchmarks(true)">🔄 Refresh Indices</button>
         </div>
         <div id="live-benchmarks-table"></div>
-        <div id="dynamic-macro-drivers" style="margin-top:8px; font-size:0.75rem; color:#cbd5e1; line-height:1.5;"></div>
+        <div id="dynamic-macro-drivers" style="margin-top:8px; font-size:0.75rem; color:#334155; line-height:1.5;"></div>
       </div>
     </div>
 
@@ -650,7 +962,7 @@
       <button type="button" class="filter-chip" onclick="setStockFilter('LOSERS', this)">🔴 Losers</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('EXIT', this)">🚨 Flagged Exits</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('BOOK', this)">🟣 Profit Booking</button>
-      <button type="button" class="filter-chip active" id="btn-toggle-broker-group" style="margin-left:auto; border-color:#38bdf8; color:#7dd3fc;" onclick="toggleBrokerGroupingMode()">🗂️ Grouped by Broker: ON</button>
+      <button type="button" class="filter-chip active" id="btn-toggle-broker-group" style="margin-left:auto; border-color:#0284c7; color:#0369a1;" onclick="toggleBrokerGroupingMode()">🗂️ Grouped by Broker: ON</button>
     </div>
     <div id="stocks-list-container"></div>
     <div class="card" style="margin-top:14px;">
@@ -747,7 +1059,7 @@
   <div id="view-sim" class="tab-view" style="display: none;">
     <div class="card">
       <div class="card-title">
-        <div style="color: #c084fc; font-weight: 700; font-size: 0.95rem;">🔮 Dynamic Portfolio Rebalancing &amp; Stress Simulator</div>
+        <div style="color: #7c3aed; font-weight: 700; font-size: 0.95rem;">🔮 Dynamic Portfolio Rebalancing &amp; Stress Simulator</div>
         <button type="button" class="btn-emerald" onclick="applySimulationToPortfolio()" style="padding: 6px 14px; font-size: 0.8rem;">Apply Rebalance to Portfolio</button>
       </div>
       <div class="sim-toggle-row">
@@ -793,7 +1105,7 @@
         <div class="kpi-card"><div class="kpi-label">Unrealized Gains Pool</div><div class="kpi-val pos" id="tax-kpi-gains">₹0</div></div>
         <div class="kpi-card"><div class="kpi-label">Harvestable Loss Pool</div><div class="kpi-val neg" id="tax-kpi-losses">₹0</div></div>
         <div class="kpi-card"><div class="kpi-label">Estimated Tax (Before)</div><div class="kpi-val neg" id="tax-kpi-before">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label" style="color: #a7f3d0;">Tax Saved via Harvesting</div><div class="kpi-val pos" id="tax-kpi-saved">₹0</div></div>
+        <div class="kpi-card"><div class="kpi-label" style="color: #047857;">Tax Saved via Harvesting</div><div class="kpi-val pos" id="tax-kpi-saved">₹0</div></div>
       </div>
       <div class="form-grid">
         <div>
@@ -855,7 +1167,7 @@
           <input type="range" id="slider-w-years" class="rule-slider" min="3" max="30" step="1" value="10" oninput="calculateWealthProjection()">
         </div>
       </div>
-      <canvas id="canvas-wealth-curve" width="750" height="220" style="width:100%; height:220px; background:#070b14; border-radius:8px; margin:10px 0;"></canvas>
+      <canvas id="canvas-wealth-curve" width="750" height="220" style="width:100%; height:220px; background:#f8fafc; border-radius:8px; margin:10px 0;"></canvas>
       <table class="sim-matrix-table">
         <thead><tr><th>Horizon Year</th><th>Monthly SIP</th><th>Total Invested</th><th>Base Case Corpus</th><th>Bull Case (+3% CAGR)</th><th>Milestone Status</th></tr></thead>
         <tbody id="wealth-table-tbody"></tbody>
@@ -864,13 +1176,13 @@
   </div>
   
   <!-- ════ TAB 10: DHANHQ V2 EQUITY ALGO & WEBHOOK HUB ════ -->
-  <div id="view-algo" class="tab-view" style="display: none;">
+  <div id="view-algo" class="tab-view" style="display: block;">
     <div class="card" style="border-color:#0284c7; background:linear-gradient(135deg,#0c192c 0%,#0f172a 100%);">
-      <div class="card-title" style="color:#38bdf8;">
+      <div class="card-title" style="color:#0284c7;">
         <span>🤖 DhanHQ v2 Equity Algo Execution, Forever OCO GTT &amp; 3-Leg Super Order Hub</span>
         <span class="badge badge-blue" id="algo-signal-count">0 Active Signals</span>
       </div>
-      <div style="font-size:0.77rem; color:#cbd5e1; margin-bottom:10px; line-height:1.5;">
+      <div style="font-size:0.77rem; color:#334155; margin-bottom:10px; line-height:1.5;">
         Convert your portfolio's live <strong>EXIT</strong>, <strong>PROFIT BOOKING</strong>, and <strong>WATCHLIST BUY ZONE</strong> signals into ready-to-fire <strong>TradingView Webhook JSONs</strong> (zero Static IP required), <strong>Forever OCO GTT Orders</strong> (<code>/v2/forever/orders</code>), or <strong>3-Leg Atomic Super Orders</strong> (<code>/v2/super/orders</code>).
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -897,14 +1209,14 @@
           <span>🔗 Instant TradingView Webhook JSON Payload</span>
           <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="copyTextFromEl('algo-batch-webhook-json')">📋 Copy JSON</button>
         </div>
-        <pre id="algo-batch-webhook-json" style="background:#050811; border:1px solid #1e293b; border-radius:8px; padding:10px; font-size:0.73rem; color:#a7f3d0; overflow-x:auto;"></pre>
+        <pre id="algo-batch-webhook-json" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:0.73rem; color:#047857; overflow-x:auto;"></pre>
       </div>
       <div class="card">
         <div class="card-title">
           <span>🐍 Python <code>dhanhq</code> Forever OCO GTT Bot</span>
           <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="copyTextFromEl('algo-batch-python-code')">📋 Copy Python</button>
         </div>
-        <pre id="algo-batch-python-code" style="background:#050811; border:1px solid #1e293b; border-radius:8px; padding:10px; font-size:0.73rem; color:#93c5fd; overflow-x:auto;"></pre>
+        <pre id="algo-batch-python-code" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:0.73rem; color:#1d4ed8; overflow-x:auto;"></pre>
       </div>
     </div>
 
@@ -924,9 +1236,9 @@
   <div class="modal-box">
     <div class="card-title">
       <span>🛡️ Feed Diagnostics &amp; Cloudflare Worker Verification (8s Timeout Guard)</span>
-      <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="closeReliabilityModal()">✕ Close</button>
+      <button type="button" class="close-x-btn" onclick="closeReliabilityModal()" title="Close">✕</button>
     </div>
-    <div style="font-size:0.76rem; color:#cbd5e1; margin-bottom:10px; line-height:1.5;">
+    <div style="font-size:0.76rem; color:#334155; margin-bottom:10px; line-height:1.5;">
       Verify your <strong>Cloudflare Worker URL</strong> and <strong>DhanHQ v2 Token</strong> below. All market feed requests enforce a strict <strong>8-second timeout</strong> so failed or blocked requests immediately display a red <code>🔴 Feed Disconnected</code> badge instead of spinning on "Syncing..." forever.
     </div>
     <div class="form-grid">
@@ -940,7 +1252,7 @@
       <button type="button" class="btn-primary" onclick="verifyFeedAndDhanDiagnostics('diag-verify-output')">🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)</button>
       <button type="button" class="btn-secondary" onclick="copyCloudflareWorkerCode()">📋 Copy Cloudflare Worker Script</button>
     </div>
-    <div id="diag-verify-output" style="background:#050811; border:1px solid #1e293b; border-radius:8px; padding:10px; font-size:0.75rem; color:#cbd5e1; margin-bottom:10px;">
+    <div id="diag-verify-output" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:0.75rem; color:#334155; margin-bottom:10px;">
       Click "🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)" above to test live connectivity.
     </div>
     <div id="telemetry-summary-box" style="font-size:0.74rem; color:var(--text-muted);"></div>
@@ -967,7 +1279,7 @@
   <div class="modal-box" style="max-width:760px;">
     <div class="card-title">
       <span id="algo-modal-title">⚡ DhanHQ v2 Algo &amp; Webhook Builder</span>
-      <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="closeAlgoBuilderModal()">✕ Close</button>
+      <button type="button" class="close-x-btn" onclick="closeAlgoBuilderModal()" title="Close">✕</button>
     </div>
     <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
       <button type="button" class="filter-chip active" id="amode-webhook" onclick="setAlgoModalMode('WEBHOOK')">🔗 1. TradingView Webhook</button>
@@ -975,7 +1287,7 @@
       <button type="button" class="filter-chip" id="amode-super" onclick="setAlgoModalMode('SUPER')">🚀 3. 3-Leg Super Order (/v2/super/orders)</button>
       <button type="button" class="filter-chip" id="amode-direct" onclick="setAlgoModalMode('DIRECT')">⚡ 4. Standard Order (/v2/orders)</button>
     </div>
-    <div id="algo-mode-explainer" style="font-size:0.75rem; color:#cbd5e1; background:#090d16; border:1px solid #1e293b; padding:8px 10px; border-radius:8px; margin-bottom:10px;"></div>
+    <div id="algo-mode-explainer" style="font-size:0.75rem; color:#334155; background:#f8fafc; border:1px solid #cbd5e1; padding:8px 10px; border-radius:8px; margin-bottom:10px;"></div>
     <div class="form-grid">
       <div>
         <label style="font-size:0.68rem; color:var(--text-muted);">NSE Symbol</label>
@@ -1024,21 +1336,21 @@
     <div class="grid-2" style="margin-top:10px;">
       <div>
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <strong id="algo-code-left-title" style="font-size:0.74rem; color:#38bdf8;">JSON Payload</strong>
+          <strong id="algo-code-left-title" style="font-size:0.74rem; color:#0284c7;">JSON Payload</strong>
           <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="copyTextFromEl('algo-modal-json-box')">📋 Copy</button>
         </div>
-        <pre id="algo-modal-json-box" style="background:#050811; border:1px solid #1e293b; border-radius:8px; padding:9px; font-size:0.72rem; color:#a7f3d0; overflow-x:auto; max-height:210px;"></pre>
+        <pre id="algo-modal-json-box" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:9px; font-size:0.72rem; color:#047857; overflow-x:auto; max-height:210px;"></pre>
       </div>
       <div>
         <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-          <strong id="algo-code-right-title" style="font-size:0.74rem; color:#c084fc;">Script / SDK Code</strong>
+          <strong id="algo-code-right-title" style="font-size:0.74rem; color:#7c3aed;">Script / SDK Code</strong>
           <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="copyTextFromEl('algo-modal-script-box')">📋 Copy</button>
         </div>
-        <pre id="algo-modal-script-box" style="background:#050811; border:1px solid #1e293b; border-radius:8px; padding:9px; font-size:0.72rem; color:#93c5fd; overflow-x:auto; max-height:210px;"></pre>
+        <pre id="algo-modal-script-box" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:9px; font-size:0.72rem; color:#1d4ed8; overflow-x:auto; max-height:210px;"></pre>
       </div>
     </div>
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px;">
-      <div id="algo-exec-status" style="font-size:0.75rem; color:#7dd3fc;">Ready</div>
+      <div id="algo-exec-status" style="font-size:0.75rem; color:#0369a1;">Ready</div>
       <div style="display:flex; gap:8px;">
         <button type="button" class="btn-secondary" onclick="closeAlgoBuilderModal()">Cancel</button>
         <button type="button" class="btn-emerald" id="btn-fire-dhan-order" onclick="executeLiveDhanOrderFromModal()">📋 Copy Webhook JSON</button>
@@ -1049,10 +1361,10 @@
 
 
 <!-- AI COPILOT CHAT -->
-<button type="button" class="chat-fab" onclick="toggleChatWindow()">🤖 PIAI Copilot</button>
+<button type="button" class="chat-fab" style="display:none;" onclick="toggleChatWindow()">🤖 PIAI Copilot</button>
 <div class="chat-window" id="chat-window">
   <div class="chat-header">
-    <div style="font-weight:700; font-size:0.85rem; color:#fff;">🤖 PIAI Portfolio Copilot</div>
+    <div style="font-weight:700; font-size:0.85rem; color:#0f172a;">🤖 PIAI Portfolio Copilot</div>
     <button type="button" style="background:none; border:none; color:#9ca3af; cursor:pointer; font-size:1rem;" onclick="toggleChatWindow()">✕</button>
   </div>
   <div class="chat-messages" id="chat-messages">
@@ -1383,6 +1695,22 @@
       if (panel) panel.style.display = (k === tabKey) ? "block" : "none";
       if (btn) btn.classList.toggle("active", k === tabKey);
     });
+  }
+
+
+  let privacyMaskActive = false;
+  function togglePrivacyMaskMode() {
+    privacyMaskActive = !privacyMaskActive;
+    document.body.classList.toggle("privacy-masked", privacyMaskActive);
+    const btn = document.getElementById("btn-privacy-mask");
+    if (btn) {
+      btn.textContent = `👁️ Privacy Mask: ${privacyMaskActive ? "ON" : "OFF"}`;
+      btn.className = privacyMaskActive ? "btn-amber" : "btn-secondary";
+    }
+    renderAllViews();
+  }
+  function openOrTriggerVaultLock() {
+    navigateToModule("index.html");
   }
 
   function persistState() {
@@ -2873,7 +3201,7 @@
     if (deltaEl) {
       const base = getOrInitDailyBaseline(grandCur, grandInv);
       const flashBanner = baselineJustPinnedFlash && base
-        ? `<div style="background:rgba(16,185,129,0.18); border:1px solid #34d399; color:#a7f3d0; padding:6px 10px; border-radius:6px; margin-bottom:8px; font-weight:600;">
+        ? `<div style="background:rgba(16,185,129,0.18); border:1px solid #34d399; color:#047857; padding:6px 10px; border-radius:6px; margin-bottom:8px; font-weight:600;">
              ✅ Baseline Snapshot Pinned at <strong>${base.date} ${base.time} IST</strong>! (Pinned Net Worth: <strong>${fmtVal(base.grandCur || 0)}</strong>${base.niftyLtp ? ` · Pinned Nifty: <strong>${base.niftyLtp.toLocaleString("en-IN", {maximumFractionDigits:2})}</strong>` : ''}).
            </div>`
         : "";
@@ -2909,7 +3237,7 @@
       const bStyle = getBrokerBadgeStyle(b);
       const bPnl = st.cur - st.inv;
       const bPct = st.inv > 0 ? (bPnl / st.inv) * 100 : 0;
-      return `<div class="data-row" style="background:rgba(15,23,42,0.55); padding:6px 8px; border-radius:6px; margin-top:4px;">
+      return `<div class="data-row" style="background:#f8fafc; padding:6px 8px; border-radius:6px; margin-top:4px;">
         <span><strong style="color:${bStyle.color};">${bStyle.label}</strong> <span style="font-size:0.72rem; color:var(--text-muted);">(${st.eqCount} Stocks · ${st.etfCount} ETFs)</span></span>
         <span class="${bPnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(st.cur)}</strong> (${fmt(bPnl)} / ${bPct >= 0 ? '+':''}${bPct.toFixed(1)}%)</span>
       </div>`;
@@ -2995,7 +3323,7 @@
         ${isOpen ? `
           <div class="stock-expanded">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-              <span style="color:#e2e8f0;"><strong>Health ${h.h}/100:</strong> ${h.note} (Stop-Loss: ₹${h.sl} · 25% Target: ₹${h.tgt})</span>
+              <span style="color:#1e293b;"><strong>Health ${h.h}/100:</strong> ${h.note} (Stop-Loss: ₹${h.sl} · 25% Target: ₹${h.tgt})</span>
               <div style="display:flex; gap:6px;">
                 <button type="button" class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); promptManualLTP('${safeKey}', false)">✏️ Edit Broker / LTP / Qty</button>
                 <button type="button" class="btn-danger" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); removeHolding('${safeKey}', false)">🗑️ Delete</button>
@@ -3132,9 +3460,9 @@
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 12px; margin-bottom:8px; border-radius:10px; background:${bStyle.bg}; border:1px solid ${bStyle.border};">
             <div>
               <span style="font-size:0.9rem; font-weight:800; color:${bStyle.color};">${bStyle.label}</span>
-              <span style="font-size:0.74rem; color:#e2e8f0; margin-left:8px;"><strong>${bItems.length}</strong> Stock${bItems.length === 1 ? '' : 's'} Listed</span>
+              <span style="font-size:0.74rem; color:#1e293b; margin-left:8px;"><strong>${bItems.length}</strong> Stock${bItems.length === 1 ? '' : 's'} Listed</span>
             </div>
-            <div style="font-size:0.76rem; color:#f8fafc;">
+            <div style="font-size:0.76rem; color:#0f172a;">
               Inv: <strong>${fmtVal(bInv)}</strong> &nbsp;·&nbsp;
               Cur: <strong>${fmtVal(bCur)}</strong> &nbsp;·&nbsp;
               P&amp;L: <strong class="${bPnl >= 0 ? 'pos' : 'neg'}">${fmt(bPnl)} (${bPct >= 0 ? '+' : ''}${bPct.toFixed(2)}%)</strong>
@@ -3182,7 +3510,7 @@
           const bStyle = getBrokerBadgeStyle(b.broker);
           return `<div class="data-row"><span><strong>${b.n}</strong> <span style="font-size:0.65rem; padding:1px 6px; border-radius:999px; background:${bStyle.bg}; color:${bStyle.color}; border:1px solid ${bStyle.border};">${bStyle.short}</span> (Inv: ${fmtVal(b.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(b.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
         }).join("")
-      : `<div class="empty-state" style="padding:12px; color:#fde68a;">No Bonds / InvIT / SGB holdings loaded</div>`;
+      : `<div class="empty-state" style="padding:12px; color:#b45309;">No Bonds / InvIT / SGB holdings loaded</div>`;
   }
 
   function renderDynamicBuyRecs() {
@@ -3221,7 +3549,7 @@
           </div>
         `);
       }
-      intraEl.innerHTML = sigCards.length ? sigCards.join("") : `<div style="padding:8px; color:#a7f3d0; font-size:0.78rem;">Click <strong>⚡ Sync Live NSE Prices</strong> above to refresh intraday signals.</div>`;
+      intraEl.innerHTML = sigCards.length ? sigCards.join("") : `<div style="padding:8px; color:#047857; font-size:0.78rem;">Click <strong>⚡ Sync Live NSE Prices</strong> above to refresh intraday signals.</div>`;
     }
 
     const targetSectors = [

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PIAI — Portfolio Intelligence AI (100% Dynamic Live Dashboard)</title>
   <style>
     :root {
@@ -52,7 +52,7 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
-    .header-title { font-size: 1.15rem; font-weight: 800; color: #fff; }
+    .header-title { font-size: 1.15rem; font-weight: 800; color: #0f172a; }
     .header-total { text-align: right; }
     .header-cur-val { font-size: 1.05rem; font-weight: 800; color: var(--emerald); }
     .header-pnl { font-size: 0.75rem; color: var(--text-muted); }
@@ -75,7 +75,7 @@
       font-weight: 600;
       border: 1px solid transparent;
     }
-    .badge-blue { background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.3); }
+    .badge-blue { background: rgba(56, 189, 248, 0.12); color: #0369a1; border-color: rgba(56, 189, 248, 0.3); }
     .badge-emerald { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; border-color: rgba(52, 211, 153, 0.3); }
     .badge-red { background: rgba(248, 113, 113, 0.16); color: #fca5a5; border-color: rgba(248, 113, 113, 0.45); }
     .badge-amber { background: rgba(251, 191, 36, 0.14); color: #fde68a; border-color: rgba(251, 191, 36, 0.35); }
@@ -106,21 +106,21 @@
       align-items: center;
       gap: 5px;
     }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-emerald { background: #059669; color: #fff; }
+    .btn-primary { background: #2563eb; color: #0f172a; }
+    .btn-emerald { background: #059669; color: #0f172a; }
     .btn-secondary { background: #1f2937; color: #e5e7eb; border: 1px solid #374151; }
     .btn-danger { background: #991b1b; color: #fecaca; }
-    .btn-algo { background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: 1px solid #38bdf8; }
+    .btn-algo { background: linear-gradient(135deg, #0284c7, #2563eb); color: #0f172a; border: 1px solid #38bdf8; }
 
     .sync-banner {
       display: none;
-      background: #0c192c;
+      background: #f0f9ff;
       border: 1px solid #0284c7;
       border-radius: 8px;
       padding: 8px 12px;
       margin-bottom: 12px;
       font-size: 0.76rem;
-      color: #7dd3fc;
+      color: #0369a1;
     }
     .sync-banner.active { display: block; }
     .sync-progress-bar { height: 4px; background: #1e293b; border-radius: 999px; margin-top: 6px; overflow: hidden; }
@@ -145,7 +145,7 @@
       font-weight: 600;
       white-space: nowrap;
     }
-    .tab-btn.active { background: #1e3a8a; color: #fff; border-color: #3b82f6; }
+    .tab-btn.active { background: #1e3a8a; color: #0f172a; border-color: #3b82f6; }
 
     .kpi-grid {
       display: grid;
@@ -175,7 +175,7 @@
     .card-title {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #fff;
+      color: #0f172a;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
@@ -211,7 +211,7 @@
     .search-input, .watchlist-input {
       background: #090d16;
       border: 1px solid #374151;
-      color: #fff;
+      color: #0f172a;
       padding: 7px 10px;
       border-radius: 8px;
       font-size: 0.78rem;
@@ -226,7 +226,7 @@
       font-size: 0.73rem;
       cursor: pointer;
     }
-    .filter-chip.active { background: #2563eb; color: #fff; border-color: #60a5fa; }
+    .filter-chip.active { background: #2563eb; color: #0f172a; border-color: #60a5fa; }
 
     .stock-card {
       background: var(--bg-card);
@@ -240,7 +240,7 @@
     .stock-summary { padding: 10px 12px; cursor: pointer; }
     .stock-top, .stock-bottom { display: flex; justify-content: space-between; align-items: center; }
     .stock-bottom { margin-top: 6px; font-size: 0.76rem; }
-    .stock-name { font-weight: 700; color: #fff; font-size: 0.85rem; }
+    .stock-name { font-weight: 700; color: #0f172a; font-size: 0.85rem; }
     .stock-meta { font-size: 0.72rem; color: var(--text-muted); }
     .stock-price { text-align: right; }
     .stock-ltp { font-weight: 700; font-size: 0.82rem; }
@@ -263,7 +263,7 @@
 
     .rec-card { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
     .rec-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; }
-    .rec-name { color: #fff; }
+    .rec-name { color: #0f172a; }
     .rec-size { color: var(--accent); }
     .rec-note { font-size: 0.75rem; color: var(--text-muted); }
     .alert-pill { padding: 10px 12px; border-radius: 8px; font-size: 0.78rem; }
@@ -300,7 +300,7 @@
       bottom: 18px;
       right: 20px;
       background: linear-gradient(135deg, #2563eb, #7c3aed);
-      color: #fff;
+      color: #0f172a;
       border: none;
       border-radius: 999px;
       padding: 11px 18px;
@@ -330,15 +330,331 @@
     .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 0.77rem; }
     .chat-bubble { padding: 8px 11px; border-radius: 10px; max-width: 88%; line-height: 1.45; }
     .chat-bubble-ai { background: #1e293b; color: #e2e8f0; align-self: flex-start; }
-    .chat-bubble-user { background: #2563eb; color: #fff; align-self: flex-end; }
+    .chat-bubble-user { background: #2563eb; color: #0f172a; align-self: flex-end; }
     .chat-prompts { display: flex; gap: 6px; overflow-x: auto; padding: 6px 10px; background: #090d16; }
     .prompt-chip { background: #1e293b; color: #93c5fd; border: 1px solid #334155; border-radius: 999px; padding: 3px 9px; font-size: 0.7rem; white-space: nowrap; cursor: pointer; }
     .chat-input-bar { display: flex; padding: 8px; background: #1e293b; gap: 6px; }
-    .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; color: #fff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem; }
-    .chat-send-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: 0 12px; font-weight: 600; cursor: pointer; }
+    .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; color: #0f172a; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem; }
+    .chat-send-btn { background: #2563eb; color: #0f172a; border: none; border-radius: 8px; padding: 0 12px; font-weight: 600; cursor: pointer; }
+  
+    /* =====================================================================
+       PIAI CRISP INSTITUTIONAL LIGHT THEME & MOBILE/LAPTOP RESPONSIVE SYSTEM
+       Compatible with Desktop/Laptop & Mobile (Android Chrome & iOS Safari)
+       ===================================================================== */
+    :root {
+      --bg-dark: #f1f5f9 !important;
+      --bg-card: #ffffff !important;
+      --bg-card-alt: #f8fafc !important;
+      --border: #cbd5e1 !important;
+      --border-light: #94a3b8 !important;
+      --text-main: #0f172a !important;
+      --text-muted: #475569 !important;
+      --accent: #0284c7 !important;
+      --emerald: #059669 !important;
+      --red: #dc2626 !important;
+      --amber: #d97706 !important;
+      --purple: #7c3aed !important;
+    }
+    html {
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
+    }
+    body {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+      overflow-x: hidden;
+    }
+    code {
+      background: #e2e8f0 !important;
+      color: #0369a1 !important;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+    /* Unified Global Top App Navigation Bar (All 4 HTML Modules in One Place) */
+    .global-app-bar {
+      background: #ffffff;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 8px 14px;
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .global-app-bar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .app-module-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+      align-items: center;
+    }
+    .app-nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #334155;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+    .app-nav-tab:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      transform: translateY(-1px);
+    }
+    .app-nav-tab.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
+    }
+    .global-util-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Light Theme Header & Cards */
+    .top-header {
+      background: linear-gradient(90deg, #ffffff 0%, #f0f9ff 50%, #ffffff 100%) !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+      position: relative !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .header-title, .brand-title, .card-title {
+      color: #0f172a !important;
+    }
+    .card, .kpi-card, .stock-card, .upload-card, .control-bar, .toolbar-card, .simple-bar, .strategy-spotlight, details.advanced-drawer {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .strategy-spotlight {
+      background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%) !important;
+      border: 1px solid #38bdf8 !important;
+    }
+    .setup-steps, .replay-bar, .algo-card, .rec-card, .sim-toggle-row, .action-item, .stock-expanded {
+      background: #f8fafc !important;
+      border-color: #334155 !important;
+      color: #0f172a !important;
+    }
+    .algo-card.active {
+      background: #e0f2fe !important;
+      border-color: #0284c7 !important;
+    }
+    .stock-name, .rec-name { color: #0f172a !important; }
+    .data-row { border-bottom: 1px solid #e2e8f0 !important; }
+
+    /* Strict Separation Between Clickable Buttons vs. Read-Only Badges/Pills (Requirement #9) */
+    button, .btn-primary, .btn-secondary, .btn-emerald, .btn-danger, .btn-algo, .btn-purple, .btn-amber {
+      border-radius: 8px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+    }
+    .btn-primary { background: #2563eb !important; color: #ffffff !important; border: 1px solid #1d4ed8 !important; }
+    .btn-emerald { background: #059669 !important; color: #ffffff !important; border: 1px solid #047857 !important; }
+    .btn-purple, .btn-algo { background: #7c3aed !important; color: #ffffff !important; border: 1px solid #6d28d9 !important; }
+    .btn-amber { background: #d97706 !important; color: #ffffff !important; border: 1px solid #b45309 !important; }
+    .btn-danger { background: #dc2626 !important; color: #ffffff !important; border: 1px solid #b91c1c !important; }
+    .btn-secondary {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+    }
+    .btn-secondary:hover { background: #e2e8f0 !important; }
+
+    /* Non-Button Informational Badges & Status Pills */
+    span.badge, div.badge, .header-signal-pill, .header-pill {
+      border-radius: 6px !important;
+      box-shadow: none !important;
+      font-weight: 700 !important;
+    }
+    .badge-blue { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #7dd3fc !important; }
+    .badge-emerald { background: #dcfce7 !important; color: #047857 !important; border: 1px solid #6ee7b7 !important; }
+    .badge-red { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important; }
+    .badge-amber { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; }
+    .badge-purple { background: #f3e8ff !important; color: #6d28d9 !important; border: 1px solid #d8b4fe !important; }
+
+    /* Sub-Navigation Tabs & Filter Chips */
+    .nav-tabs {
+      border-bottom: 2px solid #e2e8f0 !important;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .tab-btn {
+      background: #f8fafc !important;
+      color: #475569 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 700 !important;
+    }
+    .tab-btn.active {
+      background: #0f172a !important;
+      color: #ffffff !important;
+      border-color: #0f172a !important;
+    }
+    .filter-chip {
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+      font-weight: 600 !important;
+      border-radius: 8px !important;
+    }
+    .filter-chip.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+    }
+
+    /* Inputs, Selects & Tables in Light Theme */
+    .search-input, .watchlist-input, .inp-field, select, input[type="text"], input[type="number"], input[type="password"] {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+    }
+    .search-input:focus, .watchlist-input:focus, .inp-field:focus {
+      outline: 2px solid #38bdf8 !important;
+      border-color: #0284c7 !important;
+    }
+    th {
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+    }
+    td {
+      border-bottom: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .chain-strike-col {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .code-box, pre {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+
+    /* Modals, Top-Right Close Button & Chat Window */
+    .modal-backdrop {
+      background: rgba(15, 23, 42, 0.55) !important;
+      backdrop-filter: blur(3px);
+    }
+    .modal-box {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #94a3b8 !important;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22) !important;
+    }
+    .close-x-btn {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 0 !important;
+      cursor: pointer;
+    }
+    .close-x-btn:hover {
+      background: #fee2e2 !important;
+      color: #b91c1c !important;
+      border-color: #fca5a5 !important;
+    }
+    .chat-window {
+      background: #ffffff !important;
+      border: 1px solid #94a3b8 !important;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18) !important;
+    }
+    .chat-header {
+      background: #0f172a !important;
+      color: #ffffff !important;
+    }
+    .chat-bubble-ai {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1;
+    }
+    .chat-prompts { background: #f8fafc !important; border-top: 1px solid #e2e8f0; }
+    .prompt-chip { background: #e0f2fe !important; color: #0369a1 !important; border-color: #0369a1 !important; }
+    .chat-input-bar { background: #f1f5f9 !important; border-top: 1px solid #cbd5e1; }
+    .chat-input { background: #ffffff !important; color: #0f172a !important; border-color: #94a3b8 !important; }
+
+    /* Privacy Blur Mode when active on body */
+    body.privacy-masked .mask-sensitive {
+      filter: blur(6px);
+      user-select: none;
+    }
+
+    /* Responsive Laptop & Mobile Rules (Android Chrome & iOS Safari) */
+    @media (max-width: 768px) {
+      .global-app-bar { padding: 6px 10px; }
+      .app-nav-tab { padding: 6px 10px; font-size: 0.74rem; }
+      .container { padding: 0 10px !important; margin: 10px auto !important; }
+      .grid-2, .grid-equal { grid-template-columns: 1fr !important; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+      .header-top, .header-inner { flex-direction: column; align-items: flex-start !important; }
+      .header-total, .header-right { text-align: left !important; width: 100%; }
+      /* Prevent iOS Safari auto-zoom on input focus */
+      input[type="text"], input[type="number"], input[type="password"], select, textarea, .search-input, .watchlist-input, .inp-field, .chat-input {
+        font-size: 16px !important;
+      }
+      .chat-window {
+        right: 10px !important;
+        left: 10px !important;
+        width: auto !important;
+        bottom: 68px !important;
+        height: 68vh !important;
+      }
+    }
+    @media (max-width: 480px) {
+      .kpi-grid { grid-template-columns: 1fr !important; }
+    }
+
   </style>
 </head>
 <body>
+<!-- UNIFIED GLOBAL APP NAVIGATION BAR (ALL 4 MODULES IN ONE PLACE) -->
+<div class="global-app-bar">
+  <div class="global-app-bar-inner">
+    <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
+      <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Equity Algo Studio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock Trading Lab</button>
+    </div>
+      <div class="global-util-btns">
+        <button type="button" class="btn-secondary" id="btn-privacy-mask" style="padding:5px 10px; font-size:0.73rem;" onclick="togglePrivacyMaskMode()" title="Mask ₹ values and quantities for screen sharing">👁️ Privacy Mask: OFF</button>
+        <button type="button" class="btn-secondary" id="btn-vault-lock-top" style="padding:5px 10px; font-size:0.73rem;" onclick="openOrTriggerVaultLock()" title="Lock or configure Portfolio Security PIN">🔒 Vault Lock</button>
+        <button type="button" class="btn-emerald" id="btn-live-sync" style="padding:5px 11px; font-size:0.74rem;" onclick="syncLiveNSEPrices(true)">⚡ Sync Live Prices</button>
+      </div>
+  </div>
+</div>
+
 
 <div class="top-header">
   <div class="header-top">
@@ -357,222 +673,12 @@
     <span class="badge badge-blue" id="badge-sensex" onclick="promptManualIndex('^BSESN', 'SENSEX')" style="cursor:pointer;" title="Click to refresh or override">SENSEX: Syncing...</span>
     <span class="badge badge-blue" id="badge-banknifty" onclick="promptManualIndex('^NSEBANK', 'BANK NIFTY')" style="cursor:pointer;" title="Click to refresh or override">BANK NIFTY: Syncing...</span>
     <span class="badge badge-amber" id="badge-vix" onclick="promptManualIndex('^INDIAVIX', 'INDIA VIX')" style="cursor:pointer;" title="Click to refresh or override">INDIA VIX: Syncing...</span>
-    <button type="button" class="badge badge-purple" onclick="navigateToModule('index_algo.html')" style="cursor:pointer;">🤖 Equity Algo Edition</button>
-    <button type="button" class="badge badge-emerald" onclick="navigateToModule('index_options.html')" style="cursor:pointer; font-weight:700;" title="Open Standalone F&amp;O Options &amp; GainzAlgo V2 Alpha Hub">🎯 F&amp;O Options &amp; GainzAlgo Hub</button>
-    <button type="button" class="badge badge-amber" onclick="navigateToModule('index_mock.html')" style="cursor:pointer; font-weight:700;" title="Open Mock Trading &amp; 6-Algo Strategy Simulator">🧪 Mock Algo Lab</button>
+
     <span class="badge badge-emerald" id="badge-autosync" onclick="cycleAutoSyncInterval()" style="cursor:pointer; margin-left:auto;" title="Click to change auto-sync frequency">🔄 Auto-Sync: 60s</span>
   </div>
 </div>
 
 <div class="container">
-
-  <div class="upload-card">
-    <div>
-      <div style="font-weight: 700; font-size: 0.88rem; color: #fff;">Portfolio Data &amp; Live Market Feed</div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-        100% Dynamic · 8-Second Feed Timeout Guard · Live NSE/BSE Quotes &amp; Universal Broker CSV Parser
-      </div>
-    </div>
-    <div class="upload-btn-group">
-      <div style="display:inline-flex; align-items:center; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:2px 6px; gap:6px;">
-        <span style="font-size:0.7rem; color:#94a3b8; font-weight:600;">CSV Broker:</span>
-        <select id="csv-broker-select" style="background:#0f172a; color:#f8fafc; border:1px solid #475569; border-radius:6px; padding:4px 6px; font-size:0.74rem; font-weight:600;">
-          <option value="Kotak" selected>🏦 Kotak Securities</option>
-          <option value="Dhan">⚡ DhanHQ</option>
-          <option value="INDmoney">🟣 INDmoney</option>
-          <option value="Custom">📁 Other / Custom</option>
-        </select>
-        <label class="btn-primary" style="margin:0; padding:5px 10px;">
-          <span>📁 Upload Broker CSV (Merge)</span>
-          <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-        </label>
-      </div>
-      <button type="button" class="btn-emerald" id="btn-live-sync" onclick="syncLiveNSEPrices(true)">⚡ Sync Live NSE Prices</button>
-      <button type="button" class="btn-secondary" style="border:1px solid #38bdf8; color:#7dd3fc;" onclick="openReliabilityModal()">🛡️ Feed Diagnostics &amp; Worker</button>
-      <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#0284c7,#7c3aed);" onclick="toggleDhanModal()">🔗 Connect Brokers (Dhan · Kotak · INDmoney)</button>
-      
-      <button type="button" class="btn-primary" style="background:linear-gradient(135deg,#7c3aed,#2563eb);" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Algo</button>
-      <button type="button" class="btn-secondary" onclick="toggleAddHoldingForm()">➕ Add Position</button>
-      <button type="button" class="btn-secondary" onclick="window.print()">📄 Export PDF</button>
-      <button type="button" class="btn-danger" onclick="clearAllPortfolioData()">🗑️ Clear Data</button>
-    </div>
-  </div>
-
-  <!-- MULTI-BROKER FREE API INTEGRATION HUB (DHANHQ + KOTAK NEO + INDMONEY) -->
-  <div class="card" id="dhan-config-card" style="display: none; margin-bottom: 12px; border: 1px solid #0284c7; background: #0c192c;">
-    <div class="card-title" style="color: #38bdf8;">
-      <span>🔗 Multi-Broker Free API Integration Hub — Non-Destructive Broker-Wise Sync (Stocks &amp; ETFs)</span>
-      <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleDhanModal()">✕ Close</button>
-    </div>
-    <div style="font-size:0.75rem; color:#cbd5e1; margin-bottom:10px; line-height:1.45;">
-      Each broker imports into its own dedicated <strong>Broker Slice</strong> (<code>🏦 Kotak</code>, <code>⚡ Dhan</code>, <code>🟣 INDmoney</code>) so syncing one broker <strong>never overrides</strong> your stocks or ETFs from another broker. All three broker APIs below are <strong>₹0/month Free Tier</strong> for fetching demat holdings, positions, stocks, and ETFs.
-    </div>
-
-    <!-- Shared Cloudflare Worker Relay Bar -->
-    <div style="background:#070d19; border:1px solid #1e293b; border-radius:8px; padding:8px 10px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-      <div style="flex:1; min-width:240px;">
-        <label style="font-size:0.68rem; color:#7dd3fc; font-weight:700;">Cloudflare Worker CORS Relay URL (Shared across Dhan, Kotak Neo &amp; INDmoney)</label>
-        <input type="text" id="dhan-proxy-url" class="watchlist-input" style="margin-bottom:0; margin-top:3px;" placeholder="https://piai-relay.yourname.workers.dev/?url=">
-      </div>
-      <button type="button" class="btn-secondary" style="font-size:0.72rem; padding:6px 10px;" onclick="copyCloudflareWorkerCode()">📋 Copy Multi-Broker Worker Script</button>
-      <button type="button" class="btn-primary" style="font-size:0.72rem; padding:6px 10px;" onclick="verifyFeedAndDhanDiagnostics('dhan-status-msg')">🔍 Verify Worker &amp; Active Brokers</button>
-    </div>
-
-    <!-- Broker Sub-Tabs -->
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; border-bottom:1px solid #1e293b; padding-bottom:8px;">
-      <button type="button" class="filter-chip active" id="brk-tab-btn-dhan" onclick="switchBrokerApiTab('dhan')">⚡ DhanHQ v2 API (₹0 Free)</button>
-      <button type="button" class="filter-chip" id="brk-tab-btn-kotak" onclick="switchBrokerApiTab('kotak')">🏦 Kotak Neo / Securities API (₹0 Free)</button>
-      <button type="button" class="filter-chip" id="brk-tab-btn-indmoney" onclick="switchBrokerApiTab('indmoney')">🟣 INDmoney / INDstocks API (₹0 Free)</button>
-    </div>
-
-    <!-- BROKER PANEL 1: DHANHQ -->
-    <div id="brk-panel-dhan" class="broker-api-panel">
-      <div class="form-grid">
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Dhan API Tier</label>
-          <select id="dhan-tier-mode" class="watchlist-input" style="margin-bottom:0;">
-            <option value="FREE" selected>🟢 Free Tier (Holdings/Positions API + Live NSE LTP)</option>
-            <option value="PAID">⚡ Paid Data API Plan (₹499/mo /v2/marketfeed/ohlc)</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Dhan Client ID (<code>client-id</code>)</label>
-          <input type="text" id="dhan-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. 1000000001">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Dhan JWT Access Token (<code>access-token</code>)</label>
-          <input type="password" id="dhan-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste 24h JWT token from web.dhan.co">
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-        <button type="button" class="btn-emerald" onclick="saveAndSyncDhanHQ()">⚡ Sync Dhan Stocks &amp; ETFs (Preserves Kotak &amp; INDmoney)</button>
-        <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('Dhan')">🗑️ Clear Only Dhan Holdings</button>
-        <button type="button" class="btn-secondary" onclick="disconnectDhanHQ()">Disconnect Dhan</button>
-      </div>
-    </div>
-
-    <!-- BROKER PANEL 2: KOTAK NEO / SECURITIES (FREE TRADE API V2) -->
-    <div id="brk-panel-kotak" class="broker-api-panel" style="display:none;">
-      <div style="font-size:0.72rem; color:#93c5fd; margin-bottom:8px; line-height:1.45;">
-        <strong>Kotak Neo Free Trade API v2 (₹0/mo):</strong> In Kotak Neo App/Web, go to <strong>More / Invest → Trade API → Generate Application</strong> to copy your plain <strong>Consumer Key / Access Token</strong>, and complete one-time <strong>TOTP Registration</strong>. Enter your TOTP + MPIN below to authenticate (or paste an existing Session <code>Auth</code> Token + <code>Sid</code>) and fetch <code>GET /portfolio/v1/holdings</code> &amp; <code>/quick/user/positions</code>.
-      </div>
-      <div class="form-grid">
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Kotak Consumer Key (Plain Token from Trade API)</label>
-          <input type="password" id="kotak-consumer-key" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. ec6a746c-e44b-455e-abf2-...">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Registered Mobile Number</label>
-          <input type="text" id="kotak-mobile" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. +919876543210 or 10-digit">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">UCC (5-Char Client Code in Profile)</label>
-          <input type="text" id="kotak-ucc" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. AB123">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">6-Digit Trading MPIN</label>
-          <input type="password" id="kotak-mpin" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit MPIN">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Live 6-Digit Authenticator TOTP</label>
-          <input type="text" id="kotak-totp" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit TOTP (for step-1 login)">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Session <code>Auth</code> Token (Auto-filled after TOTP login)</label>
-          <input type="password" id="kotak-session-auth" class="watchlist-input" style="margin-bottom:0;" placeholder="Auto-filled or paste session Auth">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Session <code>Sid</code> (Auto-filled after TOTP login)</label>
-          <input type="text" id="kotak-session-sid" class="watchlist-input" style="margin-bottom:0;" placeholder="Auto-filled or paste session Sid">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Kotak Gateway Base URL</label>
-          <input type="text" id="kotak-base-url" class="watchlist-input" style="margin-bottom:0;" placeholder="https://gw-napi.kotaksecurities.com">
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-        <button type="button" class="btn-emerald" onclick="loginAndSyncKotakNeo(true)">🔐 Authenticate TOTP+MPIN &amp; Import Kotak Stocks + ETFs</button>
-        <button type="button" class="btn-primary" onclick="loginAndSyncKotakNeo(false)">⚡ Sync Using Saved Session Auth + Sid</button>
-        <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('Kotak')">🗑️ Clear Only Kotak Holdings</button>
-      </div>
-    </div>
-
-    <!-- BROKER PANEL 3: INDMONEY / INDSTOCKS (FREE API) -->
-    <div id="brk-panel-indmoney" class="broker-api-panel" style="display:none;">
-      <div style="font-size:0.72rem; color:#d8b4fe; margin-bottom:8px; line-height:1.45;">
-        <strong>INDmoney / INDstocks Free Trading API (₹0/mo):</strong> Log in to <code>indstocks.com/app/api-trading/access-tokens</code> (or click <strong>Algo Trading</strong> on INDstocks web) to copy your 24-hour <strong>Access Token</strong> (or generate one via TOTP using your static Client ID <code>x-api-key</code> + MPIN + TOTP). Calls <code>GET https://api.indstocks.com/portfolio/holdings</code> &amp; <code>/portfolio/positions</code> to import your Stocks &amp; ETFs.
-      </div>
-      <div class="form-grid">
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">INDmoney / INDstocks Access Token (<code>Authorization</code>)</label>
-          <input type="password" id="ind-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste token from indstocks.com/app/api-trading/access-tokens">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Optional: Static Client ID (<code>x-api-key</code> for TOTP login)</label>
-          <input type="text" id="ind-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="Optional if Access Token is pasted above">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Optional: INDstocks MPIN (for TOTP token gen)</label>
-          <input type="password" id="ind-mpin" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit MPIN (optional)">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Optional: 6-Digit Authenticator TOTP</label>
-          <input type="text" id="ind-totp" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit TOTP (optional)">
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
-        <button type="button" class="btn-emerald" onclick="saveAndSyncIndMoney(false)">🟣 Sync INDmoney Stocks &amp; ETFs (Using Access Token)</button>
-        <button type="button" class="btn-primary" onclick="saveAndSyncIndMoney(true)">🔐 Generate Token via TOTP &amp; Sync INDmoney</button>
-        <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('INDmoney')">🗑️ Clear Only INDmoney Holdings</button>
-      </div>
-    </div>
-
-    <div id="dhan-status-msg" style="font-size: 0.75rem; color: #7dd3fc; margin-top: 10px; padding: 8px; border-radius: 6px; background: #060b14; border: 1px solid #1e293b;">
-      Ready — select a broker tab above (DhanHQ, Kotak Neo, or INDmoney) to sync your Stocks &amp; ETFs without overriding other brokers.
-    </div>
-  </div>
-
-  <!-- ADD POSITION DRAWER -->
-  <div class="card" id="add-holding-card" style="display: none; margin-bottom: 12px; border: 1px solid #374151;">
-    <div class="card-title">
-      <span>➕ Add Equity / ETF Position (Broker-Tagged)</span>
-      <button type="button" class="btn-secondary" style="padding: 2px 8px; font-size: 0.72rem;" onclick="toggleAddHoldingForm()">Close</button>
-    </div>
-    <form onsubmit="handleAddHoldingSubmit(event)">
-      <div class="form-grid">
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Broker Account</label>
-          <select id="add-broker" class="watchlist-input">
-            <option value="Kotak" selected>🏦 Kotak Securities</option>
-            <option value="Dhan">⚡ DhanHQ</option>
-            <option value="INDmoney">🟣 INDmoney</option>
-            <option value="Custom">📁 Other / Custom</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Stock / ETF Name or NSE Ticker</label>
-          <input type="text" id="add-name" class="watchlist-input" placeholder="e.g. RELIANCE, TMPV, NIFTYBEES" required>
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Sector / Category (use ETF for ETFs)</label>
-          <input type="text" id="add-sec" class="watchlist-input" placeholder="e.g. Banking, IT, Auto, ETF" value="Equity">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Quantity</label>
-          <input type="number" id="add-qty" class="watchlist-input" step="any" min="0.01" placeholder="10" required>
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Buy Avg Price (₹)</label>
-          <input type="number" id="add-avg" class="watchlist-input" step="any" min="0.01" placeholder="1250" required>
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Current LTP (₹, optional)</label>
-          <input type="number" id="add-ltp" class="watchlist-input" step="any" placeholder="Auto-fetched if blank">
-        </div>
-      </div>
-      <button type="submit" class="btn-emerald">✅ Save Position to Broker &amp; Sync Live LTP</button>
-    </form>
-  </div>
 
   <div class="sync-banner" id="sync-banner">
     <div id="sync-status-text">⚡ Syncing live market feeds...</div>
@@ -581,16 +687,17 @@
 
   <!-- NAVIGATION TABS -->
   <div class="nav-tabs">
-    <button type="button" class="tab-btn active" onclick="switchTab('dashboard')">📊 Overview</button>
-    <button type="button" class="tab-btn" onclick="switchTab('stocks')">📈 Stocks <span id="tab-stocks-count">(0)</span></button>
-    <button type="button" class="tab-btn" onclick="switchTab('mf')">🏦 MF / ETF / Bonds <span id="tab-mf-count">(0)</span></button>
-    <button type="button" class="tab-btn" onclick="switchTab('recs')">🎯 Buy &amp; Scaling Recs</button>
-    <button type="button" class="tab-btn" onclick="switchTab('alerts')">🚨 Exit &amp; Risk Radar <span id="tab-alerts-count">(0)</span></button>
-    <button type="button" class="tab-btn" onclick="switchTab('charts')">📉 Visual Analytics</button>
-    <button type="button" class="tab-btn" onclick="switchTab('sim')">🔮 What-If Simulator</button>
-    <button type="button" class="tab-btn" onclick="switchTab('tax')">🧾 Tax Harvest</button>
-    <button type="button" class="tab-btn" onclick="switchTab('wealth')">🚀 Wealth Projector</button>
-    
+    <button type="button" class="tab-btn active" id="nav-tab-dashboard" onclick="switchTab('dashboard')">📊 Overview</button>
+    <button type="button" class="tab-btn" id="nav-tab-stocks" onclick="switchTab('stocks')">📈 Stocks <span id="tab-stocks-count">(0)</span></button>
+    <button type="button" class="tab-btn" id="nav-tab-etfs" onclick="switchTab('etfs')">🌍 ETFs <span id="tab-etfs-count">(0)</span></button>
+    <button type="button" class="tab-btn" id="nav-tab-mf" onclick="switchTab('mf')">🏦 MFs &amp; Bonds <span id="tab-mf-count">(0)</span></button>
+    <button type="button" class="tab-btn" id="nav-tab-recs" onclick="switchTab('recs')">🎯 Buy &amp; Scaling Recs</button>
+    <button type="button" class="tab-btn" id="nav-tab-alerts" onclick="switchTab('alerts')">🚨 Exit &amp; Risk Radar <span id="tab-alerts-count">(0)</span></button>
+    <button type="button" class="tab-btn" id="nav-tab-charts" onclick="switchTab('charts')">📉 Visual Analytics</button>
+    <button type="button" class="tab-btn" id="nav-tab-sim" onclick="switchTab('sim')">🔮 What-If Simulator</button>
+    <button type="button" class="tab-btn" id="nav-tab-tax" onclick="switchTab('tax')">🧾 Tax Harvest</button>
+    <button type="button" class="tab-btn" id="nav-tab-wealth" onclick="switchTab('wealth')">🚀 Wealth Projector</button>
+    <button type="button" class="tab-btn" id="nav-tab-admin" onclick="switchTab('admin')">⚙️ Brokers &amp; Admin</button>
   </div>
 
   <!-- ════ TAB 1: OVERVIEW DASHBOARD ════ -->
@@ -602,7 +709,7 @@
       <div class="kpi-card"><div class="kpi-label">Overall Return %</div><div class="kpi-val pos" id="dash-pct">0.00%</div></div>
     </div>
 
-    <div class="card" style="border-color:#38bdf8;">
+    <div class="card" style="border-color:#0284c7;">
       <div class="card-title">
         <span>📌 Daily Delta Scorecard &amp; Pinned Baseline Comparison</span>
         <div style="display:flex; gap:6px;">
@@ -610,13 +717,13 @@
           <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.72rem;" onclick="syncLiveNSEPrices(true)">🔄 Refresh Now</button>
         </div>
       </div>
-      <div id="dash-daily-delta-summary" style="font-size:0.78rem; color:#cbd5e1; line-height:1.55;"></div>
+      <div id="dash-daily-delta-summary" style="font-size:0.78rem; color:#334155; line-height:1.55;"></div>
     </div>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-title"><span>🌐 Live Market Context &amp; Asset Breakdown</span></div>
-        <div id="dash-macro-text" style="font-size:0.78rem; color:#cbd5e1; margin-bottom:10px; line-height:1.5;"></div>
+        <div id="dash-macro-text" style="font-size:0.78rem; color:#334155; margin-bottom:10px; line-height:1.5;"></div>
         <div id="dash-asset-breakdown"></div>
       </div>
       <div class="card">
@@ -625,7 +732,7 @@
           <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="fetchAllLiveBenchmarks(true)">🔄 Refresh Indices</button>
         </div>
         <div id="live-benchmarks-table"></div>
-        <div id="dynamic-macro-drivers" style="margin-top:8px; font-size:0.75rem; color:#cbd5e1; line-height:1.5;"></div>
+        <div id="dynamic-macro-drivers" style="margin-top:8px; font-size:0.75rem; color:#334155; line-height:1.5;"></div>
       </div>
     </div>
 
@@ -640,7 +747,7 @@
     </div>
   </div>
 
-  <!-- ════ TAB 2: STOCKS (BROKER-WISE) ════ -->
+  <!-- ════ TAB 2: STOCKS (BROKER-WISE WITH EXPAND/COLLAPSE) ════ -->
   <div id="view-stocks" class="tab-view" style="display: none;">
     <div id="broker-summary-pills" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;"></div>
     <div class="filter-bar">
@@ -650,21 +757,37 @@
       <button type="button" class="filter-chip" onclick="setStockFilter('LOSERS', this)">🔴 Losers</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('EXIT', this)">🚨 Flagged Exits</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('BOOK', this)">🟣 Profit Booking</button>
-      <button type="button" class="filter-chip active" id="btn-toggle-broker-group" style="margin-left:auto; border-color:#38bdf8; color:#7dd3fc;" onclick="toggleBrokerGroupingMode()">🗂️ Grouped by Broker: ON</button>
+      <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(false)">➕ Expand All Brokers</button>
+        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(true)">➖ Collapse All Brokers</button>
+        <button type="button" class="btn-primary" id="btn-toggle-broker-group" style="padding:5px 10px; font-size:0.72rem;" onclick="toggleBrokerGroupingMode()">🗂️ Grouped by Broker: ON</button>
+      </div>
     </div>
     <div id="stocks-list-container"></div>
-    <div class="card" style="margin-top:14px;">
-      <div class="card-title">
-        <span>🌍 Broker-Wise ETFs (Synced from Kotak, Dhan, INDmoney &amp; CSV)</span>
-      </div>
-      <div id="stocks-tab-etf-container"></div>
-    </div>
   </div>
 
-  <!-- ════ TAB 3: MF / ETF / BONDS ════ -->
+  <!-- ════ TAB 3: DEDICATED ETFs TAB (IDENTICAL CARD & EDIT SUPPORT TO STOCKS) ════ -->
+  <div id="view-etfs" class="tab-view" style="display: none;">
+    <div id="etf-broker-summary-pills" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;"></div>
+    <div class="filter-bar">
+      <input type="text" id="etf-search" class="search-input" style="max-width:240px;" placeholder="🔍 Search ETF name, ticker, or broker..." oninput="handleEtfSearch()">
+      <button type="button" class="filter-chip active" onclick="setEtfFilter('ALL', this)">All ETFs</button>
+      <button type="button" class="filter-chip" onclick="setEtfFilter('WINNERS', this)">🟢 Winners</button>
+      <button type="button" class="filter-chip" onclick="setEtfFilter('LOSERS', this)">🔴 Losers</button>
+      <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(false)">➕ Expand All Brokers</button>
+        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(true)">➖ Collapse All Brokers</button>
+        <button type="button" class="btn-emerald" style="padding:5px 10px; font-size:0.72rem;" onclick="switchTab('admin')">➕ Add / Import ETF</button>
+      </div>
+    </div>
+    <div id="etfs-cards-container"></div>
+    <div id="etf-list-container" style="display:none;"></div>
+    <div id="stocks-tab-etf-container" style="display:none;"></div>
+  </div>
+
+  <!-- ════ TAB 4: MUTUAL FUNDS & BONDS ════ -->
   <div id="view-mf" class="tab-view" style="display: none;">
     <div class="card"><div class="card-title"><span>🏦 Mutual Funds (Live AMFI NAV Sync)</span></div><div id="mf-list-container"></div></div>
-    <div class="card"><div class="card-title"><span>🌍 Exchange Traded Funds (ETFs)</span></div><div id="etf-list-container"></div></div>
     <div class="card"><div class="card-title"><span>🏅 Bonds / InvIT / SGBs</span></div><div id="bond-list-container"></div></div>
   </div>
 
@@ -747,7 +870,7 @@
   <div id="view-sim" class="tab-view" style="display: none;">
     <div class="card">
       <div class="card-title">
-        <div style="color: #c084fc; font-weight: 700; font-size: 0.95rem;">🔮 Dynamic Portfolio Rebalancing &amp; Stress Simulator</div>
+        <div style="color: #7c3aed; font-weight: 700; font-size: 0.95rem;">🔮 Dynamic Portfolio Rebalancing &amp; Stress Simulator</div>
         <button type="button" class="btn-emerald" onclick="applySimulationToPortfolio()" style="padding: 6px 14px; font-size: 0.8rem;">Apply Rebalance to Portfolio</button>
       </div>
       <div class="sim-toggle-row">
@@ -793,7 +916,7 @@
         <div class="kpi-card"><div class="kpi-label">Unrealized Gains Pool</div><div class="kpi-val pos" id="tax-kpi-gains">₹0</div></div>
         <div class="kpi-card"><div class="kpi-label">Harvestable Loss Pool</div><div class="kpi-val neg" id="tax-kpi-losses">₹0</div></div>
         <div class="kpi-card"><div class="kpi-label">Estimated Tax (Before)</div><div class="kpi-val neg" id="tax-kpi-before">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label" style="color: #a7f3d0;">Tax Saved via Harvesting</div><div class="kpi-val pos" id="tax-kpi-saved">₹0</div></div>
+        <div class="kpi-card"><div class="kpi-label" style="color: #047857;">Tax Saved via Harvesting</div><div class="kpi-val pos" id="tax-kpi-saved">₹0</div></div>
       </div>
       <div class="form-grid">
         <div>
@@ -855,12 +978,268 @@
           <input type="range" id="slider-w-years" class="rule-slider" min="3" max="30" step="1" value="10" oninput="calculateWealthProjection()">
         </div>
       </div>
-      <canvas id="canvas-wealth-curve" width="750" height="220" style="width:100%; height:220px; background:#070b14; border-radius:8px; margin:10px 0;"></canvas>
+      <canvas id="canvas-wealth-curve" width="750" height="220" style="width:100%; height:220px; background:#f8fafc; border-radius:8px; margin:10px 0;"></canvas>
       <table class="sim-matrix-table">
         <thead><tr><th>Horizon Year</th><th>Monthly SIP</th><th>Total Invested</th><th>Base Case Corpus</th><th>Bull Case (+3% CAGR)</th><th>Milestone Status</th></tr></thead>
         <tbody id="wealth-table-tbody"></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- ════ TAB 11: BROKERS, CSV IMPORT, ALIAS MEMORY & SECURITY ADMIN ════ -->
+  <div id="view-admin" class="tab-view" style="display: none;">
+
+    <!-- 1. CSV UPLOAD & "WHAT CHANGED" DIFF SUMMARY -->
+    <div class="card">
+      <div class="card-title">
+        <span>📁 1. Upload Broker CSV &amp; Automatic "What Changed" Diff Analyzer</span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.73rem;" onclick="window.print()">📄 Export PDF Report</button>
+          <button type="button" class="btn-danger" style="padding:5px 10px; font-size:0.73rem;" onclick="clearAllPortfolioData()">🗑️ Reset All Portfolio Data</button>
+        </div>
+      </div>
+      <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">
+        Select your target broker below and upload your latest holdings CSV. PIAI automatically applies all your <strong>Saved Stock/ETF Name &amp; Ticker Aliases</strong>, merges only that broker's slice without overriding other brokers, and shows a complete summary of <strong>Added, Removed, and Quantity/Avg Changed</strong> positions.
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:6px 10px; gap:8px;">
+          <label for="csv-broker-select" style="font-size:0.76rem; color:#334155; font-weight:700;">Target CSV Broker:</label>
+          <select id="csv-broker-select" class="inp-field" style="width:auto; padding:5px 10px;">
+            <option value="Kotak" selected>🏦 Kotak Securities</option>
+            <option value="Dhan">⚡ DhanHQ</option>
+            <option value="INDmoney">🟣 INDmoney</option>
+            <option value="Custom">📁 Other / Custom</option>
+          </select>
+          <label class="btn-primary" style="margin:0; padding:7px 14px; cursor:pointer;">
+            <span>📁 Upload Broker CSV (Merge &amp; Compare)</span>
+            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+          </label>
+        </div>
+        <button type="button" class="btn-secondary" onclick="openCsvDiffModal()">📋 View Last CSV Change Report</button>
+      </div>
+      <!-- Inline CSV Diff Summary Box right next to Upload Button (Requirement #6) -->
+      <div id="csv-diff-inline-box" style="display:none; margin-top:12px; padding:12px; border-radius:10px; background:#f0fdf4; border:1px solid #86efac; font-size:0.78rem; position:relative;"></div>
+    </div>
+
+    <!-- 2. MULTI-BROKER LIVE API INTEGRATION HUB (DHANHQ + KOTAK NEO + INDMONEY) -->
+    <div class="card" id="dhan-config-card">
+      <div class="card-title">
+        <span>🔗 2. Multi-Broker Free API Integration Hub (DhanHQ v2 · Kotak Neo v2 · INDmoney)</span>
+        <button type="button" class="btn-secondary" style="padding:4px 10px; font-size:0.73rem;" onclick="openReliabilityModal()">🛡️ Feed &amp; Worker Diagnostics</button>
+      </div>
+      <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px;">
+        Each broker imports into its own dedicated <strong>Broker Slice</strong> (<code>🏦 Kotak</code>, <code>⚡ Dhan</code>, <code>🟣 INDmoney</code>) so syncing one broker never overrides another. All three broker APIs below are <strong>₹0/month Free Tier</strong> for fetching demat holdings, positions, stocks, and ETFs.
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <div style="flex:1; min-width:240px;">
+          <label style="font-size:0.7rem; color:#0369a1; font-weight:700;">Cloudflare Worker CORS Relay URL (Shared across Dhan, Kotak Neo &amp; INDmoney)</label>
+          <input type="text" id="dhan-proxy-url" class="watchlist-input" style="margin-bottom:0; margin-top:4px;" placeholder="https://piai-relay.yourname.workers.dev/?url=">
+        </div>
+        <button type="button" class="btn-secondary" onclick="copyCloudflareWorkerCode()">📋 Copy Multi-Broker Worker Script</button>
+        <button type="button" class="btn-primary" onclick="verifyFeedAndDhanDiagnostics('dhan-status-msg')">🔍 Verify Worker &amp; Active Brokers</button>
+      </div>
+
+      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+        <button type="button" class="filter-chip active" id="brk-tab-btn-dhan" onclick="switchBrokerApiTab('dhan')">⚡ DhanHQ v2 API (₹0 Free)</button>
+        <button type="button" class="filter-chip" id="brk-tab-btn-kotak" onclick="switchBrokerApiTab('kotak')">🏦 Kotak Neo / Securities API (₹0 Free)</button>
+        <button type="button" class="filter-chip" id="brk-tab-btn-indmoney" onclick="switchBrokerApiTab('indmoney')">🟣 INDmoney / INDstocks API (₹0 Free)</button>
+      </div>
+
+      <div id="brk-panel-dhan" class="broker-api-panel">
+        <div class="form-grid">
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Dhan API Tier</label>
+            <select id="dhan-tier-mode" class="watchlist-input" style="margin-bottom:0;">
+              <option value="FREE" selected>🟢 Free Tier (Holdings/Positions API + Live NSE LTP)</option>
+              <option value="PAID">⚡ Paid Data API Plan (₹499/mo /v2/marketfeed/ohlc)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Dhan Client ID (<code>client-id</code>)</label>
+            <input type="text" id="dhan-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. 1000000001">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Dhan JWT Access Token (<code>access-token</code>)</label>
+            <input type="password" id="dhan-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste 24h JWT token from web.dhan.co">
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+          <button type="button" class="btn-emerald" onclick="saveAndSyncDhanHQ()">⚡ Sync Dhan Stocks &amp; ETFs (Preserves Kotak &amp; INDmoney)</button>
+          <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('Dhan')">🗑️ Clear Only Dhan Holdings</button>
+          <button type="button" class="btn-secondary" onclick="disconnectDhanHQ()">Disconnect Dhan</button>
+        </div>
+      </div>
+
+      <div id="brk-panel-kotak" class="broker-api-panel" style="display:none;">
+        <div style="font-size:0.74rem; color:#1d4ed8; margin-bottom:8px; line-height:1.45;">
+          <strong>Kotak Neo Free Trade API v2 (₹0/mo):</strong> In Kotak Neo App/Web, open <strong>More / Invest → Trade API → Generate Application</strong> to copy your plain <strong>Consumer Key</strong> and complete one-time <strong>TOTP Registration</strong>.
+        </div>
+        <div class="form-grid">
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Kotak Consumer Key (Plain Token)</label>
+            <input type="password" id="kotak-consumer-key" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. ec6a746c-e44b-...">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Registered Mobile Number</label>
+            <input type="text" id="kotak-mobile" class="watchlist-input" style="margin-bottom:0;" placeholder="+919876543210">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">UCC (5-Char Client Code)</label>
+            <input type="text" id="kotak-ucc" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. AB123">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">6-Digit Trading MPIN (Never Stored)</label>
+            <input type="password" id="kotak-mpin" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit MPIN">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Live 6-Digit TOTP (Never Stored)</label>
+            <input type="text" id="kotak-totp" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit TOTP">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Session <code>Auth</code> Token</label>
+            <input type="password" id="kotak-session-auth" class="watchlist-input" style="margin-bottom:0;" placeholder="Auto-filled after TOTP login">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Session <code>Sid</code></label>
+            <input type="text" id="kotak-session-sid" class="watchlist-input" style="margin-bottom:0;" placeholder="Auto-filled after TOTP login">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Kotak Gateway Base URL</label>
+            <input type="text" id="kotak-base-url" class="watchlist-input" style="margin-bottom:0;" placeholder="https://gw-napi.kotaksecurities.com">
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+          <button type="button" class="btn-emerald" onclick="loginAndSyncKotakNeo(true)">🔐 Authenticate TOTP+MPIN &amp; Import Kotak Stocks + ETFs</button>
+          <button type="button" class="btn-primary" onclick="loginAndSyncKotakNeo(false)">⚡ Sync Using Saved Session Auth + Sid</button>
+          <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('Kotak')">🗑️ Clear Only Kotak Holdings</button>
+        </div>
+      </div>
+
+      <div id="brk-panel-indmoney" class="broker-api-panel" style="display:none;">
+        <div style="font-size:0.74rem; color:#6d28d9; margin-bottom:8px; line-height:1.45;">
+          <strong>INDmoney / INDstocks Free Trading API (₹0/mo):</strong> Copy your 24h Access Token from <code>indstocks.com/app/api-trading/access-tokens</code> (or generate via Client ID <code>x-api-key</code> + MPIN + TOTP).
+        </div>
+        <div class="form-grid">
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">INDmoney Access Token (<code>Authorization</code>)</label>
+            <input type="password" id="ind-access-token" class="watchlist-input" style="margin-bottom:0;" placeholder="Paste token from indstocks.com">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Optional: Static Client ID (<code>x-api-key</code>)</label>
+            <input type="text" id="ind-client-id" class="watchlist-input" style="margin-bottom:0;" placeholder="Optional for TOTP token gen">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Optional: MPIN (Never Stored)</label>
+            <input type="password" id="ind-mpin" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit MPIN">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Optional: 6-Digit TOTP (Never Stored)</label>
+            <input type="text" id="ind-totp" class="watchlist-input" style="margin-bottom:0;" placeholder="6-digit TOTP">
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+          <button type="button" class="btn-emerald" onclick="saveAndSyncIndMoney(false)">🟣 Sync INDmoney Stocks &amp; ETFs (Using Access Token)</button>
+          <button type="button" class="btn-primary" onclick="saveAndSyncIndMoney(true)">🔐 Generate Token via TOTP &amp; Sync INDmoney</button>
+          <button type="button" class="btn-secondary" onclick="clearSingleBrokerHoldings('INDmoney')">🗑️ Clear Only INDmoney Holdings</button>
+        </div>
+      </div>
+
+      <div id="dhan-status-msg" style="font-size: 0.76rem; color: #0369a1; margin-top: 10px; padding: 10px; border-radius: 8px; background: #f0f9ff; border: 1px solid #bae6fd;">
+        Ready — select a broker tab above (DhanHQ, Kotak Neo, or INDmoney) to sync your Stocks &amp; ETFs without overriding other brokers.
+      </div>
+    </div>
+
+    <!-- 3. MANUAL ADD POSITION FORM -->
+    <div class="card" id="add-holding-card">
+      <div class="card-title">
+        <span>➕ 3. Manually Add Equity / ETF Position (Broker-Tagged)</span>
+      </div>
+      <form onsubmit="handleAddHoldingSubmit(event)">
+        <div class="form-grid">
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Broker Account</label>
+            <select id="add-broker" class="watchlist-input">
+              <option value="Kotak" selected>🏦 Kotak Securities</option>
+              <option value="Dhan">⚡ DhanHQ</option>
+              <option value="INDmoney">🟣 INDmoney</option>
+              <option value="Custom">📁 Other / Custom</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Stock / ETF Name or NSE Ticker</label>
+            <input type="text" id="add-name" class="watchlist-input" placeholder="e.g. RELIANCE, TMPV, NIFTYBEES" required>
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Sector / Category (use ETF for ETFs)</label>
+            <input type="text" id="add-sec" class="watchlist-input" placeholder="e.g. Banking, IT, Auto, ETF" value="Equity">
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Quantity</label>
+            <input type="number" id="add-qty" class="watchlist-input" step="any" min="0.01" placeholder="10" required>
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Buy Avg Price (₹)</label>
+            <input type="number" id="add-avg" class="watchlist-input" step="any" min="0.01" placeholder="1250" required>
+          </div>
+          <div>
+            <label style="font-size:0.7rem; color:var(--text-muted);">Current LTP (₹, optional)</label>
+            <input type="number" id="add-ltp" class="watchlist-input" step="any" placeholder="Auto-fetched if blank">
+          </div>
+        </div>
+        <button type="submit" class="btn-emerald">✅ Save Position to Broker &amp; Sync Live LTP</button>
+      </form>
+    </div>
+
+    <!-- 4. PERSISTENT STOCK / ETF NAME & TICKER ALIAS MEMORY MANAGER (Requirement #10) -->
+    <div class="card">
+      <div class="card-title">
+        <span>🗂️ 4. Saved Stock &amp; ETF Name / Ticker Aliases (Auto-Applied to All Future CSV Uploads)</span>
+        <button type="button" class="btn-secondary" style="padding:4px 9px; font-size:0.72rem;" onclick="clearAllSymbolAliases()">🗑️ Clear All Saved Aliases</button>
+      </div>
+      <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px;">
+        Whenever you rename a Stock or ETF or update its NSE/BSE Ticker via the <strong>✏️ Edit</strong> button, PIAI permanently remembers that mapping here and applies it automatically to every new Broker CSV you upload in the future.
+      </div>
+      <form onsubmit="handleAddAliasSubmit(event)" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:8px; margin-bottom:10px;">
+        <input type="text" id="alias-raw-name" class="watchlist-input" placeholder="Raw CSV Name (e.g. TATA MOTORS PV LTD)" required>
+        <input type="text" id="alias-clean-name" class="watchlist-input" placeholder="Preferred Name (e.g. TMPV)" required>
+        <input type="text" id="alias-ticker" class="watchlist-input" placeholder="NSE/BSE Ticker (e.g. TMPV.NS)" required>
+        <button type="submit" class="btn-primary">💾 Save Permanent Alias Rule</button>
+      </form>
+      <div id="saved-aliases-list-container"></div>
+    </div>
+
+    <!-- 5. PORTFOLIO SECURITY & PRIVACY VAULT (Requirement #12) -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔒 5. Portfolio Security, Privacy Mask &amp; Local Vault Protection</span>
+        <span class="badge badge-emerald">100% On-Device Storage</span>
+      </div>
+      <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+        Your portfolio quantities, buy prices, and net worth stay strictly inside your browser and are never sent to external AI servers. Configure additional security controls below:
+      </div>
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight:700;">Session-Only Broker API Token Mode (<code>sessionStorage</code>)</div>
+          <div style="font-size:0.74rem; color:var(--text-muted);">Automatically erases Dhan, Kotak Neo, and INDmoney API tokens the moment you close this browser tab.</div>
+        </div>
+        <input type="checkbox" id="chk-session-only-tokens" class="sim-checkbox" onchange="toggleSessionOnlyTokensMode()">
+      </div>
+      <div class="sim-toggle-row">
+        <div>
+          <div style="font-weight:700;">Show Floating Portfolio Query Assistant Button</div>
+          <div style="font-size:0.74rem; color:var(--text-muted);">Toggle the bottom-right local Portfolio Query Bot button ON or OFF.</div>
+        </div>
+        <input type="checkbox" id="chk-show-portfolio-bot" class="sim-checkbox" checked onchange="togglePortfolioBotVisibility()">
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;">
+        <input type="password" id="inp-vault-pin-setup" class="watchlist-input" style="max-width:210px; margin-bottom:0;" placeholder="Set 4–8 digit Vault PIN">
+        <button type="button" class="btn-primary" onclick="saveVaultPinSetup()">🔐 Set / Update Vault Lock PIN</button>
+        <button type="button" class="btn-secondary" onclick="openOrTriggerVaultLock()">🔒 Lock Screen Now</button>
+        <button type="button" class="btn-danger" onclick="panicWipeAllDataAndTokens()">🚨 Panic Wipe All Tokens &amp; Data</button>
+      </div>
+    </div>
+
   </div>
   
 </div>
@@ -870,9 +1249,9 @@
   <div class="modal-box">
     <div class="card-title">
       <span>🛡️ Feed Diagnostics &amp; Cloudflare Worker Verification (8s Timeout Guard)</span>
-      <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="closeReliabilityModal()">✕ Close</button>
+      <button type="button" class="close-x-btn" onclick="closeReliabilityModal()" title="Close">✕</button>
     </div>
-    <div style="font-size:0.76rem; color:#cbd5e1; margin-bottom:10px; line-height:1.5;">
+    <div style="font-size:0.76rem; color:#334155; margin-bottom:10px; line-height:1.5;">
       Verify your <strong>Cloudflare Worker URL</strong> and <strong>DhanHQ v2 Token</strong> below. All market feed requests enforce a strict <strong>8-second timeout</strong> so failed or blocked requests immediately display a red <code>🔴 Feed Disconnected</code> badge instead of spinning on "Syncing..." forever.
     </div>
     <div class="form-grid">
@@ -886,35 +1265,66 @@
       <button type="button" class="btn-primary" onclick="verifyFeedAndDhanDiagnostics('diag-verify-output')">🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)</button>
       <button type="button" class="btn-secondary" onclick="copyCloudflareWorkerCode()">📋 Copy Cloudflare Worker Script</button>
     </div>
-    <div id="diag-verify-output" style="background:#050811; border:1px solid #1e293b; border-radius:8px; padding:10px; font-size:0.75rem; color:#cbd5e1; margin-bottom:10px;">
+    <div id="diag-verify-output" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:0.75rem; color:#334155; margin-bottom:10px;">
       Click "🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)" above to test live connectivity.
     </div>
     <div id="telemetry-summary-box" style="font-size:0.74rem; color:var(--text-muted);"></div>
   </div>
 </div>
 
-<!-- IN-PAGE EDIT / OVERRIDE MODAL -->
+<!-- IN-PAGE EDIT / OVERRIDE MODAL (STOCKS, ETFs & BENCHMARKS) -->
 <div class="modal-backdrop" id="edit-item-modal-backdrop">
-  <div class="modal-box" style="max-width:440px;">
+  <div class="modal-box" style="max-width:480px;">
     <div class="card-title">
       <span id="edit-modal-title">✏️ Edit Position / Benchmark</span>
-      <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="closeEditItemModal()">✕</button>
+      <button type="button" class="close-x-btn" onclick="closeEditItemModal()" title="Close">✕</button>
     </div>
     <div id="edit-modal-fields" class="form-grid"></div>
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
       <button type="button" class="btn-secondary" onclick="closeEditItemModal()">Cancel</button>
-      <button type="button" class="btn-emerald" onclick="applyEditItemModal()">✅ Save Changes</button>
+      <button type="button" class="btn-emerald" onclick="applyEditItemModal()">✅ Save &amp; Remember Alias</button>
     </div>
+  </div>
+</div>
+
+<!-- CSV IMPORT "WHAT CHANGED" DIFF POPUP MODAL (Requirement #6 & #7) -->
+<div class="modal-backdrop" id="csv-diff-modal-backdrop">
+  <div class="modal-box" style="max-width:640px;">
+    <div class="card-title">
+      <span id="csv-diff-modal-title">📋 Broker CSV Import — What Changed vs. Current Holdings</span>
+      <button type="button" class="close-x-btn" onclick="closeCsvDiffModal()" title="Close">✕</button>
+    </div>
+    <div id="csv-diff-modal-body" style="font-size:0.8rem; line-height:1.55;">
+      No CSV diff recorded in this session yet. Upload a Broker CSV in the <strong>⚙️ Brokers &amp; Admin</strong> tab to compare changes.
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+      <button type="button" class="btn-primary" onclick="closeCsvDiffModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- SECURITY VAULT LOCK SCREEN MODAL (Requirement #12) -->
+<div class="modal-backdrop" id="vault-lock-modal-backdrop">
+  <div class="modal-box" style="max-width:380px; text-align:center;">
+    <div class="card-title" style="justify-content:center;">
+      <span>🔒 PIAI Security Vault Locked</span>
+    </div>
+    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+      Enter your Vault PIN to unlock your portfolio dashboard:
+    </div>
+    <input type="password" id="inp-vault-unlock-pin" class="watchlist-input" style="text-align:center; font-size:1.1rem; letter-spacing:0.2em; margin-bottom:10px;" placeholder="••••" onkeydown="if(event.key==='Enter')unlockVaultWithPin()">
+    <div id="vault-unlock-err" style="font-size:0.75rem; color:var(--red); margin-bottom:8px; min-height:18px;"></div>
+    <button type="button" class="btn-primary" style="width:100%; justify-content:center;" onclick="unlockVaultWithPin()">🔓 Unlock Portfolio</button>
   </div>
 </div>
 
 
 <!-- AI COPILOT CHAT -->
-<button type="button" class="chat-fab" onclick="toggleChatWindow()">🤖 PIAI Copilot</button>
+<button type="button" class="chat-fab" id="chat-fab-btn" onclick="toggleChatWindow()">🤖 Portfolio Assistant</button>
 <div class="chat-window" id="chat-window">
   <div class="chat-header">
-    <div style="font-weight:700; font-size:0.85rem; color:#fff;">🤖 PIAI Portfolio Copilot</div>
-    <button type="button" style="background:none; border:none; color:#9ca3af; cursor:pointer; font-size:1rem;" onclick="toggleChatWindow()">✕</button>
+    <div style="font-weight:700; font-size:0.85rem; color:#0f172a;">🤖 PIAI Portfolio Copilot</div>
+    <button type="button" class="close-x-btn" onclick="toggleChatWindow()" title="Close">✕</button>
   </div>
   <div class="chat-messages" id="chat-messages">
     <div class="chat-bubble chat-bubble-ai">Hello! I analyze your live portfolio and real-time market feeds with zero hardcoded assumptions. Upload your CSV or ask me a question below.</div>
@@ -1076,10 +1486,12 @@
   }
 
   function fmtVal(n) {
+    if (privacyMaskActive) return "₹••,•••";
     const v = Math.round(Number(n) || 0);
     return "₹" + v.toLocaleString("en-IN");
   }
   function fmt(n) {
+    if (privacyMaskActive) return "₹••,•••";
     const v = Math.round(Number(n) || 0);
     return (v >= 0 ? "+₹" : "-₹") + Math.abs(v).toLocaleString("en-IN");
   }
@@ -1145,10 +1557,332 @@
 
   const STORAGE_KEY_KOTAK = "piai_kotak_creds_v1";
   const STORAGE_KEY_INDMONEY = "piai_indmoney_creds_v1";
+  const STORAGE_KEY_ALIASES = "piai_symbol_aliases_v1";
+  const STORAGE_KEY_VAULT_PIN = "piai_vault_pin_hash_v1";
+  const STORAGE_KEY_COLLAPSED = "piai_collapsed_brokers_v1";
   let kotakConfig = { consumerKey: "", mobile: "", ucc: "", sessionAuth: "", sessionSid: "", baseUrl: "https://gw-napi.kotaksecurities.com" };
   let indMoneyConfig = { accessToken: "", clientId: "" };
   let activeBrokerFilter = "ALL";
+  let activeEtfBrokerFilter = "ALL";
+  let activeEtfFilter = "ALL";
+  let etfSearchQuery = "";
   let groupStocksByBroker = true;
+  let collapsedBrokers = {};
+  let symbolAliases = {};
+  let privacyMaskActive = false;
+  let sessionOnlyTokens = false;
+
+  function loadSymbolAliasesAndCollapsed() {
+    try {
+      const rawA = safeGetStorage(STORAGE_KEY_ALIASES, "{}");
+      symbolAliases = JSON.parse(rawA) || {};
+    } catch (e) { symbolAliases = {}; }
+    try {
+      const rawC = safeGetStorage(STORAGE_KEY_COLLAPSED, "{}");
+      collapsedBrokers = JSON.parse(rawC) || {};
+    } catch (e) { collapsedBrokers = {}; }
+  }
+
+  function saveSymbolAliases() {
+    safeSetStorage(STORAGE_KEY_ALIASES, JSON.stringify(symbolAliases));
+    renderSavedAliasesList();
+  }
+
+  function normalizeAliasLookupKey(str) {
+    return String(str || "").trim().toUpperCase().replace(/\.(NS|BO)$/, "").replace(/-EQ$/, "").replace(/\s+/g, " ");
+  }
+
+  function recordSymbolAlias(rawName, preferredName, ticker, sec) {
+    const k1 = normalizeAliasLookupKey(rawName);
+    const k2 = normalizeAliasLookupKey(preferredName);
+    const entry = {
+      rawName: String(rawName || preferredName).trim(),
+      customName: String(preferredName).trim(),
+      ticker: String(ticker || "").trim().toUpperCase(),
+      sec: String(sec || "Equity").trim()
+    };
+    if (k1) symbolAliases[k1] = entry;
+    if (k2) symbolAliases[k2] = entry;
+    saveSymbolAliases();
+  }
+
+  function applySavedSymbolAlias(rawName, explicitTicker, secStr) {
+    const k1 = normalizeAliasLookupKey(rawName);
+    const k2 = explicitTicker ? normalizeAliasLookupKey(explicitTicker) : "";
+    const match = (k1 && symbolAliases[k1]) || (k2 && symbolAliases[k2]) || null;
+    if (match) {
+      return {
+        n: match.customName || rawName,
+        rawName: String(rawName).trim(),
+        ticker: match.ticker || explicitTicker || null,
+        sec: match.sec || secStr || "Equity"
+      };
+    }
+    return {
+      n: rawName,
+      rawName: String(rawName).trim(),
+      ticker: explicitTicker || null,
+      sec: secStr || "Equity"
+    };
+  }
+
+  function handleAddAliasSubmit(e) {
+    e.preventDefault();
+    const rawN = document.getElementById("alias-raw-name").value.trim();
+    const cleanN = document.getElementById("alias-clean-name").value.trim();
+    let tick = document.getElementById("alias-ticker").value.trim().toUpperCase();
+    if (tick && !tick.endsWith(".NS") && !tick.endsWith(".BO")) tick += ".NS";
+    recordSymbolAlias(rawN, cleanN, tick, "Equity");
+    // Immediately apply to any existing matching holding or ETF
+    const kRaw = normalizeAliasLookupKey(rawN);
+    [...holdings, ...etfs].forEach(item => {
+      if (normalizeAliasLookupKey(item.rawName || item.n) === kRaw || normalizeAliasLookupKey(item.n) === kRaw) {
+        item.rawName = item.rawName || item.n;
+        item.n = cleanN;
+        if (tick) item.ticker = tick;
+      }
+    });
+    persistState();
+    runPortfolioIntelligenceEngine();
+    e.target.reset();
+  }
+
+  function deleteSingleAlias(key) {
+    delete symbolAliases[key];
+    saveSymbolAliases();
+  }
+
+  function clearAllSymbolAliases() {
+    symbolAliases = {};
+    saveSymbolAliases();
+  }
+
+  function renderSavedAliasesList() {
+    const box = document.getElementById("saved-aliases-list-container");
+    if (!box) return;
+    const keys = Object.keys(symbolAliases);
+    if (keys.length === 0) {
+      box.innerHTML = `<div class="empty-state" style="padding:10px;">No custom name/ticker aliases saved yet. Editing any Stock or ETF name/ticker automatically saves it here for future CSV uploads.</div>`;
+      return;
+    }
+    box.innerHTML = keys.map(k => {
+      const a = symbolAliases[k];
+      const safeK = k.replace(/'/g, "\\'");
+      return `<div class="data-row">
+        <span><code>${a.rawName || k}</code> ➔ <strong>${a.customName}</strong> <span class="badge badge-blue">${a.ticker || 'Auto'}</span></span>
+        <button type="button" class="btn-danger" style="padding:2px 8px; font-size:0.7rem;" onclick="deleteSingleAlias('${safeK}')">🗑️ Remove</button>
+      </div>`;
+    }).join("");
+  }
+
+  // Collapsible Broker Accordion Helpers (Requirement #8)
+  function toggleBrokerSectionCollapse(brokerName) {
+    const b = normalizeBrokerTag(brokerName);
+    collapsedBrokers[b] = !collapsedBrokers[b];
+    safeSetStorage(STORAGE_KEY_COLLAPSED, JSON.stringify(collapsedBrokers));
+    renderStocksView();
+    renderETFsView();
+  }
+
+  function expandOrCollapseAllBrokers(collapseFlag) {
+    ["Kotak", "Dhan", "INDmoney", "Custom"].forEach(b => {
+      collapsedBrokers[b] = !!collapseFlag;
+    });
+    holdings.forEach(h => { collapsedBrokers[normalizeBrokerTag(h.broker)] = !!collapseFlag; });
+    etfs.forEach(e => { collapsedBrokers[normalizeBrokerTag(e.broker)] = !!collapseFlag; });
+    safeSetStorage(STORAGE_KEY_COLLAPSED, JSON.stringify(collapsedBrokers));
+    renderStocksView();
+    renderETFsView();
+  }
+
+  function closeExpandedCard(cardKey) {
+    expandedCards[cardKey] = false;
+    renderStocksView();
+    renderETFsView();
+  }
+
+  // CSV Diff Analyzer (Requirement #6)
+  function computeBrokerCsvDiffSummary(brokerName, newEq, newETFs, newMFs) {
+    const bTag = normalizeBrokerTag(brokerName);
+    const oldPool = [
+      ...holdings.filter(h => normalizeBrokerTag(h.broker) === bTag).map(h => ({ ...h, kind: "Stock" })),
+      ...etfs.filter(e => normalizeBrokerTag(e.broker) === bTag).map(e => ({ ...e, kind: "ETF" }))
+    ];
+    const newPool = [
+      ...newEq.map(h => ({ ...h, kind: "Stock" })),
+      ...newETFs.map(e => ({ ...e, kind: "ETF" }))
+    ];
+
+    const oldMap = {};
+    oldPool.forEach(item => { oldMap[normalizeAliasLookupKey(item.n)] = item; });
+    const newMap = {};
+    newPool.forEach(item => { newMap[normalizeAliasLookupKey(item.n)] = item; });
+
+    const added = [];
+    const removed = [];
+    const modified = [];
+    let unchanged = 0;
+
+    Object.keys(newMap).forEach(k => {
+      const nItem = newMap[k];
+      const oItem = oldMap[k];
+      if (!oItem) {
+        added.push(`${nItem.n} (${nItem.kind}: Qty ${nItem.qty} @ ₹${(nItem.avg || 0).toFixed(2)})`);
+      } else {
+        const qtyDiff = Math.abs((nItem.qty || 0) - (oItem.qty || 0)) > 0.001;
+        const avgDiff = Math.abs((nItem.avg || 0) - (oItem.avg || 0)) > 0.05;
+        if (qtyDiff || avgDiff) {
+          modified.push(`${nItem.n}: Qty ${oItem.qty} ➔ <strong>${nItem.qty}</strong>, Avg ₹${(oItem.avg || 0).toFixed(2)} ➔ <strong>₹${(nItem.avg || 0).toFixed(2)}</strong>`);
+        } else {
+          unchanged++;
+        }
+      }
+    });
+
+    Object.keys(oldMap).forEach(k => {
+      if (!newMap[k]) {
+        const oItem = oldMap[k];
+        removed.push(`${oItem.n} (Exited Qty: ${oItem.qty})`);
+      }
+    });
+
+    const html = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="color:#047857; font-size:0.84rem;">✅ ${bTag} CSV Import Change Summary (${newEq.length} Stocks, ${newETFs.length} ETFs, ${(newMFs || []).length} MFs)</strong>
+        <button type="button" class="close-x-btn" onclick="document.getElementById('csv-diff-inline-box').style.display='none'" title="Dismiss">✕</button>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:8px;">
+        <div style="background:#ffffff; padding:8px; border-radius:6px; border:1px solid #bbf7d0;">
+          <strong style="color:#059669;">🟢 Newly Added (${added.length}):</strong>
+          <div style="font-size:0.74rem; margin-top:3px;">${added.length ? added.join("<br>") : "None"}</div>
+        </div>
+        <div style="background:#ffffff; padding:8px; border-radius:6px; border:1px solid #bfdbfe;">
+          <strong style="color:#2563eb;">🔄 Qty / Avg Updated (${modified.length}):</strong>
+          <div style="font-size:0.74rem; margin-top:3px;">${modified.length ? modified.join("<br>") : "None"}</div>
+        </div>
+        <div style="background:#ffffff; padding:8px; border-radius:6px; border:1px solid #fecaca;">
+          <strong style="color:#dc2626;">🔴 Removed / Exited (${removed.length}):</strong>
+          <div style="font-size:0.74rem; margin-top:3px;">${removed.length ? removed.join("<br>") : "None"}</div>
+        </div>
+      </div>
+      <div style="font-size:0.73rem; color:#475569; margin-top:6px;">⚪ Unchanged positions in ${bTag}: <strong>${unchanged}</strong> · All other brokers preserved without override.</div>
+    `;
+
+    const inlineBox = document.getElementById("csv-diff-inline-box");
+    if (inlineBox) {
+      inlineBox.style.display = "block";
+      inlineBox.innerHTML = html;
+    }
+    const modalBody = document.getElementById("csv-diff-modal-body");
+    if (modalBody) {
+      modalBody.innerHTML = html;
+    }
+    openCsvDiffModal();
+  }
+
+  function openCsvDiffModal() {
+    const el = document.getElementById("csv-diff-modal-backdrop");
+    if (el) el.classList.add("open");
+  }
+  function closeCsvDiffModal() {
+    const el = document.getElementById("csv-diff-modal-backdrop");
+    if (el) el.classList.remove("open");
+  }
+
+  // Security & Privacy Controls (Requirement #12)
+  function togglePrivacyMaskMode() {
+    privacyMaskActive = !privacyMaskActive;
+    document.body.classList.toggle("privacy-masked", privacyMaskActive);
+    const btn = document.getElementById("btn-privacy-mask");
+    if (btn) {
+      btn.textContent = `👁️ Privacy Mask: ${privacyMaskActive ? "ON" : "OFF"}`;
+      btn.className = privacyMaskActive ? "btn-amber" : "btn-secondary";
+    }
+    renderAllViews();
+  }
+
+  function toggleSessionOnlyTokensMode() {
+    const chk = document.getElementById("chk-session-only-tokens");
+    sessionOnlyTokens = chk ? chk.checked : false;
+    if (sessionOnlyTokens) {
+      try {
+        localStorage.removeItem(STORAGE_KEY_DHAN);
+        localStorage.removeItem(STORAGE_KEY_KOTAK);
+        localStorage.removeItem(STORAGE_KEY_INDMONEY);
+      } catch (e) {}
+    }
+  }
+
+  function togglePortfolioBotVisibility() {
+    const chk = document.getElementById("chk-show-portfolio-bot");
+    const fab = document.getElementById("chat-fab-btn");
+    const win = document.getElementById("chat-window");
+    const show = chk ? chk.checked : true;
+    if (fab) fab.style.display = show ? "inline-flex" : "none";
+    if (!show && win) win.classList.remove("open");
+  }
+
+  function simplePinHash(pin) {
+    let h = 2166136261;
+    const s = "PIAI_SALT_" + String(pin);
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return String(h >>> 0);
+  }
+
+  function saveVaultPinSetup() {
+    const pin = (document.getElementById("inp-vault-pin-setup").value || "").trim();
+    if (!pin || pin.length < 4) {
+      const msg = document.getElementById("dhan-status-msg");
+      if (msg) msg.innerHTML = `<span style="color:var(--red);">🔴 Enter at least a 4-digit PIN to set up Vault Lock.</span>`;
+      return;
+    }
+    safeSetStorage(STORAGE_KEY_VAULT_PIN, simplePinHash(pin));
+    document.getElementById("inp-vault-pin-setup").value = "";
+    const msg = document.getElementById("dhan-status-msg");
+    if (msg) msg.innerHTML = `<span style="color:var(--emerald);">🔐 Vault Lock PIN saved! Click "🔒 Vault Lock" in the top bar anytime to lock your screen.</span>`;
+  }
+
+  function openOrTriggerVaultLock() {
+    const savedHash = safeGetStorage(STORAGE_KEY_VAULT_PIN, "");
+    if (!savedHash) {
+      switchTab("admin");
+      const inp = document.getElementById("inp-vault-pin-setup");
+      if (inp) inp.focus();
+      return;
+    }
+    document.getElementById("vault-unlock-err").textContent = "";
+    document.getElementById("inp-vault-unlock-pin").value = "";
+    document.getElementById("vault-lock-modal-backdrop").classList.add("open");
+  }
+
+  function unlockVaultWithPin() {
+    const pin = (document.getElementById("inp-vault-unlock-pin").value || "").trim();
+    const savedHash = safeGetStorage(STORAGE_KEY_VAULT_PIN, "");
+    if (!savedHash || simplePinHash(pin) === savedHash) {
+      document.getElementById("vault-lock-modal-backdrop").classList.remove("open");
+    } else {
+      document.getElementById("vault-unlock-err").textContent = "❌ Incorrect Vault PIN. Try again.";
+    }
+  }
+
+  function panicWipeAllDataAndTokens() {
+    holdings = []; mfs = []; etfs = []; bonds = []; watchlist = []; simulatedHoldings = [];
+    dhanConfig = { clientId: "", accessToken: "", proxyUrl: "", tier: "FREE" };
+    kotakConfig = { consumerKey: "", mobile: "", ucc: "", sessionAuth: "", sessionSid: "", baseUrl: "https://gw-napi.kotaksecurities.com" };
+    indMoneyConfig = { accessToken: "", clientId: "" };
+    try {
+      localStorage.removeItem(STORAGE_KEY_STATE);
+      localStorage.removeItem(STORAGE_KEY_DHAN);
+      localStorage.removeItem(STORAGE_KEY_KOTAK);
+      localStorage.removeItem(STORAGE_KEY_INDMONEY);
+      localStorage.removeItem(STORAGE_KEY_BASELINE);
+      sessionStorage.clear();
+    } catch (e) {}
+    runPortfolioIntelligenceEngine();
+  }
 
   function normalizeBrokerTag(b) {
     if (!b) return "Kotak";
@@ -1161,10 +1895,10 @@
 
   function getBrokerBadgeStyle(brokerName) {
     const b = normalizeBrokerTag(brokerName);
-    if (b === "Dhan") return { label: "⚡ DhanHQ", short: "⚡ Dhan", bg: "rgba(16,185,129,0.16)", border: "#10b981", color: "#6ee7b7" };
-    if (b === "INDmoney") return { label: "🟣 INDmoney", short: "🟣 INDmoney", bg: "rgba(168,85,247,0.18)", border: "#a855f7", color: "#d8b4fe" };
-    if (b === "Kotak") return { label: "🏦 Kotak Securities", short: "🏦 Kotak", bg: "rgba(56,189,248,0.16)", border: "#0284c7", color: "#7dd3fc" };
-    return { label: `📁 ${b}`, short: `📁 ${b}`, bg: "rgba(148,163,184,0.16)", border: "#64748b", color: "#cbd5e1" };
+    if (b === "Dhan") return { label: "⚡ DhanHQ", short: "⚡ Dhan", bg: "#dcfce7", border: "#10b981", color: "#047857" };
+    if (b === "INDmoney") return { label: "🟣 INDmoney", short: "🟣 INDmoney", bg: "#f3e8ff", border: "#a855f7", color: "#6d28d9" };
+    if (b === "Kotak") return { label: "🏦 Kotak Securities", short: "🏦 Kotak", bg: "#e0f2fe", border: "#0284c7", color: "#0369a1" };
+    return { label: `📁 ${b}`, short: `📁 ${b}`, bg: "#f1f5f9", border: "#64748b", color: "#334155" };
   }
 
   function getHoldingKey(h) {
@@ -1308,13 +2042,15 @@
   }
 
   function toggleDhanModal() {
+    switchTab("admin");
     const el = document.getElementById("dhan-config-card");
-    if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth" });
   }
 
   function toggleAddHoldingForm() {
+    switchTab("admin");
     const el = document.getElementById("add-holding-card");
-    if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth" });
   }
 
   async function handleAddHoldingSubmit(e) {
@@ -2359,9 +3095,17 @@
     if (!h) return;
     const curTicker = h.ticker || guessLocalNSETicker(h.n) || "";
     const curBroker = normalizeBrokerTag(h.broker);
-    editModalContext = { type: isEtf ? "ETF" : "STOCK", holdingKey: getHoldingKey(h) };
-    document.getElementById("edit-modal-title").textContent = `✏️ Edit ${curBroker} Position — ${h.n}`;
+    editModalContext = { type: isEtf ? "ETF" : "STOCK", holdingKey: getHoldingKey(h), rawName: h.rawName || h.n };
+    document.getElementById("edit-modal-title").textContent = `✏️ Edit ${isEtf ? "ETF" : "Stock"} — ${h.n} (${curBroker})`;
     document.getElementById("edit-modal-fields").innerHTML = `
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Display Name (Auto-saved for future CSVs)</label>
+        <input type="text" id="modal-edit-name" class="watchlist-input" value="${h.n}">
+      </div>
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">NSE/BSE Ticker (e.g. TMPV.NS, NIFTYBEES.NS)</label>
+        <input type="text" id="modal-edit-ticker" class="watchlist-input" value="${curTicker}">
+      </div>
       <div>
         <label style="font-size:0.7rem; color:var(--text-muted);">Broker Account</label>
         <select id="modal-edit-broker" class="watchlist-input">
@@ -2372,16 +3116,20 @@
         </select>
       </div>
       <div>
-        <label style="font-size:0.7rem; color:var(--text-muted);">NSE/BSE Ticker (e.g. RELIANCE.NS)</label>
-        <input type="text" id="modal-edit-ticker" class="watchlist-input" value="${curTicker}">
-      </div>
-      <div>
-        <label style="font-size:0.7rem; color:var(--text-muted);">Latest Market LTP (₹)</label>
-        <input type="number" id="modal-edit-ltp" class="watchlist-input" step="any" value="${(h.ltp || h.avg || 0).toFixed(2)}">
+        <label style="font-size:0.7rem; color:var(--text-muted);">Sector / Category</label>
+        <input type="text" id="modal-edit-sec" class="watchlist-input" value="${h.sec || (isEtf ? 'ETF' : 'Equity')}">
       </div>
       <div>
         <label style="font-size:0.7rem; color:var(--text-muted);">Quantity</label>
         <input type="number" id="modal-edit-qty" class="watchlist-input" step="any" value="${h.qty}">
+      </div>
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Buy Avg Price (₹)</label>
+        <input type="number" id="modal-edit-avg" class="watchlist-input" step="any" value="${(h.avg || 0).toFixed(2)}">
+      </div>
+      <div>
+        <label style="font-size:0.7rem; color:var(--text-muted);">Latest Market LTP (₹)</label>
+        <input type="number" id="modal-edit-ltp" class="watchlist-input" step="any" value="${(h.ltp || h.avg || 0).toFixed(2)}">
       </div>
     `;
     document.getElementById("edit-item-modal-backdrop").classList.add("open");
@@ -2424,25 +3172,35 @@
       const pool = editModalContext.type === "ETF" ? etfs : holdings;
       const h = pool.find(item => getHoldingKey(item) === editModalContext.holdingKey || item.n === editModalContext.holdingKey);
       if (!h) { closeEditItemModal(); return; }
+      const origRawName = h.rawName || editModalContext.rawName || h.n;
+      const newName = (document.getElementById("modal-edit-name") && document.getElementById("modal-edit-name").value.trim()) || h.n;
       const newBroker = document.getElementById("modal-edit-broker") ? normalizeBrokerTag(document.getElementById("modal-edit-broker").value) : normalizeBrokerTag(h.broker);
-      const newTicker = document.getElementById("modal-edit-ticker").value.trim().toUpperCase();
+      const newSec = (document.getElementById("modal-edit-sec") && document.getElementById("modal-edit-sec").value.trim()) || h.sec || "Equity";
+      let newTicker = document.getElementById("modal-edit-ticker").value.trim().toUpperCase();
+      const newAvg = parseFloat(document.getElementById("modal-edit-avg") ? document.getElementById("modal-edit-avg").value : h.avg);
       const newLtp = parseFloat(document.getElementById("modal-edit-ltp").value);
       const newQty = parseFloat(document.getElementById("modal-edit-qty").value);
       closeEditItemModal();
 
+      h.rawName = origRawName;
+      h.n = newName;
       h.broker = newBroker;
-      if (!isNaN(newQty) && newQty > 0) {
-        h.qty = newQty;
-        h.inv = h.qty * h.avg;
-      }
+      h.sec = newSec;
+      if (!isNaN(newAvg) && newAvg > 0) h.avg = newAvg;
+      if (!isNaN(newQty) && newQty > 0) h.qty = newQty;
+      h.inv = h.qty * h.avg;
       if (!isNaN(newLtp) && newLtp > 0) {
         h.ltp = newLtp;
         h.cur = h.qty * h.ltp;
       }
       if (newTicker) {
-        h.ticker = (newTicker.endsWith(".NS") || newTicker.endsWith(".BO")) ? newTicker : newTicker + ".NS";
+        newTicker = (newTicker.endsWith(".NS") || newTicker.endsWith(".BO")) ? newTicker : newTicker + ".NS";
+        h.ticker = newTicker;
         await fetchFastStockQuote(h);
       }
+      // Save permanent symbol alias so future CSV uploads automatically use this Name, Ticker, and Sector (#10)
+      recordSymbolAlias(origRawName, newName, h.ticker || "", newSec);
+
       persistState();
       runPortfolioIntelligenceEngine();
       runSimulation();
@@ -2660,14 +3418,33 @@
   function runPortfolioIntelligenceEngine() {
     if (etfs && etfs.length > 0) {
       etfs.forEach(e => {
+        const aliased = applySavedSymbolAlias(e.rawName || e.n, e.ticker, e.sec || "ETF");
+        e.rawName = e.rawName || e.n;
+        e.n = aliased.n;
+        if (aliased.ticker) e.ticker = aliased.ticker;
         e.qty = parseFloat(e.qty) || 1;
         e.avg = parseFloat(e.avg) || 0;
         e.ltp = parseFloat(e.ltp) || e.avg;
         if (e.avg > 0) e.inv = e.qty * e.avg;
         if (e.ltp > 0) e.cur = e.qty * e.ltp;
+        e.pnl = (e.cur || 0) - (e.inv || 0);
+        e.pct = e.inv > 0 ? (e.pnl / e.inv) * 100 : 0;
+        const refP = e.pct > 15 ? e.ltp : e.avg;
+        e.sl = Math.round(refP * (1 - ruleStopLossBuffer / 100) * 100) / 100;
+        e.tgt = Math.round(e.ltp * 1.20 * 100) / 100;
+        if (e.pct <= ruleExitDrawdown) e.act = "EXIT 🔴";
+        else if (e.pct >= ruleProfitBook) e.act = "BOOK 15% 🟣";
+        else e.act = "HOLD ✅";
+        e.h = Math.max(25, Math.min(95, 60 + Math.round(e.pct * 0.5)));
+        e.note = `ETF Trailing Stop: ₹${e.sl.toLocaleString("en-IN")} · 20% Target: ₹${e.tgt.toLocaleString("en-IN")}.`;
       });
     }
     holdings.forEach(h => {
+      const aliased = applySavedSymbolAlias(h.rawName || h.n, h.ticker, h.sec);
+      h.rawName = h.rawName || h.n;
+      h.n = aliased.n;
+      if (aliased.ticker) h.ticker = aliased.ticker;
+      if (aliased.sec) h.sec = aliased.sec;
       h.qty = parseFloat(h.qty) || 1;
       h.avg = parseFloat(h.avg) || 0;
       h.ltp = parseFloat(h.ltp) || h.avg;
@@ -2734,7 +3511,7 @@
     if (deltaEl) {
       const base = getOrInitDailyBaseline(grandCur, grandInv);
       const flashBanner = baselineJustPinnedFlash && base
-        ? `<div style="background:rgba(16,185,129,0.18); border:1px solid #34d399; color:#a7f3d0; padding:6px 10px; border-radius:6px; margin-bottom:8px; font-weight:600;">
+        ? `<div style="background:rgba(16,185,129,0.18); border:1px solid #34d399; color:#047857; padding:6px 10px; border-radius:6px; margin-bottom:8px; font-weight:600;">
              ✅ Baseline Snapshot Pinned at <strong>${base.date} ${base.time} IST</strong>! (Pinned Net Worth: <strong>${fmtVal(base.grandCur || 0)}</strong>${base.niftyLtp ? ` · Pinned Nifty: <strong>${base.niftyLtp.toLocaleString("en-IN", {maximumFractionDigits:2})}</strong>` : ''}).
            </div>`
         : "";
@@ -2770,7 +3547,7 @@
       const bStyle = getBrokerBadgeStyle(b);
       const bPnl = st.cur - st.inv;
       const bPct = st.inv > 0 ? (bPnl / st.inv) * 100 : 0;
-      return `<div class="data-row" style="background:rgba(15,23,42,0.55); padding:6px 8px; border-radius:6px; margin-top:4px;">
+      return `<div class="data-row" style="background:#f8fafc; padding:6px 8px; border-radius:6px; margin-top:4px;">
         <span><strong style="color:${bStyle.color};">${bStyle.label}</strong> <span style="font-size:0.72rem; color:var(--text-muted);">(${st.eqCount} Stocks · ${st.etfCount} ETFs)</span></span>
         <span class="${bPnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(st.cur)}</strong> (${fmt(bPnl)} / ${bPct >= 0 ? '+':''}${bPct.toFixed(1)}%)</span>
       </div>`;
@@ -2801,6 +3578,7 @@
       : `<div class="empty-state" style="padding:12px;">No drawdowns to display</div>`;
 
     renderStocksView();
+    renderETFsView();
     renderMFView();
     renderAlertsView();
     updateBenchmarkUI();
@@ -2821,51 +3599,59 @@
     renderStocksView();
   }
 
-  function renderSingleStockCardHtml(h) {
+  function renderSinglePositionCardHtml(h, isEtf = false) {
     const hKey = getHoldingKey(h);
     const safeKey = hKey.replace(/'/g, "\\'");
     const isOpen = !!expandedCards[hKey];
-    const actBadge = h.act.includes("EXIT") ? "badge-red" : h.act.includes("BOOK") ? "badge-purple" : "badge-emerald";
+    const actStr = h.act || "HOLD ✅";
+    const actBadge = actStr.includes("EXIT") ? "badge-red" : actStr.includes("BOOK") ? "badge-purple" : "badge-emerald";
     const bStyle = getBrokerBadgeStyle(h.broker);
+    const qtyDisp = privacyMaskActive ? "•••" : h.qty;
+    const toggleFn = isEtf ? "renderETFsView()" : "renderStocksView()";
     return `
-      <div class="stock-card ${h.act.includes('EXIT') ? 'critical-border' : 'winner-border'}">
-        <div class="stock-summary" onclick="expandedCards['${safeKey}']=!expandedCards['${safeKey}'];renderStocksView()">
+      <div class="stock-card ${actStr.includes('EXIT') ? 'critical-border' : 'winner-border'}">
+        <div class="stock-summary" onclick="expandedCards['${safeKey}']=!expandedCards['${safeKey}'];${toggleFn}">
           <div class="stock-top">
             <div>
               <div class="stock-name">
                 ${h.n}
-                ${h.ticker ? `<span style="font-size:0.68rem; color:#60a5fa;">(${h.ticker})</span>` : ''}
-                <span style="display:inline-block; font-size:0.66rem; padding:1px 7px; border-radius:999px; background:${bStyle.bg}; border:1px solid ${bStyle.border}; color:${bStyle.color}; margin-left:4px; font-weight:700;">${bStyle.short}</span>
+                ${h.ticker ? `<span style="font-size:0.7rem; color:#0284c7; font-weight:600;">(${h.ticker})</span>` : ''}
+                <span style="display:inline-block; font-size:0.66rem; padding:1px 7px; border-radius:6px; background:${bStyle.bg}; border:1px solid ${bStyle.border}; color:${bStyle.color}; margin-left:4px; font-weight:700;">${bStyle.short}</span>
               </div>
-              <div class="stock-meta">${h.sec || 'Equity'} · Qty: ${h.qty} · Avg: ₹${h.avg.toFixed(2)} · Inv: ${fmtVal(h.inv)}</div>
+              <div class="stock-meta">${h.sec || (isEtf ? 'ETF' : 'Equity')} · Qty: ${qtyDisp} · Avg: ₹${(h.avg || 0).toFixed(2)} · Inv: ${fmtVal(h.inv)}</div>
             </div>
             <div class="stock-price">
-              <div class="stock-ltp">LTP ₹${h.ltp.toFixed(2)}</div>
-              <div class="stock-pct ${h.pct >= 0 ? 'pos':'neg'}">${h.pct >= 0 ? '+':''}${h.pct.toFixed(2)}%</div>
+              <div class="stock-ltp">LTP ₹${(h.ltp || h.avg || 0).toFixed(2)}</div>
+              <div class="stock-pct ${(h.pct || 0) >= 0 ? 'pos':'neg'}">${(h.pct || 0) >= 0 ? '+':''}${(h.pct || 0).toFixed(2)}%</div>
             </div>
           </div>
           <div class="stock-bottom">
             <span>
-              <strong class="${h.pnl >= 0 ? 'pos':'neg'}">${fmt(h.pnl)}</strong>
+              <strong class="${(h.pnl || 0) >= 0 ? 'pos':'neg'}">${fmt(h.pnl || 0)}</strong>
               <span style="color:var(--text-muted); margin-left:6px;">Cur: ${fmtVal(h.cur)}</span>
-              ${h.today ? `<span style="color:${h.today>=0?'var(--emerald)':'var(--red)'}; margin-left:6px;">Today: ${fmt(h.today)}</span>` : ''}
+              ${h.today ? `<span style="color:${h.today>=0?'var(--emerald)':'var(--red)'}; margin-left:6px; font-weight:600;">Today: ${fmt(h.today)}</span>` : ''}
             </span>
-            <span class="badge ${actBadge}">${h.act}</span>
+            <span class="badge ${actBadge}">${actStr}</span>
           </div>
         </div>
         ${isOpen ? `
-          <div class="stock-expanded">
+          <div class="stock-expanded" style="position:relative; padding-right:38px;">
+            <button type="button" class="close-x-btn" style="position:absolute; top:8px; right:8px;" onclick="event.stopPropagation(); closeExpandedCard('${safeKey}')" title="Close expanded view">✕</button>
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-              <span style="color:#e2e8f0;"><strong>Health ${h.h}/100:</strong> ${h.note} (Stop-Loss: ₹${h.sl} · 25% Target: ₹${h.tgt})</span>
-              <div style="display:flex; gap:6px;">
-                <button type="button" class="btn-secondary" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); promptManualLTP('${safeKey}', false)">✏️ Edit Broker / LTP / Qty</button>
-                <button type="button" class="btn-danger" style="padding:3px 8px; font-size:0.7rem;" onclick="event.stopPropagation(); removeHolding('${safeKey}', false)">🗑️ Delete</button>
+              <span style="color:#1e293b;"><strong>Health ${h.h || 70}/100:</strong> ${h.note || ''} (Stop-Loss: ₹${h.sl || 0} · Target: ₹${h.tgt || 0})</span>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn-secondary" style="padding:4px 10px; font-size:0.72rem;" onclick="event.stopPropagation(); promptManualLTP('${safeKey}', ${isEtf})">✏️ Edit Name / Ticker / LTP / Qty</button>
+                <button type="button" class="btn-danger" style="padding:4px 10px; font-size:0.72rem;" onclick="event.stopPropagation(); removeHolding('${safeKey}', ${isEtf})">🗑️ Delete</button>
               </div>
             </div>
           </div>
         ` : ''}
       </div>
     `;
+  }
+
+  function renderSingleStockCardHtml(h) {
+    return renderSinglePositionCardHtml(h, false);
   }
 
   function renderEtfRowsHtml(etfList) {
@@ -2988,21 +3774,130 @@
       const bPnl = bCur - bInv;
       const bPct = bInv > 0 ? (bPnl / bInv) * 100 : 0;
       const bToday = bItems.reduce((s, h) => s + (h.today || 0), 0);
+      const isCollapsed = !!collapsedBrokers[b];
+      const safeB = b.replace(/'/g, "\\'");
       return `
-        <div style="margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 12px; margin-bottom:8px; border-radius:10px; background:${bStyle.bg}; border:1px solid ${bStyle.border};">
-            <div>
+        <div style="margin-bottom:14px;">
+          <div onclick="toggleBrokerSectionCollapse('${safeB}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 14px; margin-bottom:8px; border-radius:10px; background:${bStyle.bg}; border:1px solid ${bStyle.border};">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="event.stopPropagation(); toggleBrokerSectionCollapse('${safeB}')">${isCollapsed ? "▶ Expand" : "▼ Collapse"}</button>
               <span style="font-size:0.9rem; font-weight:800; color:${bStyle.color};">${bStyle.label}</span>
-              <span style="font-size:0.74rem; color:#e2e8f0; margin-left:8px;"><strong>${bItems.length}</strong> Stock${bItems.length === 1 ? '' : 's'} Listed</span>
+              <span style="font-size:0.74rem; color:#334155;">(<strong>${bItems.length}</strong> Stock${bItems.length === 1 ? '' : 's'})</span>
             </div>
-            <div style="font-size:0.76rem; color:#f8fafc;">
+            <div style="font-size:0.76rem; color:#0f172a;">
               Inv: <strong>${fmtVal(bInv)}</strong> &nbsp;·&nbsp;
               Cur: <strong>${fmtVal(bCur)}</strong> &nbsp;·&nbsp;
               P&amp;L: <strong class="${bPnl >= 0 ? 'pos' : 'neg'}">${fmt(bPnl)} (${bPct >= 0 ? '+' : ''}${bPct.toFixed(2)}%)</strong>
               ${bToday ? ` &nbsp;·&nbsp; Today: <strong style="color:${bToday >= 0 ? 'var(--emerald)' : 'var(--red)'};">${fmt(bToday)}</strong>` : ''}
             </div>
           </div>
-          ${bItems.map(h => renderSingleStockCardHtml(h)).join("")}
+          ${isCollapsed ? '' : bItems.map(h => renderSinglePositionCardHtml(h, false)).join("")}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function setEtfBrokerFilter(bKey) {
+    activeEtfBrokerFilter = bKey;
+    renderETFsView();
+  }
+  function setEtfFilter(fType, btnEl) {
+    activeEtfFilter = fType;
+    if (btnEl && btnEl.parentElement) {
+      btnEl.parentElement.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+      btnEl.classList.add("active");
+    }
+    renderETFsView();
+  }
+  function handleEtfSearch() {
+    const inp = document.getElementById("etf-search");
+    etfSearchQuery = inp ? inp.value.trim().toLowerCase() : "";
+    renderETFsView();
+  }
+
+  function renderETFsView() {
+    const countEl = document.getElementById("tab-etfs-count");
+    if (countEl) countEl.textContent = `(${etfs.length})`;
+    const pillBox = document.getElementById("etf-broker-summary-pills");
+    if (pillBox) {
+      const bMap = { Kotak: { count: 0, cur: 0 }, Dhan: { count: 0, cur: 0 }, INDmoney: { count: 0, cur: 0 } };
+      etfs.forEach(e => {
+        const b = normalizeBrokerTag(e.broker);
+        if (!bMap[b]) bMap[b] = { count: 0, cur: 0 };
+        bMap[b].count++;
+        bMap[b].cur += (e.cur || 0);
+      });
+      const pills = [
+        `<button type="button" class="filter-chip ${activeEtfBrokerFilter === 'ALL' ? 'active' : ''}" onclick="setEtfBrokerFilter('ALL')">🌐 All Brokers (${etfs.length} ETFs)</button>`
+      ];
+      Object.keys(bMap).forEach(b => {
+        const st = bMap[b];
+        if (st.count > 0 || ["Kotak", "Dhan", "INDmoney"].includes(b)) {
+          const bStyle = getBrokerBadgeStyle(b);
+          pills.push(`<button type="button" class="filter-chip ${activeEtfBrokerFilter === b ? 'active' : ''}" onclick="setEtfBrokerFilter('${b}')">${bStyle.short}: ${st.count} ETFs (${fmtVal(st.cur)})</button>`);
+        }
+      });
+      pillBox.innerHTML = pills.join("");
+    }
+
+    const container = document.getElementById("etfs-cards-container");
+    if (!container) return;
+
+    let list = [...etfs];
+    if (activeEtfBrokerFilter !== "ALL") {
+      list = list.filter(e => normalizeBrokerTag(e.broker) === activeEtfBrokerFilter);
+    }
+    if (etfSearchQuery) {
+      list = list.filter(e =>
+        e.n.toLowerCase().includes(etfSearchQuery) ||
+        (e.ticker && e.ticker.toLowerCase().includes(etfSearchQuery)) ||
+        normalizeBrokerTag(e.broker).toLowerCase().includes(etfSearchQuery)
+      );
+    }
+    if (activeEtfFilter === "WINNERS") list = list.filter(e => (e.pnl || 0) > 0);
+    else if (activeEtfFilter === "LOSERS") list = list.filter(e => (e.pnl || 0) < 0);
+
+    if (list.length === 0) {
+      container.innerHTML = `<div class="empty-state">No ETF holdings match this view. Open the <strong>⚙️ Brokers &amp; Admin</strong> tab to upload a Broker CSV, connect Dhan / Kotak Neo / INDmoney API, or add an ETF position.</div>`;
+      return;
+    }
+
+    const groups = {};
+    list.forEach(e => {
+      const b = normalizeBrokerTag(e.broker);
+      if (!groups[b]) groups[b] = [];
+      groups[b].push(e);
+    });
+    const brokerOrder = ["Kotak", "Dhan", "INDmoney"];
+    const orderedBrokers = [
+      ...brokerOrder.filter(b => groups[b] && groups[b].length > 0),
+      ...Object.keys(groups).filter(b => !brokerOrder.includes(b))
+    ];
+
+    container.innerHTML = orderedBrokers.map(b => {
+      const bItems = groups[b];
+      const bStyle = getBrokerBadgeStyle(b);
+      const bInv = bItems.reduce((s, e) => s + (e.inv || 0), 0);
+      const bCur = bItems.reduce((s, e) => s + (e.cur || 0), 0);
+      const bPnl = bCur - bInv;
+      const bPct = bInv > 0 ? (bPnl / bInv) * 100 : 0;
+      const isCollapsed = !!collapsedBrokers[b];
+      const safeB = b.replace(/'/g, "\\'");
+      return `
+        <div style="margin-bottom:14px;">
+          <div onclick="toggleBrokerSectionCollapse('${safeB}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 14px; margin-bottom:8px; border-radius:10px; background:${bStyle.bg}; border:1px solid ${bStyle.border};">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="event.stopPropagation(); toggleBrokerSectionCollapse('${safeB}')">${isCollapsed ? "▶ Expand" : "▼ Collapse"}</button>
+              <span style="font-size:0.9rem; font-weight:800; color:${bStyle.color};">${bStyle.label}</span>
+              <span style="font-size:0.74rem; color:#334155;">(<strong>${bItems.length}</strong> ETF${bItems.length === 1 ? '' : 's'})</span>
+            </div>
+            <div style="font-size:0.76rem; color:#0f172a;">
+              Inv: <strong>${fmtVal(bInv)}</strong> &nbsp;·&nbsp;
+              Cur: <strong>${fmtVal(bCur)}</strong> &nbsp;·&nbsp;
+              P&amp;L: <strong class="${bPnl >= 0 ? 'pos' : 'neg'}">${fmt(bPnl)} (${bPct >= 0 ? '+' : ''}${bPct.toFixed(2)}%)</strong>
+            </div>
+          </div>
+          ${isCollapsed ? '' : bItems.map(e => renderSinglePositionCardHtml(e, true)).join("")}
         </div>
       `;
     }).join("");
@@ -3022,7 +3917,7 @@
   }
 
   function renderMFView() {
-    const totalCount = mfs.length + etfs.length + bonds.length;
+    const totalCount = mfs.length + bonds.length;
     document.getElementById("tab-mf-count").textContent = `(${totalCount})`;
 
     document.getElementById("mf-list-container").innerHTML = mfs.length
@@ -3034,7 +3929,7 @@
         }).join("")
       : `<div class="empty-state" style="padding:12px;">No mutual fund holdings loaded</div>`;
 
-    document.getElementById("etf-list-container").innerHTML = renderEtfRowsHtml(etfs);
+    if (document.getElementById("etf-list-container")) document.getElementById("etf-list-container").innerHTML = renderEtfRowsHtml(etfs);
 
     document.getElementById("bond-list-container").innerHTML = bonds.length
       ? bonds.map(b => {
@@ -3043,7 +3938,7 @@
           const bStyle = getBrokerBadgeStyle(b.broker);
           return `<div class="data-row"><span><strong>${b.n}</strong> <span style="font-size:0.65rem; padding:1px 6px; border-radius:999px; background:${bStyle.bg}; color:${bStyle.color}; border:1px solid ${bStyle.border};">${bStyle.short}</span> (Inv: ${fmtVal(b.inv)})</span><span class="${pnl >= 0 ? 'pos':'neg'}"><strong>${fmtVal(b.cur)}</strong> (${fmt(pnl)} / ${pct >= 0 ? '+':''}${pct.toFixed(1)}%)</span></div>`;
         }).join("")
-      : `<div class="empty-state" style="padding:12px; color:#fde68a;">No Bonds / InvIT / SGB holdings loaded</div>`;
+      : `<div class="empty-state" style="padding:12px; color:#b45309;">No Bonds / InvIT / SGB holdings loaded</div>`;
   }
 
   function renderDynamicBuyRecs() {
@@ -3082,7 +3977,7 @@
           </div>
         `);
       }
-      intraEl.innerHTML = sigCards.length ? sigCards.join("") : `<div style="padding:8px; color:#a7f3d0; font-size:0.78rem;">Click <strong>⚡ Sync Live NSE Prices</strong> above to refresh intraday signals.</div>`;
+      intraEl.innerHTML = sigCards.length ? sigCards.join("") : `<div style="padding:8px; color:#047857; font-size:0.78rem;">Click <strong>⚡ Sync Live NSE Prices</strong> above to refresh intraday signals.</div>`;
     }
 
     const targetSectors = [
@@ -3517,38 +4412,133 @@
   function toggleChatWindow() { document.getElementById("chat-window").classList.toggle("open"); }
   function askQuickPrompt(t) { document.getElementById("chat-input").value = t; sendChatMessage(); }
   function sendChatMessage() {
-    const inp = document.getElementById("chat-input"), q = inp.value.trim();
+    const inp = document.getElementById("chat-input");
+    const q = inp ? inp.value.trim() : "";
     if (!q) return;
     const box = document.getElementById("chat-messages");
-    box.innerHTML += `<div class="chat-bubble chat-bubble-user">${q}</div>`;
+    const safeQ = q.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    box.innerHTML += `<div class="chat-bubble chat-bubble-user">${safeQ}</div>`;
     inp.value = "";
+
     const ql = q.toLowerCase();
-    const eqCur = holdings.reduce((s, h) => s + h.cur, 0);
-    const exits = holdings.filter(h => h.act.includes("EXIT"));
-    const sortedByWt = [...holdings].sort((a, b) => b.cur - a.cur);
+    const allPos = [
+      ...holdings.map(h => ({ ...h, assetType: "Stock" })),
+      ...etfs.map(e => ({ ...e, assetType: "ETF", pnl: (e.cur || 0) - (e.inv || 0), pct: e.inv > 0 ? (((e.cur || 0) - e.inv) / e.inv) * 100 : 0 }))
+    ];
+    const eqInv = holdings.reduce((s, h) => s + (h.inv || 0), 0);
+    const eqCur = holdings.reduce((s, h) => s + (h.cur || 0), 0);
+    const etfInv = etfs.reduce((s, e) => s + (e.inv || 0), 0);
+    const etfCur = etfs.reduce((s, e) => s + (e.cur || 0), 0);
+    const mfCur = mfs.reduce((s, m) => s + (m.cur || 0), 0);
+    const bondCur = bonds.reduce((s, b) => s + (b.cur || 0), 0);
+    const grandCur = eqCur + etfCur + mfCur + bondCur;
+    const grandInv = eqInv + etfInv + mfs.reduce((s, m) => s + (m.inv || 0), 0) + bonds.reduce((s, b) => s + (b.inv || 0), 0);
+    const grandPnl = grandCur - grandInv;
+    const exits = holdings.filter(h => (h.act || "").includes("EXIT"));
+    const books = holdings.filter(h => (h.act || "").includes("BOOK"));
 
     let ans = "";
-    if (holdings.length === 0 && mfs.length === 0 && etfs.length === 0) {
-      ans = `Your portfolio is currently empty. Upload your broker CSV or click <strong>➕ Add Position</strong> so I can analyze your actual holdings.`;
-    } else if (ql.includes("exit") || ql.includes("flag")) {
-      ans = exits.length
-        ? `You have <strong>${exits.length}</strong> positions breaching your ${ruleExitDrawdown}% exit rule: <strong>${exits.map(h => `${h.n} (${h.pct.toFixed(1)}%)`).join(", ")}</strong>.`
-        : `Zero positions currently breach your ${ruleExitDrawdown}% exit drawdown rule.`;
-    } else if (ql.includes("tax")) {
-      ans = `By harvesting <strong>${fmtVal(lastTaxSummary.lossesUsed)}</strong> in unrealized losses, you can reduce your estimated tax (incl. 4% cess) from ${fmtVal(lastTaxSummary.beforeTax)} to ${fmtVal(lastTaxSummary.afterTax)} — saving <strong>₹${lastTaxSummary.saved.toLocaleString("en-IN")}</strong>.`;
-    } else if (ql.includes("risk") || ql.includes("concentration")) {
-      const top = sortedByWt[0];
-      const wt = top && eqCur > 0 ? ((top.cur / eqCur) * 100).toFixed(1) : 0;
-      ans = top
-        ? `Your largest single-stock exposure is <strong>${top.n}</strong> at <strong>${wt}%</strong> of equity value (${fmtVal(top.cur)}), with ${exits.length} positions currently in deep drawdown.`
-        : `No equity concentration risks detected.`;
+
+    if (allPos.length === 0 && mfs.length === 0 && bonds.length === 0) {
+      ans = `Your portfolio is currently empty. Open the <strong>⚙️ Brokers &amp; Admin</strong> tab to upload a Broker CSV or connect Dhan, Kotak Neo, or INDmoney.`;
     } else {
-      ans = `Your active portfolio holds <strong>${holdings.length} stocks</strong>, <strong>${mfs.length} mutual funds</strong>, and <strong>${etfs.length} ETFs</strong> with a total current value of <strong>${document.getElementById("hdr-cur-val").textContent}</strong>.`;
+      // 1. Check if the user asked about a specific Stock or ETF in their portfolio
+      const matchedItems = allPos.filter(item => {
+        const cleanN = item.n.toLowerCase();
+        const cleanT = (item.ticker || "").toLowerCase().replace(/\.(ns|bo)$/, "");
+        return (cleanN.length >= 2 && ql.includes(cleanN)) || (cleanT.length >= 2 && ql.includes(cleanT));
+      });
+
+      if (matchedItems.length > 0) {
+        ans = matchedItems.map(item => {
+          const pnl = (item.cur || 0) - (item.inv || 0);
+          const pct = item.inv > 0 ? (pnl / item.inv) * 100 : 0;
+          const bName = normalizeBrokerTag(item.broker);
+          // Check if user asked for averaging math (e.g. "buy 50 more")
+          const numMatch = ql.match(/\b(\d+)\b/);
+          let avgAddon = "";
+          if ((ql.includes("buy") || ql.includes("add") || ql.includes("average") || ql.includes("avg")) && numMatch) {
+            const addQty = parseInt(numMatch[1], 10);
+            if (addQty > 0) {
+              const newQty = (item.qty || 0) + addQty;
+              const newInv = (item.inv || 0) + addQty * (item.ltp || item.avg || 0);
+              const newAvg = newInv / newQty;
+              avgAddon = `<br>• <strong>Averaging Simulation (+${addQty} qty @ LTP ₹${(item.ltp || 0).toFixed(2)}):</strong> New Qty = <strong>${newQty}</strong>, New Buy Avg = <strong>₹${newAvg.toFixed(2)}</strong> (Extra Capital: ${fmtVal(addQty * (item.ltp || 0))}).`;
+            }
+          }
+          return `<strong>📊 ${item.n} (${item.assetType} · ${bName}):</strong><br>` +
+            `• Qty: <strong>${item.qty}</strong> · Buy Avg: <strong>₹${(item.avg || 0).toFixed(2)}</strong> · Live LTP: <strong>₹${(item.ltp || 0).toFixed(2)}</strong><br>` +
+            `• Invested: <strong>${fmtVal(item.inv)}</strong> · Current: <strong>${fmtVal(item.cur)}</strong><br>` +
+            `• Net P&amp;L: <strong>${fmt(pnl)} (${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%)</strong> · Signal: <strong>${item.act || "HOLD"}</strong><br>` +
+            `• Trailing SL: <strong>₹${item.sl || 0}</strong> · Target: <strong>₹${item.tgt || 0}</strong>${avgAddon}`;
+        }).join("<br><br>");
+      } else if (ql.includes("kotak") || ql.includes("dhan") || ql.includes("indmoney") || ql.includes("broker")) {
+        const bStats = {};
+        allPos.forEach(item => {
+          const b = normalizeBrokerTag(item.broker);
+          if (!bStats[b]) bStats[b] = { count: 0, inv: 0, cur: 0 };
+          bStats[b].count++;
+          bStats[b].inv += (item.inv || 0);
+          bStats[b].cur += (item.cur || 0);
+        });
+        ans = `<strong>🏦 Broker-Wise Portfolio Summary:</strong><br>` + Object.keys(bStats).map(b => {
+          const st = bStats[b];
+          const p = st.cur - st.inv;
+          const pct = st.inv > 0 ? (p / st.inv) * 100 : 0;
+          return `• <strong>${b}:</strong> ${st.count} positions · Inv: ${fmtVal(st.inv)} · Cur: <strong>${fmtVal(st.cur)}</strong> (${fmt(p)} / ${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%)`;
+        }).join("<br>");
+      } else if (ql.includes("etf")) {
+        ans = etfs.length
+          ? `<strong>🌍 Your ETF Holdings (${etfs.length}):</strong><br>` + etfs.map(e => `• <strong>${e.n}</strong> [${normalizeBrokerTag(e.broker)}]: Qty ${e.qty} · Cur ${fmtVal(e.cur)} (${fmt((e.cur || 0) - (e.inv || 0))})`).join("<br>")
+          : `You currently have 0 ETFs loaded. Upload a CSV or sync your broker in <strong>⚙️ Brokers &amp; Admin</strong>.`;
+      } else if (ql.includes("exit") || ql.includes("flag") || ql.includes("stop")) {
+        ans = exits.length
+          ? `<strong>🚨 Flagged Exit Positions (${exits.length} breaching ${ruleExitDrawdown}%):</strong><br>` + exits.map(h => `• <strong>${h.n}</strong> [${normalizeBrokerTag(h.broker)}]: ${h.pct.toFixed(1)}% (${fmt(h.pnl)}) · SL ₹${h.sl}`).join("<br>")
+          : `✅ Zero positions currently breach your ${ruleExitDrawdown}% exit drawdown rule.`;
+      } else if (ql.includes("book") || ql.includes("profit") || ql.includes("winner") || ql.includes("gain")) {
+        const topG = [...allPos].filter(x => (x.pnl || 0) > 0).sort((a, b) => b.pnl - a.pnl).slice(0, 5);
+        ans = topG.length
+          ? `<strong>🟢 Top Portfolio Winners:</strong><br>` + topG.map(h => `• <strong>${h.n}</strong> [${normalizeBrokerTag(h.broker)}]: <strong>${fmt(h.pnl)}</strong> (+${h.pct.toFixed(1)}%)`).join("<br>") +
+            (books.length ? `<br><br><strong>🟣 Eligible for Profit Booking (&gt;+${ruleProfitBook}%):</strong> ${books.map(b => b.n).join(", ")}` : "")
+          : `No positions are currently in net positive unrealized gain.`;
+      } else if (ql.includes("loser") || ql.includes("loss") || ql.includes("drawdown") || ql.includes("worst")) {
+        const topL = [...allPos].filter(x => (x.pnl || 0) < 0).sort((a, b) => a.pnl - b.pnl).slice(0, 5);
+        ans = topL.length
+          ? `<strong>🔴 Top Portfolio Drawdowns:</strong><br>` + topL.map(h => `• <strong>${h.n}</strong> [${normalizeBrokerTag(h.broker)}]: <strong>${fmt(h.pnl)}</strong> (${h.pct.toFixed(1)}%)`).join("<br>")
+          : `Zero positions are currently in unrealized loss!`;
+      } else if (ql.includes("tax") || ql.includes("harvest")) {
+        ans = `<strong>🧾 Tax-Loss Harvesting Summary:</strong><br>By harvesting <strong>${fmtVal(lastTaxSummary.lossesUsed)}</strong> in unrealized losses, your estimated capital gains tax drops from ${fmtVal(lastTaxSummary.beforeTax)} to ${fmtVal(lastTaxSummary.afterTax)} — saving <strong>₹${(lastTaxSummary.saved || 0).toLocaleString("en-IN")}</strong>.`;
+      } else if (ql.includes("sector") || ql.includes("allocation") || ql.includes("risk") || ql.includes("concentration")) {
+        const secMap = {};
+        holdings.forEach(h => {
+          const s = h.sec || "Equity";
+          secMap[s] = (secMap[s] || 0) + (h.cur || 0);
+        });
+        const topSecs = Object.entries(secMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        ans = `<strong>🧭 Portfolio Allocation &amp; Sector Weights:</strong><br>` +
+          `• Equities: ${fmtVal(eqCur)} · ETFs: ${fmtVal(etfCur)} · MFs: ${fmtVal(mfCur)} · Bonds: ${fmtVal(bondCur)}<br>` +
+          topSecs.map(([s, v]) => `• <strong>${s}:</strong> ${fmtVal(v)} (${eqCur > 0 ? ((v / eqCur) * 100).toFixed(1) : 0}% of equities)`).join("<br>");
+      } else if (ql.includes("today") || ql.includes("intraday") || ql.includes("day")) {
+        const todayTot = holdings.reduce((s, h) => s + (h.today || 0), 0) + etfs.reduce((s, e) => s + (e.today || 0), 0);
+        ans = `<strong>⚡ Today's Intraday Portfolio Change:</strong> <strong>${fmt(todayTot)}</strong> across ${holdings.length} stocks and ${etfs.length} ETFs.`;
+      } else if (ql.includes("summary") || ql.includes("net worth") || ql.includes("total") || ql.includes("value") || ql.includes("portfolio")) {
+        const pct = grandInv > 0 ? (grandPnl / grandInv) * 100 : 0;
+        ans = `<strong>📊 Complete Portfolio Summary:</strong><br>` +
+          `• Net Worth: <strong>${fmtVal(grandCur)}</strong> (Invested: ${fmtVal(grandInv)})<br>` +
+          `• Overall P&amp;L: <strong>${fmt(grandPnl)} (${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%)</strong><br>` +
+          `• Holdings: <strong>${holdings.length} Stocks</strong>, <strong>${etfs.length} ETFs</strong>, <strong>${mfs.length} MFs</strong>, <strong>${bonds.length} Bonds</strong>.`;
+      } else {
+        ans = `🤖 <strong>Portfolio-Only Assistant:</strong> I only answer questions about your loaded portfolio (100% locally in your browser). Try asking:<br>` +
+          `• Any stock or ETF name in your portfolio (e.g. <code>${holdings[0] ? holdings[0].n : "HDFCBANK"}</code>)<br>` +
+          `• <code>Kotak vs Dhan broker summary</code><br>` +
+          `• <code>Top gainers</code>, <code>Top losers</code>, or <code>Flagged exits</code><br>` +
+          `• <code>Sector allocation</code> or <code>Tax harvest savings</code>`;
+      }
     }
+
     box.innerHTML += `<div class="chat-bubble chat-bubble-ai">${ans}</div>`;
     box.scrollTop = box.scrollHeight;
   }
-
   function splitCSVRow(line) {
     const res = []; let cur = "", inQ = false;
     for (let i = 0; i < line.length; i++) {
@@ -3659,7 +4649,23 @@
         }
       }
 
+      // Apply saved Stock/ETF Name & Ticker Aliases immediately before diffing & merging (#10)
+      newEq.forEach(item => {
+        const al = applySavedSymbolAlias(item.n, item.ticker, item.sec);
+        item.rawName = item.n;
+        item.n = al.n;
+        if (al.ticker) item.ticker = al.ticker;
+        if (al.sec) item.sec = al.sec;
+      });
+      newETFs.forEach(item => {
+        const al = applySavedSymbolAlias(item.n, item.ticker, "ETF");
+        item.rawName = item.n;
+        item.n = al.n;
+        if (al.ticker) item.ticker = al.ticker;
+      });
+
       const targetBroker = (newEq[0] && newEq[0].broker) || (newETFs[0] && newETFs[0].broker) || (newMFs[0] && newMFs[0].broker) || ((document.getElementById("csv-broker-select") && document.getElementById("csv-broker-select").value) || "Kotak");
+      computeBrokerCsvDiffSummary(targetBroker, newEq, newETFs, newMFs);
       mergeBrokerPortfolio(targetBroker, newEq, newETFs, newMFs, newBonds);
       syncLiveNSEPrices(true);
       e.target.value = "";
@@ -3668,7 +4674,9 @@
   });
 
   function initApp() {
+    loadSymbolAliasesAndCollapsed();
     loadPersistedState();
+    renderSavedAliasesList();
     updateHeaderClock();
     setInterval(updateHeaderClock, 1000);
     runPortfolioIntelligenceEngine();
