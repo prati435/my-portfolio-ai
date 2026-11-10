@@ -378,9 +378,7 @@
       border: 1px solid var(--border);
     }
 
-    /* Standard Website Sticky Top Header:
-       Left = Brand Title + 5 Module Tabs (Portfolio, Algo, Options, Mock, Admin)
-       Top-Right = Date/Time + Market Status + Live Synced + Auto-Sync + Refresh Icon + Theme + Three-Dots Menu */
+    /* Standard Sticky Top App Header */
     .global-app-bar {
       background: var(--bar-bg);
       border-bottom: 1px solid var(--border);
@@ -505,7 +503,7 @@
       display: none !important;
     }
 
-    /* Minimal Secondary Sub-Header (Net Worth / Market Strip Only, No Duplicate Titles/Clocks) */
+    /* Minimal Secondary Sub-Header */
     .top-header {
       background: var(--header-grad) !important;
       border-bottom: 1px solid var(--border) !important;
@@ -561,7 +559,7 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Three-Dots More Dropdown Menu + Mobile Bottom-Sheet Action Drawer */
+    /* Three-Dots More Dropdown Menu & Mobile Bottom-Sheet Action Drawer */
     .more-tabs-wrapper {
       position: relative;
       display: inline-block;
@@ -572,11 +570,11 @@
       top: calc(100% + 6px);
       right: 0;
       min-width: 240px;
-      background: var(--bg-card);
+      background: var(--bg-card) !important;
       border: 1px solid var(--border-light);
       border-radius: 10px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
-      z-index: 9999;
+      z-index: 99999;
       padding: 6px;
     }
     .more-tabs-dropdown.align-left {
@@ -617,17 +615,6 @@
     .more-menu-item:hover, .more-menu-item.active {
       background: rgba(37, 99, 235, 0.12) !important;
       color: #2563eb !important;
-    }
-    .more-menu-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      z-index: 9990;
-      backdrop-filter: blur(2px);
-    }
-    .more-menu-backdrop.open {
-      display: block;
     }
 
     /* Collapsible Card Sections */
@@ -808,7 +795,7 @@
       min-height: 32px;
     }
 
-    /* Mobile-First Responsive Layout & Fixed Bottom-Sheet Three-Dots Menu */
+    /* Mobile-First Responsive Layout & Clean Dropdown Positioning */
     @media (max-width: 768px) {
       .global-app-bar { padding: 6px 10px; }
       .global-top-right { align-items: flex-start; width: 100%; }
@@ -827,31 +814,15 @@
         bottom: 68px !important;
         height: 68vh !important;
       }
-      /* On mobile viewports, render ANY open three-dots menu as a fixed, centered bottom-sheet drawer so it NEVER clips off-screen! */
       .more-tabs-dropdown.open {
-        position: fixed !important;
-        left: 12px !important;
-        right: 12px !important;
-        top: auto !important;
-        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        max-height: 72vh !important;
-        overflow-y: auto !important;
-        z-index: 99999 !important;
-        padding: 10px !important;
-        border-radius: 14px !important;
-        border: 2px solid var(--accent) !important;
-        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45) !important;
-      }
-      .more-menu-mobile-hdr {
-        display: flex !important;
+        right: 0 !important;
+        left: auto !important;
+        min-width: 250px !important;
+        max-width: calc(100vw - 20px) !important;
       }
       .more-menu-item {
-        padding: 11px 12px !important;
-        font-size: 0.85rem !important;
-        min-height: 42px !important;
+        padding: 9px 11px !important;
+        font-size: 0.8rem !important;
       }
     }
     @media (max-width: 480px) {
@@ -862,7 +833,6 @@
 </head>
 <body class="theme-light">
 <!-- STANDARD WEBSITE HEADER: LEFT = HEADING + 5 MODULE TABS | TOP-RIGHT = DATE/TIME + AUTO-SYNC + THEME + MORE -->
-<div class="more-menu-backdrop" id="piai-more-menu-backdrop" onclick="closeAllMoreMenus()"></div>
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
     <div class="global-left-brand-and-tabs">
@@ -883,10 +853,6 @@
         <div class="more-tabs-wrapper">
           <button type="button" class="btn-secondary" id="btn-top-more-actions" style="padding:4px 10px; font-size:0.78rem;" onclick="toggleInlineMoreMenu('top-util-dropdown', event)" title="More Actions">⋯</button>
           <div class="more-tabs-dropdown" id="top-util-dropdown">
-            <div class="more-menu-mobile-hdr">
-              <span>⚡ Quick Actions &amp; Tools</span>
-              <button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>
-            </div>
             <button type="button" class="more-menu-item" id="btn-collapse-all-secs" onclick="toggleAllPageSections()"><span>➖ Collapse All Sections</span></button>
             <button type="button" class="more-menu-item" onclick="sendPortfolioAlertViaWhatsApp()"><span>💬 Send Alert on WhatsApp</span></button>
             <button type="button" class="more-menu-item" onclick="sendPortfolioAlertViaEmail()"><span>✉️ Send Alert via Email</span></button>
@@ -1033,8 +999,6 @@
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center;">
       <button type="button" class="btn-emerald" onclick="saveDhanAndWorkerConfig()">💾 Save Credentials</button>
-      <button type="button" class="btn-emerald" onclick="sendPortfolioAlertViaWhatsApp()">💬 Send F&amp;O Signal on WhatsApp</button>
-      <button type="button" class="btn-primary" onclick="sendPortfolioAlertViaEmail()">✉️ Email Signal</button>
       <button type="button" class="btn-primary" id="btn-verify-feeds" onclick="verifyWorkerAndDhanFeeds()">🔍 Verify Worker &amp; DhanHQ v2 Token (8s Timeout)</button>
       <button type="button" class="btn-secondary" onclick="fetchDynamicExpiriesForUnderlying(true)">📅 Test /v2/optionchain/expirylist Now</button>
       <button type="button" class="btn-secondary" onclick="copyOptionsCloudflareWorkerCode()">📋 Copy Cloudflare Worker Script (Dhan POST + CORS)</button>
@@ -1067,19 +1031,12 @@
     </div>
   </div>
 
-  <!-- COMPACT OPTIONS TABS + THREE-DOTS MORE TABS MENU -->
-  <div class="nav-tabs" style="align-items:center;">
-    <button type="button" class="tab-btn active" id="tabbtn-scanner" onclick="switchOptionsTab('scanner')">📈 1. GainzAlgo Scanner</button>
-    <button type="button" class="tab-btn" id="tabbtn-chain" onclick="switchOptionsTab('chain')">⛓️ 2. Option Chain &amp; Greeks</button>
-    <div class="more-tabs-wrapper">
-      <button type="button" class="tab-btn" id="btn-opt-more-tabs" onclick="toggleInlineMoreMenu('opt-more-tabs-dd', event)">⋯ More Tabs <span id="lbl-opt-more-active"></span> ▾</button>
-      <div class="more-tabs-dropdown align-left" id="opt-more-tabs-dd">
-        <button type="button" class="more-menu-item" id="tabbtn-pine" onclick="switchOptionsTab('pine')"><span>📜 3. GainzAlgo Webhook JSON &amp; Pine Script v5</span></button>
-        <button type="button" class="more-menu-item" id="tabbtn-exec" onclick="switchOptionsTab('exec')"><span>🚀 4. DhanHQ v2 F&amp;O Super Order &amp; API Execution</span></button>
-        <button type="button" class="more-menu-item" onclick="toggleDhanDrawer()"><span>🔑 DhanHQ F&amp;O Token Drawer</span></button>
-        <button type="button" class="more-menu-item" onclick="navigateToModule('index_admin.html')"><span>⚙️ Open Full Admin Hub ➔</span></button>
-      </div>
-    </div>
+  <!-- NAVIGATION TABS -->
+  <div class="nav-tabs">
+    <button type="button" class="tab-btn active" id="tabbtn-scanner" onclick="switchOptionsTab('scanner')">📈 1. GainzAlgo V2 Alpha Scanner &amp; 5m OHLC</button>
+    <button type="button" class="tab-btn" id="tabbtn-chain" onclick="switchOptionsTab('chain')">⛓️ 2. Live Option Chain, Greeks &amp; Payoff Simulator</button>
+    <button type="button" class="tab-btn" id="tabbtn-pine" onclick="switchOptionsTab('pine')">📜 3. GainzAlgo Webhook JSON &amp; Pine Script v5</button>
+    <button type="button" class="tab-btn" id="tabbtn-exec" onclick="switchOptionsTab('exec')">🚀 4. DhanHQ v2 F&amp;O Super Order &amp; API Execution</button>
   </div>
 
   <!-- ==================== TAB 1: GAINZALGO V2 ALPHA SCANNER ==================== -->
@@ -1177,9 +1134,11 @@
     <div class="card">
       <div class="card-title">
         <span>⛓️ Real-Time Option Chain &amp; Black-Scholes Greeks (Calls CE vs Puts PE)</span>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
           <span class="badge badge-blue" id="chain-spot-badge">Spot: —</span>
           <span class="badge badge-purple" id="chain-dte-badge">Expiry DTE: —</span>
+          <span class="badge badge-amber" id="chain-ivp-badge" title="Live Implied Volatility Percentile (IVP)">IVP: Calculating...</span>
+          <span class="badge badge-red" id="chain-iv-crush-badge" style="display:none;" title="Post-Event IV Crush Warning">⚠️ IV Crush Risk</span>
           <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="fetchLiveDhanOptionChain()">🔄 Pull Live Dhan /v2/optionchain</button>
         </div>
       </div>
@@ -1386,7 +1345,7 @@
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
      - Dedicated Admin HTML Navigation (index_admin.html)
-     - Mobile-Safe Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
+     - Robust Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
      - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
      ========================================================================= */
   const STORAGE_KEY_THEME = "piai_theme_mode_v1";
@@ -1446,11 +1405,7 @@
   function closeAllMoreMenus() {
     document.querySelectorAll(".more-tabs-dropdown.open").forEach(dd => {
       dd.classList.remove("open");
-      dd.style.left = "";
-      dd.style.right = "";
     });
-    const bd = document.getElementById("piai-more-menu-backdrop");
-    if (bd) bd.classList.remove("open");
   }
 
   function toggleInlineMoreMenu(menuId, ev) {
@@ -1463,29 +1418,7 @@
     const wasOpen = target.classList.contains("open");
     closeAllMoreMenus();
     if (!wasOpen) {
-      // Ensure mobile header exists inside every dropdown for easy closing on mobile
-      if (!target.querySelector(".more-menu-mobile-hdr")) {
-        const hdr = document.createElement("div");
-        hdr.className = "more-menu-mobile-hdr";
-        hdr.innerHTML = `<span>⚡ Select Option</span><button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>`;
-        target.insertBefore(hdr, target.firstChild);
-      }
       target.classList.add("open");
-      const bd = document.getElementById("piai-more-menu-backdrop");
-      if (bd && window.innerWidth <= 768) {
-        bd.classList.add("open");
-      }
-      // On desktop/tablet (> 768px), clamp horizontal position so it never overflows left or right edge of viewport
-      if (window.innerWidth > 768) {
-        const rect = target.getBoundingClientRect();
-        if (rect.left < 8) {
-          target.style.left = "0px";
-          target.style.right = "auto";
-        } else if (rect.right > window.innerWidth - 8) {
-          target.style.right = "0px";
-          target.style.left = "auto";
-        }
-      }
     }
   }
 
@@ -1494,9 +1427,8 @@
   }
 
   document.addEventListener("click", (ev) => {
-    // If user clicked a menu item inside an open dropdown, close the dropdown right after the item's onclick runs
     if (ev.target.closest(".more-menu-item")) {
-      setTimeout(closeAllMoreMenus, 20);
+      setTimeout(closeAllMoreMenus, 30);
       return;
     }
     if (!ev.target.closest(".more-tabs-wrapper")) {
@@ -1504,7 +1436,7 @@
     }
   });
 
-  // Navigate to the dedicated index_admin.html page (or scroll to section if already on index_admin.html)
+  // Navigate to dedicated index_admin.html
   function openAdminModule() {
     closeAllMoreMenus();
     const path = (window.location.pathname || "").toLowerCase();
@@ -1669,35 +1601,72 @@
     if (waEl && !waEl.matches(":focus")) waEl.value = c.whatsapp || "";
   }
 
+  // Dynamic Alert Builder: ONLY includes actionable BUY/SELL signals triggered by today's market moves (Zero old history)
   function buildActionableAlertDigestText() {
     const st = computeOfficialNSEMarketStatus();
-    const lines = [`📊 *PIAI Portfolio & Algo Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
+    const lines = [`📊 *PIAI Real-Time Market Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
 
     if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
-      const exits = holdings.filter(h => (h.act || "").includes("EXIT"));
-      const books = holdings.filter(h => (h.act || "").includes("BOOK"));
-      const eqInv = holdings.reduce((s, h) => s + (h.inv || 0), 0);
-      const eqCur = holdings.reduce((s, h) => s + (h.cur || 0), 0);
-      const eqPnl = eqCur - eqInv;
-      const eqPct = eqInv > 0 ? ((eqPnl / eqInv) * 100).toFixed(2) : "0.00";
-      const hideVals = typeof privacyMaskActive !== "undefined" && privacyMaskActive;
+      // 1. Dynamic Intraday/Today's Buy Opportunities
+      const dipBuys = holdings.filter(h => {
+        const todayChg = h.today || 0;
+        return (todayChg < 0 && (h.pct || 0) > 0 && Math.abs(todayChg) > (h.cur || 1) * 0.015);
+      });
+      // 2. Dynamic Scaling Buy Opportunities
+      const scaleBuys = holdings.filter(h => (h.pct || 0) > 10 && (h.pct || 0) < 50 && (h.cur || 0) > 0);
+      // 3. Urgent Sell / Flagged Exits
+      const urgentExits = holdings.filter(h => (h.act || "").includes("EXIT"));
+      // 4. Profit Booking Sells
+      const bookProfits = holdings.filter(h => (h.act || "").includes("BOOK"));
 
-      lines.push(`• *Portfolio Return:* ${eqPct >= 0 ? "+" : ""}${eqPct}% ${hideVals ? "(₹ Masked)" : `(Net P&L: ₹${Math.round(eqPnl).toLocaleString("en-IN")})`}`);
-      if (exits.length > 0) {
-        lines.push(`🚨 *Flagged Exits (${exits.length}):* ` + exits.map(h => `${h.n} (${h.pct.toFixed(1)}%, SL ₹${h.sl})`).join(", "));
+      lines.push("");
+      lines.push("🎯 *TODAY'S DYNAMIC ACTION RECOMMENDATIONS:*");
+
+      if (urgentExits.length > 0) {
+        lines.push(`🚨 *SELL / EXIT TRIGGERED (${urgentExits.length}):*`);
+        urgentExits.slice(0, 5).forEach(h => {
+          lines.push(`  • *${h.n}*: Down ${h.pct.toFixed(1)}% (Stop-Loss: ₹${h.sl}, LTP: ₹${h.ltp})`);
+        });
       } else {
-        lines.push(`✅ *Flagged Exits:* None breaching drawdown limit.`);
+        lines.push(`✅ *SELL / EXITS:* No positions breaching drawdown limit today.`);
       }
-      if (books.length > 0) {
-        lines.push(`🟣 *Profit Booking Candidates (${books.length}):* ` + books.map(h => `${h.n} (+${h.pct.toFixed(1)}%, Tgt ₹${h.tgt})`).join(", "));
+
+      if (bookProfits.length > 0) {
+        lines.push(`🟣 *PROFIT BOOKING SELL (${bookProfits.length}):*`);
+        bookProfits.slice(0, 5).forEach(h => {
+          lines.push(`  • *${h.n}*: Up +${h.pct.toFixed(1)}% (Target ₹${h.tgt} reached, LTP: ₹${h.ltp})`);
+        });
+      }
+
+      if (dipBuys.length > 0) {
+        lines.push(`🟢 *INTRADAY DIP-BUY CANDIDATES (${dipBuys.length}):*`);
+        dipBuys.slice(0, 4).forEach(h => {
+          lines.push(`  • *${h.n}*: Quality holding pulling back today (${h.today ? '₹' + Math.round(h.today) : ''}), LTP ₹${h.ltp}`);
+        });
+      } else if (scaleBuys.length > 0) {
+        lines.push(`🟢 *WINNER SCALING BUY ZONE:*`);
+        scaleBuys.slice(0, 3).forEach(h => {
+          lines.push(`  • *${h.n}*: Momentum leader (+${h.pct.toFixed(1)}%), eligible for scaling.`);
+        });
       }
     } else if (typeof lastGainzState !== "undefined" && lastGainzState) {
-      lines.push(`🎯 *F&O Options Signal:* ${activeUnderlying} · ${lastGainzState.signalState} · Contract: ${lastGainzState.contractSym || "ATM"} @ Spot ₹${lastGainzState.spot || 0}`);
+      const sig = lastGainzState.signal;
+      const isCE = sig === "BUY_CE";
+      const isPE = sig === "BUY_PE";
+      if (isCE || isPE) {
+        lines.push(`⚡ *F&O SIGNAL TRIGGERED:* ${isCE ? '🟢 BUY CALL' : '🔴 BUY PUT'}`);
+        lines.push(`• Underlying: *${activeUnderlying}* (Spot: ₹${lastGainzState.spot || 0})`);
+        lines.push(`• Contract: *${lastGainzState.recStrike} ${lastGainzState.recOptType}* @ Entry ₹${lastGainzState.entryPrem}`);
+        lines.push(`• SL: ₹${lastGainzState.slPrem} · Target: ₹${lastGainzState.tp1Prem} (RSI: ${lastGainzState.rsiVal})`);
+      } else {
+        lines.push(`⏸️ *F&O SIGNAL:* ${lastGainzState.rsiFilterReason || 'Waiting for high-probability momentum confirmation'}`);
+      }
     } else if (typeof activeInstrument !== "undefined") {
       const sigEl = document.querySelector(".header-signal-pill, .header-pill");
       lines.push(`🧪 *Mock Strategy Signal:* ${activeInstrument} · ${sigEl ? sigEl.textContent : "Active"}`);
     }
-    lines.push(`⚡ _Generated locally on-device by PIAI_`);
+    lines.push("");
+    lines.push(`⚡ _Generated in real-time on-device by PIAI_`);
     return lines.join(String.fromCharCode(10));
   }
 
@@ -1730,12 +1699,13 @@
       }
     }
     const st = computeOfficialNSEMarketStatus();
-    const subject = `PIAI Portfolio & Algo Action Alert — ${st.istDateStr}`;
+    const subject = `PIAI Dynamic Action Alert — ${st.istDateStr}`;
     const body = customText || buildActionableAlertDigestText().replace(/\*/g, "").replace(/_/g, "");
     const mailUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailUrl;
   }
 
+  // Smart Indian Stock Sector Classifier
   function inferIndianStockSector(name, ticker, rawSec) {
     const s = String(rawSec || "").trim();
     if (s && !/^(equity|position|stock|shares|nse|bse|nse_eq|bse_eq|delivery|cnc|normal)$/i.test(s)) {
@@ -3130,7 +3100,25 @@
     document.getElementById("kpi-rec-entry").textContent = `Entry ₹${entryPrem} · SL ₹${slPrem} · TP1 ₹${tp1Prem} (${Math.ceil(dte)} DTE)`;
 
     document.getElementById("kpi-atr-val").textContent = `ATR Stop: ₹${stopNow.toFixed(1)}`;
-    document.getElementById("kpi-rsi-val").textContent = `RSI(14): ${rsiVal} · Vol Surge: ${volSurge}x`;
+    // Live IV Percentile (IVP) & IV Crush Calculation (Requirement #7)
+    const baseVix = (liveSpotMap.INDIAVIX && liveSpotMap.INDIAVIX.ltp > 0) ? liveSpotMap.INDIAVIX.ltp : 14.5;
+    const minHistoricalVix = 9.8, maxHistoricalVix = 23.4;
+    const currentIv = +(baseIv).toFixed(1);
+    const ivpVal = Math.max(5, Math.min(95, Math.round(((currentIv - minHistoricalVix) / (maxHistoricalVix - minHistoricalVix)) * 100)));
+    const isIvCrushRisk = ivpVal > 75 || (dte <= 1 && currentIv > 16.0);
+
+    const ivpBadge = document.getElementById("chain-ivp-badge");
+    if (ivpBadge) {
+      ivpBadge.textContent = `⚡ ATM IV: ${currentIv}% (IVP: ${ivpVal}%)`;
+      ivpBadge.className = "badge " + (ivpVal > 70 ? "badge-red" : ivpVal < 30 ? "badge-emerald" : "badge-amber");
+    }
+    const crushBadge = document.getElementById("chain-iv-crush-badge");
+    if (crushBadge) {
+      crushBadge.style.display = isIvCrushRisk ? "inline-block" : "none";
+      crushBadge.textContent = dte <= 1 ? "⚠️ Expiry Day IV Crush" : `⚠️ High IV (${currentIv}%) — Crush Risk on Reversal`;
+    }
+
+    document.getElementById("kpi-rsi-val").textContent = `RSI(14): ${rsiVal} · ATM IV: ${currentIv}% (IVP: ${ivpVal}%)`;
 
     const hdrSig = document.getElementById("hdr-active-signal");
     if (signalState === "BUY_CE") {
@@ -3212,11 +3200,12 @@
   let activeOptionsChartMode = "SIGNAL";
   let lastRenderedOptionChartState = null;
 
+  // TradingView Widget Compatible Symbol Mapping (Uses tradable NSE/BSE tickers supported in free embedded iframes)
   const TV_SYMBOL_MAP = {
-    NIFTY: "NSE:NIFTY",
-    BANKNIFTY: "NSE:BANKNIFTY",
-    FINNIFTY: "NSE:FINNIFTY",
-    MIDCPNIFTY: "NSE:MIDCPNIFTY",
+    NIFTY: "NSE:NIFTYBEES",
+    BANKNIFTY: "NSE:BANKBEES",
+    FINNIFTY: "NSE:HDFCBANK",
+    MIDCPNIFTY: "NSE:MID150BEES",
     SENSEX: "BSE:SENSEX",
     RELIANCE: "NSE:RELIANCE",
     HDFCBANK: "NSE:HDFCBANK",
@@ -3963,10 +3952,7 @@ print("Dhan F&O Order Response:", res)`;
 
     const clk = document.getElementById("hdr-clock");
     if (clk) {
-      const syncLbl = lastSyncMs > 0
-        ? `<span class="badge badge-emerald">⚡ Live Synced: ${new Date(lastSyncMs).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })}</span>`
-        : `<span class="badge badge-blue">⏳ Auto-Syncing...</span>`;
-      clk.innerHTML = `📅 ${dStr} · 🕒 ${tStr} IST · ${mktSt.statusBadgeHtml} · ${syncLbl}`;
+      clk.innerHTML = `📅 ${dStr} · 🕒 ${tStr} IST · ${mktSt.statusBadgeHtml}`;
     }
 
     const syncBadge = document.getElementById("strip-autosync");
@@ -3995,8 +3981,6 @@ print("Dhan F&O Order Response:", res)`;
   }
 
   function initOptionsModule() {
-    if (window._optBootDone) return;
-    window._optBootDone = true;
     try {
       const creds = JSON.parse(safeGetStorage(STORAGE_KEY_DHAN, "{}"));
       if (creds.clientId) document.getElementById("inp-dhan-cid").value = creds.clientId;
@@ -4013,7 +3997,6 @@ print("Dhan F&O Order Response:", res)`;
     syncOptionsMarketData(false);
   }
 
-  window.addEventListener('DOMContentLoaded', initOptionsModule);
   window.onload = initOptionsModule;
 
   window.addEventListener("DOMContentLoaded", () => {

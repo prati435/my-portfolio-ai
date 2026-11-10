@@ -401,9 +401,7 @@
       border: 1px solid var(--border);
     }
 
-    /* Standard Website Sticky Top Header:
-       Left = Brand Title + 5 Module Tabs (Portfolio, Algo, Options, Mock, Admin)
-       Top-Right = Date/Time + Market Status + Live Synced + Auto-Sync + Refresh Icon + Theme + Three-Dots Menu */
+    /* Standard Sticky Top App Header */
     .global-app-bar {
       background: var(--bar-bg);
       border-bottom: 1px solid var(--border);
@@ -528,7 +526,7 @@
       display: none !important;
     }
 
-    /* Minimal Secondary Sub-Header (Net Worth / Market Strip Only, No Duplicate Titles/Clocks) */
+    /* Minimal Secondary Sub-Header */
     .top-header {
       background: var(--header-grad) !important;
       border-bottom: 1px solid var(--border) !important;
@@ -584,7 +582,7 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Three-Dots More Dropdown Menu + Mobile Bottom-Sheet Action Drawer */
+    /* Three-Dots More Dropdown Menu & Mobile Bottom-Sheet Action Drawer */
     .more-tabs-wrapper {
       position: relative;
       display: inline-block;
@@ -595,11 +593,11 @@
       top: calc(100% + 6px);
       right: 0;
       min-width: 240px;
-      background: var(--bg-card);
+      background: var(--bg-card) !important;
       border: 1px solid var(--border-light);
       border-radius: 10px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
-      z-index: 9999;
+      z-index: 99999;
       padding: 6px;
     }
     .more-tabs-dropdown.align-left {
@@ -640,17 +638,6 @@
     .more-menu-item:hover, .more-menu-item.active {
       background: rgba(37, 99, 235, 0.12) !important;
       color: #2563eb !important;
-    }
-    .more-menu-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      z-index: 9990;
-      backdrop-filter: blur(2px);
-    }
-    .more-menu-backdrop.open {
-      display: block;
     }
 
     /* Collapsible Card Sections */
@@ -831,7 +818,7 @@
       min-height: 32px;
     }
 
-    /* Mobile-First Responsive Layout & Fixed Bottom-Sheet Three-Dots Menu */
+    /* Mobile-First Responsive Layout & Clean Dropdown Positioning */
     @media (max-width: 768px) {
       .global-app-bar { padding: 6px 10px; }
       .global-top-right { align-items: flex-start; width: 100%; }
@@ -850,31 +837,15 @@
         bottom: 68px !important;
         height: 68vh !important;
       }
-      /* On mobile viewports, render ANY open three-dots menu as a fixed, centered bottom-sheet drawer so it NEVER clips off-screen! */
       .more-tabs-dropdown.open {
-        position: fixed !important;
-        left: 12px !important;
-        right: 12px !important;
-        top: auto !important;
-        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        max-height: 72vh !important;
-        overflow-y: auto !important;
-        z-index: 99999 !important;
-        padding: 10px !important;
-        border-radius: 14px !important;
-        border: 2px solid var(--accent) !important;
-        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45) !important;
-      }
-      .more-menu-mobile-hdr {
-        display: flex !important;
+        right: 0 !important;
+        left: auto !important;
+        min-width: 250px !important;
+        max-width: calc(100vw - 20px) !important;
       }
       .more-menu-item {
-        padding: 11px 12px !important;
-        font-size: 0.85rem !important;
-        min-height: 42px !important;
+        padding: 9px 11px !important;
+        font-size: 0.8rem !important;
       }
     }
     @media (max-width: 480px) {
@@ -885,7 +856,6 @@
 </head>
 <body class="theme-light">
 <!-- STANDARD WEBSITE HEADER: LEFT = HEADING + 5 MODULE TABS | TOP-RIGHT = DATE/TIME + AUTO-SYNC + THEME + MORE -->
-<div class="more-menu-backdrop" id="piai-more-menu-backdrop" onclick="closeAllMoreMenus()"></div>
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
     <div class="global-left-brand-and-tabs">
@@ -906,10 +876,6 @@
         <div class="more-tabs-wrapper">
           <button type="button" class="btn-secondary" id="btn-top-more-actions" style="padding:4px 10px; font-size:0.78rem;" onclick="toggleInlineMoreMenu('top-util-dropdown', event)" title="More Actions">⋯</button>
           <div class="more-tabs-dropdown" id="top-util-dropdown">
-            <div class="more-menu-mobile-hdr">
-              <span>⚡ Quick Actions &amp; Tools</span>
-              <button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>
-            </div>
             <button type="button" class="more-menu-item" id="btn-privacy-mask" onclick="togglePrivacyMaskMode()"><span>👁️ Privacy Mask</span></button>
             <button type="button" class="more-menu-item" id="btn-vault-lock-top" onclick="openOrTriggerVaultLock()"><span>🔒 Vault Lock</span></button>
             <button type="button" class="more-menu-item" id="btn-collapse-all-secs" onclick="toggleAllPageSections()"><span>➖ Collapse All Sections</span></button>
@@ -953,334 +919,24 @@
     <div class="sync-progress-bar"><div class="sync-progress-fill" id="sync-progress-fill"></div></div>
   </div>
 
-    <!-- DEDICATED ADMIN PAGE QUICK-JUMP BAR -->
+    <!-- TRUE TABBED ADMIN NAVIGATION BAR (Clicking a tab renders ONLY that chosen section) -->
   <div class="nav-tabs" style="align-items:center;">
-    <button type="button" class="tab-btn active" onclick="scrollToAdminSection('view-admin')">📂 1. CSV Import &amp; Diff</button>
-    <button type="button" class="tab-btn" onclick="scrollToAdminSection('dhan-config-card')">🔗 2. Broker APIs (Dhan · Kotak · INDmoney)</button>
-    <button type="button" class="tab-btn" onclick="scrollToAdminSection('add-holding-card')">➕ 3. Manual Add &amp; Aliases</button>
-    <div class="more-tabs-wrapper">
-      <button type="button" class="tab-btn" onclick="toggleInlineMoreMenu('admin-sec-more-dd', event)">⋯ More Admin Tools ▾</button>
-      <div class="more-tabs-dropdown align-left" id="admin-sec-more-dd">
-        <button type="button" class="more-menu-item" onclick="scrollToAdminSection('admin-sec-alerts')"><span>📲 4. Email &amp; WhatsApp Alert Setup</span></button>
-        <button type="button" class="more-menu-item" onclick="scrollToAdminSection('admin-sec-vault')"><span>🔒 5. Security Vault PIN &amp; JSON Backup</span></button>
-        <button type="button" class="more-menu-item" onclick="openReliabilityModal()"><span>🛡️ 6. Cloudflare Worker &amp; Feed Diagnostics</span></button>
-        <button type="button" class="more-menu-item" onclick="navigateToModule('index.html')"><span>📊 Back to Main Portfolio Dashboard ➔</span></button>
-      </div>
+    <button type="button" class="tab-btn active" id="btn-admin-tab-csv" onclick="switchAdminSubSection('csv')">📂 1. CSV Import &amp; Diff</button>
+    <button type="button" class="tab-btn" id="btn-admin-tab-brokers" onclick="switchAdminSubSection('brokers')">🔗 2. Broker APIs (Dhan · Kotak · IND)</button>
+    <button type="button" class="tab-btn" id="btn-admin-tab-aliases" onclick="switchAdminSubSection('aliases')">➕ 3. Manual Add &amp; Aliases</button>
+    <button type="button" class="tab-btn" id="btn-admin-tab-alerts" onclick="switchAdminSubSection('alerts')">📲 4. Dynamic Alerts</button>
+    <button type="button" class="tab-btn" id="btn-admin-tab-vault" onclick="switchAdminSubSection('vault')">🔒 5. Security Vault</button>
+    <div style="margin-left:auto;">
+      <button type="button" class="btn-secondary" style="padding:5px 11px; font-size:0.74rem;" onclick="navigateToModule('index.html')">📊 Back to Portfolio ➔</button>
     </div>
-    <span id="tab-stocks-count" style="display:none;"></span>
-    <span id="tab-etfs-count" style="display:none;"></span>
-    <span id="tab-mf-count" style="display:none;"></span>
-    <span id="tab-alerts-count" style="display:none;"></span>
   </div>
 
-  <!-- ════ TAB 1: OVERVIEW DASHBOARD ════ -->
-  <div id="view-dashboard" class="tab-view" style="display:none;">
-    <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Total Invested</div><div class="kpi-val" id="dash-invested">₹0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Current Value</div><div class="kpi-val" id="dash-current">₹0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Net Unrealized P&amp;L</div><div class="kpi-val pos" id="dash-pnl">₹0</div></div>
-      <div class="kpi-card"><div class="kpi-label">Overall Return %</div><div class="kpi-val pos" id="dash-pct">0.00%</div></div>
-    </div>
+    <!-- ════ TAB 11: BROKERS, CSV IMPORT, ALIAS MEMORY & SECURITY ADMIN ════ -->
+  <div id="view-admin" class="tab-view" style="display: block;">
 
-    <div class="card" style="border-color:#0284c7;">
-      <div class="card-title">
-        <span>📌 Daily Delta Scorecard &amp; Pinned Baseline Comparison</span>
-        <div style="display:flex; gap:6px;">
-          <button type="button" class="btn-secondary" id="btn-pin-baseline" style="padding:3px 9px; font-size:0.72rem;" onclick="saveManualDailyBaseline(true)">📌 Pin Baseline</button>
-          <button type="button" class="icon-refresh-btn" onclick="syncLiveNSEPrices(true)" title="Refresh Live Prices">↻</button>
-        </div>
-      </div>
-      <div id="dash-daily-delta-summary" style="font-size:0.78rem; color:#334155; line-height:1.55;"></div>
-    </div>
-
-    <div class="grid-2">
+    <!-- PANEL 1: CSV UPLOAD & DIFF -->
+    <div id="admin-panel-csv" class="admin-sub-panel" style="display:block;">
       <div class="card">
-        <div class="card-title"><span>🌐 Live Market Context &amp; Asset Breakdown</span></div>
-        <div id="dash-macro-text" style="font-size:0.78rem; color:#334155; margin-bottom:10px; line-height:1.5;"></div>
-        <div id="dash-asset-breakdown"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <span>📡 Live Indian &amp; Global Benchmarks (8s Timeout Guard)</span>
-          <button type="button" class="icon-refresh-btn" onclick="fetchAllLiveBenchmarks(true)" title="Refresh Indices">↻</button>
-        </div>
-        <div id="live-benchmarks-table"></div>
-        <div id="dynamic-macro-drivers" style="margin-top:8px; font-size:0.75rem; color:#334155; line-height:1.5;"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <span>⚡ Priority Portfolio Actions</span>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button type="button" class="btn-emerald" style="padding:4px 10px; font-size:0.72rem;" onclick="sendPortfolioAlertViaWhatsApp()">💬 Send Alert on WhatsApp</button>
-          <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.72rem;" onclick="sendPortfolioAlertViaEmail()">✉️ Send Alert via Email</button>
-        </div>
-      </div>
-      <div id="dash-priority-actions"></div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card"><div class="card-title"><span>🟢 Top Portfolio Gainers</span></div><div id="dash-top-gainers"></div></div>
-      <div class="card"><div class="card-title"><span>🔴 Top Portfolio Drawdowns</span></div><div id="dash-top-losers"></div></div>
-    </div>
-  </div>
-
-  <!-- ════ TAB 2: STOCKS (BROKER-WISE WITH EXPAND/COLLAPSE) ════ -->
-  <div id="view-stocks" class="tab-view" style="display: none;">
-    <div id="broker-summary-pills" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;"></div>
-    <div class="filter-bar" style="align-items:center;">
-      <input type="text" id="stock-search" class="search-input" style="max-width:220px;" placeholder="🔍 Search stock, ticker, sector..." oninput="handleSearch()">
-      <button type="button" class="filter-chip active" onclick="setStockFilter('ALL', this)">All</button>
-      <button type="button" class="filter-chip" onclick="setStockFilter('WINNERS', this)">🟢 Winners</button>
-      <button type="button" class="filter-chip" onclick="setStockFilter('LOSERS', this)">🔴 Losers</button>
-      <div class="more-tabs-wrapper">
-        <button type="button" class="filter-chip" onclick="toggleInlineMoreMenu('stock-filter-more-dd', event)" title="More Filters &amp; Sector Actions">⋯ More</button>
-        <div class="more-tabs-dropdown align-left" id="stock-filter-more-dd">
-          <button type="button" class="more-menu-item" onclick="setStockFilter('EXIT', this)"><span>🚨 Flagged Exits</span></button>
-          <button type="button" class="more-menu-item" onclick="setStockFilter('BOOK', this)"><span>🟣 Profit Booking</span></button>
-          <button type="button" class="more-menu-item" onclick="expandOrCollapseAllSectors(false)"><span>➕ Expand All Sectors</span></button>
-          <button type="button" class="more-menu-item" onclick="expandOrCollapseAllSectors(true)"><span>➖ Collapse All Sectors</span></button>
-        </div>
-      </div>
-      <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllSectors(false)">➕ Expand Sectors</button>
-        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllSectors(true)">➖ Collapse Sectors</button>
-      </div>
-    </div>
-    <div id="stocks-list-container"></div>
-  </div>
-
-  <!-- ════ TAB 3: DEDICATED ETFs TAB (IDENTICAL CARD & EDIT SUPPORT TO STOCKS) ════ -->
-  <div id="view-etfs" class="tab-view" style="display: none;">
-    <div id="etf-broker-summary-pills" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;"></div>
-    <div class="filter-bar">
-      <input type="text" id="etf-search" class="search-input" style="max-width:240px;" placeholder="🔍 Search ETF name, ticker, or broker..." oninput="handleEtfSearch()">
-      <button type="button" class="filter-chip active" onclick="setEtfFilter('ALL', this)">All ETFs</button>
-      <button type="button" class="filter-chip" onclick="setEtfFilter('WINNERS', this)">🟢 Winners</button>
-      <button type="button" class="filter-chip" onclick="setEtfFilter('LOSERS', this)">🔴 Losers</button>
-      <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
-        <button type="button" class="btn-emerald" style="padding:5px 10px; font-size:0.72rem;" onclick="navigateToModule('index_admin.html')">➕ Add / Import ETF</button>
-        <div class="more-tabs-wrapper">
-          <button type="button" class="filter-chip" onclick="toggleInlineMoreMenu('etf-filter-more-dd', event)" title="More ETF Actions">⋯</button>
-          <div class="more-tabs-dropdown" id="etf-filter-more-dd">
-            <button type="button" class="more-menu-item" onclick="expandOrCollapseAllBrokers(false)"><span>➕ Expand All Brokers</span></button>
-            <button type="button" class="more-menu-item" onclick="expandOrCollapseAllBrokers(true)"><span>➖ Collapse All Brokers</span></button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="etfs-cards-container"></div>
-    <div id="etf-list-container" style="display:none;"></div>
-    <div id="stocks-tab-etf-container" style="display:none;"></div>
-  </div>
-
-  <!-- ════ TAB 4: MUTUAL FUNDS & BONDS ════ -->
-  <div id="view-mf" class="tab-view" style="display: none;">
-    <div class="card"><div class="card-title"><span>🏦 Mutual Funds (Live AMFI NAV Sync)</span></div><div id="mf-list-container"></div></div>
-    <div class="card"><div class="card-title"><span>🏅 Bonds / InvIT / SGBs</span></div><div id="bond-list-container"></div></div>
-  </div>
-
-  <!-- ════ TAB 4: BUY & SCALING RECS ════ -->
-  <div id="view-recs" class="tab-view" style="display: none;">
-    <div class="card">
-      <div class="card-title">
-        <span>⚡ Intraday Dip-Buy, Breakout &amp; Regime Signals</span>
-        <span id="rec-live-timestamp" style="font-size:0.72rem; color:var(--text-muted);">Live</span>
-      </div>
-      <div id="dynamic-intraday-signals"></div>
-    </div>
-    <div class="grid-2">
-      <div class="card"><div class="card-title"><span>🧭 Underweight Sector Gaps vs Nifty 50</span></div><div id="dynamic-sector-gaps"></div></div>
-      <div class="card"><div class="card-title"><span>🚀 Portfolio Winners Eligible for Scaling (&lt;5% Weight)</span></div><div id="dynamic-winner-scaling"></div></div>
-    </div>
-  </div>
-
-  <!-- ════ TAB 5: ALERTS, RISK RADAR & WATCHLIST ════ -->
-  <div id="view-alerts" class="tab-view" style="display: none;">
-    <div class="card">
-      <div class="card-title">
-        <span>⚙️ Dynamic Portfolio Alert Thresholds</span>
-        <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="resetAlertRules()">Reset Defaults</button>
-      </div>
-      <div class="form-grid">
-        <div>
-          <label style="font-size:0.72rem; color:var(--text-muted);">Critical Exit Drawdown: <strong id="lbl-rule-exit" style="color:var(--red);">-20%</strong></label>
-          <input type="range" id="slider-rule-exit" class="rule-slider" min="-40" max="-5" step="5" value="-20" oninput="updateAlertRules()">
-        </div>
-        <div>
-          <label style="font-size:0.72rem; color:var(--text-muted);">Profit-Booking Trigger: <strong id="lbl-rule-book" style="color:var(--purple);">+60%</strong></label>
-          <input type="range" id="slider-rule-book" class="rule-slider" min="20" max="150" step="10" value="60" oninput="updateAlertRules()">
-        </div>
-        <div>
-          <label style="font-size:0.72rem; color:var(--text-muted);">Trailing Stop-Loss Buffer: <strong id="lbl-rule-sl" style="color:var(--emerald);">12%</strong></label>
-          <input type="range" id="slider-rule-sl" class="rule-slider" min="5" max="25" step="1" value="12" oninput="updateAlertRules()">
-        </div>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="card"><div class="card-title"><span>🚨 Flagged Exit Positions</span></div><div id="alerts-container"></div></div>
-      <div class="card"><div class="card-title"><span>🛡️ Concentration &amp; Tail Risk Radar</span></div><div id="risk-radar-items"></div></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span>🎯 Live Entry Watchlist</span></div>
-      <form onsubmit="addWatchlistItem(event)" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin-bottom:10px;">
-        <input type="text" id="wl-name" class="watchlist-input" placeholder="Stock / Ticker (e.g. TCS)" required>
-        <input type="number" id="wl-ltp" class="watchlist-input" step="any" placeholder="Current LTP (optional)">
-        <input type="number" id="wl-target" class="watchlist-input" step="any" placeholder="Target Buy Price (₹)" required>
-        <button type="submit" class="btn-primary">➕ Add Watchlist Target</button>
-      </form>
-      <div id="watchlist-container"></div>
-    </div>
-  </div>
-
-  <!-- ════ TAB 6: VISUAL ANALYTICS ════ -->
-  <div id="view-charts" class="tab-view" style="display: none;">
-    <div class="grid-2">
-      <div class="card" style="text-align:center;">
-        <div class="card-title"><span>🍩 Asset Class Allocation</span></div>
-        <canvas id="canvas-asset-donut" width="220" height="220" style="margin:0 auto;"></canvas>
-        <div id="legend-asset-donut" style="margin-top:8px;"></div>
-      </div>
-      <div class="card" style="text-align:center;">
-        <div class="card-title"><span>📊 Top Sector Weights (%)</span></div>
-        <canvas id="canvas-sector-bars" width="320" height="200" style="max-width:100%;"></canvas>
-      </div>
-    </div>
-    <div class="card" style="text-align:center;">
-      <div class="card-title">
-        <span>📈 Portfolio Return Distribution</span>
-        <span style="font-size:0.72rem; color:var(--purple);">Multibaggers (&gt;+60%)</span>
-      </div>
-      <canvas id="canvas-pnl-distribution" width="600" height="150" style="max-width:100%;"></canvas>
-    </div>
-  </div>
-
-  <!-- ════ TAB 7: WHAT-IF SIMULATOR ════ -->
-  <div id="view-sim" class="tab-view" style="display: none;">
-    <div class="card">
-      <div class="card-title">
-        <div style="color: #7c3aed; font-weight: 700; font-size: 0.95rem;">🔮 Dynamic Portfolio Rebalancing &amp; Stress Simulator</div>
-        <button type="button" class="btn-emerald" onclick="applySimulationToPortfolio()" style="padding: 6px 14px; font-size: 0.8rem;">Apply Rebalance to Portfolio</button>
-      </div>
-      <div class="sim-toggle-row">
-        <div>
-          <div style="font-weight:700;">1. Liquidate All Flagged Exit Positions</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" id="sim-desc-exits"></div>
-        </div>
-        <input type="checkbox" id="sim-chk-exits" class="sim-checkbox" checked onchange="runSimulation()">
-      </div>
-      <div class="sim-toggle-row">
-        <div>
-          <div style="font-weight:700;">2. Trim 20% from Profit-Booking Outperformers</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" id="sim-desc-harvest"></div>
-        </div>
-        <input type="checkbox" id="sim-chk-harvest" class="sim-checkbox" checked onchange="runSimulation()">
-      </div>
-      <div class="sim-toggle-row">
-        <div>
-          <div style="font-weight:700;">3. Redeploy Freed Cash into Top 3 Portfolio Winners</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" id="sim-desc-winners"></div>
-        </div>
-        <input type="checkbox" id="sim-chk-winners" class="sim-checkbox" checked onchange="runSimulation()">
-      </div>
-      <div class="sim-toggle-row">
-        <div>
-          <div style="font-weight:700;">4. Stress-Test: -10% Market Shock Across All Equities</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Simulates an immediate 10% market drawdown across all equity holdings.</div>
-        </div>
-        <input type="checkbox" id="sim-chk-stress" class="sim-checkbox" onchange="runSimulation()">
-      </div>
-      <table class="sim-matrix-table" style="margin-top:10px;">
-        <thead><tr><th>Portfolio Metric</th><th>Current Baseline</th><th>Simulated Post-Action</th><th>Net Impact</th></tr></thead>
-        <tbody id="sim-matrix-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ════ TAB 8: INDIAN CAPITAL GAINS & TAX-LOSS HARVESTING ════ -->
-  <div id="view-tax" class="tab-view" style="display: none;">
-    <div class="card">
-      <div class="card-title"><span>🧾 Dynamic Indian Capital Gains &amp; Tax-Loss Harvesting Calculator (FY 2026–27 + 4% Cess)</span></div>
-      <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Unrealized Gains Pool</div><div class="kpi-val pos" id="tax-kpi-gains">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Harvestable Loss Pool</div><div class="kpi-val neg" id="tax-kpi-losses">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Estimated Tax (Before)</div><div class="kpi-val neg" id="tax-kpi-before">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label" style="color: #047857;">Tax Saved via Harvesting</div><div class="kpi-val pos" id="tax-kpi-saved">₹0</div></div>
-      </div>
-      <div class="form-grid">
-        <div>
-          <div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>Share of Gains Realized This Year</span><strong id="lbl-tax-gain-pct" style="color:var(--emerald);">50%</strong></div>
-          <input type="range" id="slider-tax-gain-pct" class="rule-slider" min="10" max="100" step="10" value="50" oninput="calculateTaxHarvest()">
-        </div>
-        <div>
-          <div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>Share of Gains Held &lt;1 Yr (STCG 20%)</span><strong id="lbl-tax-stcg-mix" style="color:var(--amber);">30%</strong></div>
-          <input type="range" id="slider-tax-stcg-mix" class="rule-slider" min="0" max="100" step="10" value="30" oninput="calculateTaxHarvest()">
-        </div>
-      </div>
-      <div class="sim-toggle-row">
-        <div>
-          <div style="font-weight:700;">Harvest Flagged Exit Losses</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" id="tax-desc-exits"></div>
-        </div>
-        <input type="checkbox" id="tax-chk-exits" class="sim-checkbox" checked onchange="calculateTaxHarvest()">
-      </div>
-      <div class="sim-toggle-row">
-        <div>
-          <div style="font-weight:700;">Harvest Mild Drawdown Losses</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;" id="tax-desc-mild">Includes remaining negative-P&amp;L positions for maximum tax shield.</div>
-        </div>
-        <input type="checkbox" id="tax-chk-mild" class="sim-checkbox" checked onchange="calculateTaxHarvest()">
-      </div>
-      <div class="card-title" style="margin-top:10px;">📊 Step-by-Step Capital Gains Tax Ledger</div>
-      <table class="sim-matrix-table">
-        <thead><tr><th>Tax Computation Line Item</th><th>Before Harvesting</th><th>After Harvesting</th><th>Statutory Rule</th></tr></thead>
-        <tbody id="tax-ledger-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ════ TAB 9: MULTI-YEAR WEALTH & SIP COMPOUNDING PROJECTOR ════ -->
-  <div id="view-wealth" class="tab-view" style="display: none;">
-    <div class="card">
-      <div class="card-title"><span>🚀 Multi-Year Wealth &amp; SIP Step-Up Compounding Projector</span></div>
-      <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Projected Base Corpus</div><div class="kpi-val pos" id="wealth-kpi-corpus">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Total Capital Contributed</div><div class="kpi-val" id="wealth-kpi-invested">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Compounding Wealth Gain</div><div class="kpi-val pos" id="wealth-kpi-profit">₹0</div></div>
-        <div class="kpi-card"><div class="kpi-label">Inflation-Adjusted Purchasing Power</div><div class="kpi-val" id="wealth-kpi-real" style="color:var(--accent);">₹0</div></div>
-      </div>
-      <div class="form-grid">
-        <div>
-          <div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>Monthly SIP Contribution</span><strong id="lbl-w-sip" style="color:var(--emerald);">₹25,000 / mo</strong></div>
-          <input type="range" id="slider-w-sip" class="rule-slider" min="0" max="200000" step="5000" value="25000" oninput="calculateWealthProjection()">
-        </div>
-        <div>
-          <div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>Annual SIP Step-Up %</span><strong id="lbl-w-step" style="color:var(--accent);">10% / yr</strong></div>
-          <input type="range" id="slider-w-step" class="rule-slider" min="0" max="25" step="5" value="10" oninput="calculateWealthProjection()">
-        </div>
-        <div>
-          <div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>Expected Portfolio CAGR</span><strong id="lbl-w-cagr" style="color:var(--purple);">15%</strong></div>
-          <input type="range" id="slider-w-cagr" class="rule-slider" min="8" max="25" step="1" value="15" oninput="calculateWealthProjection()">
-        </div>
-        <div>
-          <div style="display:flex; justify-content:space-between; font-size:0.75rem;"><span>Investment Horizon</span><strong id="lbl-w-years" style="color:var(--amber);">10 Years</strong></div>
-          <input type="range" id="slider-w-years" class="rule-slider" min="3" max="30" step="1" value="10" oninput="calculateWealthProjection()">
-        </div>
-      </div>
-      <canvas id="canvas-wealth-curve" width="750" height="220" style="width:100%; height:220px; background:#f8fafc; border-radius:8px; margin:10px 0;"></canvas>
-      <table class="sim-matrix-table">
-        <thead><tr><th>Horizon Year</th><th>Monthly SIP</th><th>Total Invested</th><th>Base Case Corpus</th><th>Bull Case (+3% CAGR)</th><th>Milestone Status</th></tr></thead>
-        <tbody id="wealth-table-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ════ TAB 11: BROKERS, CSV IMPORT, ALIAS MEMORY & SECURITY ADMIN ════ -->
-  <div id="view-admin" class="tab-view" style="display: none;">
-
-    <!-- 1. CSV UPLOAD & "WHAT CHANGED" DIFF SUMMARY -->
-    <div class="card">
       <div class="card-title">
         <span>📁 1. Upload Broker CSV &amp; Automatic "What Changed" Diff Analyzer</span>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -1311,8 +967,12 @@
       <div id="csv-diff-inline-box" style="display:none; margin-top:12px; padding:12px; border-radius:10px; background:#f0fdf4; border:1px solid #86efac; font-size:0.78rem; position:relative;"></div>
     </div>
 
-    <!-- 2. MULTI-BROKER LIVE API INTEGRATION HUB (DHANHQ + KOTAK NEO + INDMONEY) -->
-    <div class="card" id="dhan-config-card">
+    </div>
+    </div>
+
+    <!-- PANEL 2: MULTI-BROKER LIVE APIS -->
+    <div id="admin-panel-brokers" class="admin-sub-panel" style="display:none;">
+      <div class="card" id="dhan-config-card" style="display:block;">
       <div class="card-title">
         <span>🔗 2. Multi-Broker Free API Integration Hub (DhanHQ v2 · Kotak Neo v2 · INDmoney)</span>
         <button type="button" class="btn-secondary" style="padding:4px 10px; font-size:0.73rem;" onclick="openReliabilityModal()">🛡️ Feed &amp; Worker Diagnostics</button>
@@ -1440,8 +1100,12 @@
       </div>
     </div>
 
-    <!-- 3. MANUAL ADD POSITION FORM -->
-    <div class="card" id="add-holding-card">
+    </div>
+    </div>
+
+    <!-- PANEL 3: MANUAL ADD & ALIASES -->
+    <div id="admin-panel-aliases" class="admin-sub-panel" style="display:none;">
+      <div class="card" id="add-holding-card" style="display:block;">
       <div class="card-title">
         <span>➕ 3. Manually Add Equity / ETF Position (Broker-Tagged)</span>
       </div>
@@ -1499,35 +1163,8 @@
       <div id="saved-aliases-list-container"></div>
     </div>
 
-    <!-- 5A. SECURE EMAIL & WHATSAPP ALERT CONFIGURATION (Requirement #7) -->
-    <div class="card" id="admin-sec-alerts">
-      <div class="card-title">
-        <span>📲 5. Configure Secure Email &amp; WhatsApp Portfolio Alerts</span>
-        <span class="badge badge-emerald">Encrypted Local Storage</span>
-      </div>
-      <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
-        Configure your <strong>Email ID</strong> and <strong>WhatsApp Phone Number</strong> to receive instant one-click summaries of <strong>Flagged Exits</strong>, <strong>Profit-Booking Candidates</strong>, and <strong>Algo Signals</strong>. Your contact details are encoded locally on your device (never uploaded to any server) and wiped immediately on Panic Wipe.
-      </div>
-      <div class="form-grid">
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">Alert Recipient Email ID</label>
-          <input type="text" id="alert-email-input" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. yourname@domain.com">
-        </div>
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-muted);">WhatsApp Mobile Number (with Country Code)</label>
-          <input type="text" id="alert-whatsapp-input" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. +919876543210">
-        </div>
-      </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px;">
-        <button type="button" class="btn-primary" onclick="saveSecureAlertContactsFromUI()">💾 Save Secure Alert Contacts</button>
-        <button type="button" class="btn-emerald" onclick="sendPortfolioAlertViaWhatsApp()">💬 Send Portfolio Alert via WhatsApp</button>
-        <button type="button" class="btn-secondary" onclick="sendPortfolioAlertViaEmail()">✉️ Send Portfolio Alert via Email</button>
-      </div>
-      <div id="alert-contact-save-status" style="font-size:0.74rem; margin-top:8px;"></div>
-    </div>
-
-    <!-- 5B. PORTFOLIO SECURITY, PRIVACY MASK & VAULT -->
-    <div class="card" id="admin-sec-vault">
+    <!-- 5. PORTFOLIO SECURITY & PRIVACY VAULT (Requirement #12) -->
+    <div class="card">
       <div class="card-title">
         <span>🔒 5. Portfolio Security, Privacy Mask &amp; Local Vault Protection</span>
         <span class="badge badge-emerald">100% On-Device Storage</span>
@@ -1555,6 +1192,7 @@
         <button type="button" class="btn-secondary" onclick="openOrTriggerVaultLock()">🔒 Lock Screen Now</button>
         <button type="button" class="btn-danger" onclick="panicWipeAllDataAndTokens()">🚨 Panic Wipe All Tokens &amp; Data</button>
       </div>
+    </div>
     </div>
 
   </div>
@@ -1660,15 +1298,15 @@
 <script>
 
   window._isDedicatedAdminPage = true;
-  function scrollToAdminSection(secId) {
-    closeAllMoreMenus();
-    const vAdmin = document.getElementById("view-admin");
-    if (vAdmin) vAdmin.style.display = "block";
-    const el = document.getElementById(secId);
-    if (el) {
-      el.classList.remove("section-collapsed");
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  function switchAdminSubSection(secKey) {
+    const panels = ["csv", "brokers", "aliases", "alerts", "vault"];
+    panels.forEach(k => {
+      const p = document.getElementById("admin-panel-" + k);
+      const b = document.getElementById("btn-admin-tab-" + k);
+      if (p) p.style.display = (k === secKey) ? "block" : "none";
+      if (b) b.classList.toggle("active", k === secKey);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
 
@@ -1676,7 +1314,7 @@
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
      - Dedicated Admin HTML Navigation (index_admin.html)
-     - Mobile-Safe Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
+     - Robust Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
      - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
      ========================================================================= */
   const STORAGE_KEY_THEME = "piai_theme_mode_v1";
@@ -1736,11 +1374,7 @@
   function closeAllMoreMenus() {
     document.querySelectorAll(".more-tabs-dropdown.open").forEach(dd => {
       dd.classList.remove("open");
-      dd.style.left = "";
-      dd.style.right = "";
     });
-    const bd = document.getElementById("piai-more-menu-backdrop");
-    if (bd) bd.classList.remove("open");
   }
 
   function toggleInlineMoreMenu(menuId, ev) {
@@ -1753,29 +1387,7 @@
     const wasOpen = target.classList.contains("open");
     closeAllMoreMenus();
     if (!wasOpen) {
-      // Ensure mobile header exists inside every dropdown for easy closing on mobile
-      if (!target.querySelector(".more-menu-mobile-hdr")) {
-        const hdr = document.createElement("div");
-        hdr.className = "more-menu-mobile-hdr";
-        hdr.innerHTML = `<span>⚡ Select Option</span><button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>`;
-        target.insertBefore(hdr, target.firstChild);
-      }
       target.classList.add("open");
-      const bd = document.getElementById("piai-more-menu-backdrop");
-      if (bd && window.innerWidth <= 768) {
-        bd.classList.add("open");
-      }
-      // On desktop/tablet (> 768px), clamp horizontal position so it never overflows left or right edge of viewport
-      if (window.innerWidth > 768) {
-        const rect = target.getBoundingClientRect();
-        if (rect.left < 8) {
-          target.style.left = "0px";
-          target.style.right = "auto";
-        } else if (rect.right > window.innerWidth - 8) {
-          target.style.right = "0px";
-          target.style.left = "auto";
-        }
-      }
     }
   }
 
@@ -1784,9 +1396,8 @@
   }
 
   document.addEventListener("click", (ev) => {
-    // If user clicked a menu item inside an open dropdown, close the dropdown right after the item's onclick runs
     if (ev.target.closest(".more-menu-item")) {
-      setTimeout(closeAllMoreMenus, 20);
+      setTimeout(closeAllMoreMenus, 30);
       return;
     }
     if (!ev.target.closest(".more-tabs-wrapper")) {
@@ -1794,7 +1405,7 @@
     }
   });
 
-  // Navigate to the dedicated index_admin.html page (or scroll to section if already on index_admin.html)
+  // Navigate to dedicated index_admin.html
   function openAdminModule() {
     closeAllMoreMenus();
     const path = (window.location.pathname || "").toLowerCase();
@@ -1959,35 +1570,72 @@
     if (waEl && !waEl.matches(":focus")) waEl.value = c.whatsapp || "";
   }
 
+  // Dynamic Alert Builder: ONLY includes actionable BUY/SELL signals triggered by today's market moves (Zero old history)
   function buildActionableAlertDigestText() {
     const st = computeOfficialNSEMarketStatus();
-    const lines = [`📊 *PIAI Portfolio & Algo Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
+    const lines = [`📊 *PIAI Real-Time Market Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
 
     if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
-      const exits = holdings.filter(h => (h.act || "").includes("EXIT"));
-      const books = holdings.filter(h => (h.act || "").includes("BOOK"));
-      const eqInv = holdings.reduce((s, h) => s + (h.inv || 0), 0);
-      const eqCur = holdings.reduce((s, h) => s + (h.cur || 0), 0);
-      const eqPnl = eqCur - eqInv;
-      const eqPct = eqInv > 0 ? ((eqPnl / eqInv) * 100).toFixed(2) : "0.00";
-      const hideVals = typeof privacyMaskActive !== "undefined" && privacyMaskActive;
+      // 1. Dynamic Intraday/Today's Buy Opportunities
+      const dipBuys = holdings.filter(h => {
+        const todayChg = h.today || 0;
+        return (todayChg < 0 && (h.pct || 0) > 0 && Math.abs(todayChg) > (h.cur || 1) * 0.015);
+      });
+      // 2. Dynamic Scaling Buy Opportunities
+      const scaleBuys = holdings.filter(h => (h.pct || 0) > 10 && (h.pct || 0) < 50 && (h.cur || 0) > 0);
+      // 3. Urgent Sell / Flagged Exits
+      const urgentExits = holdings.filter(h => (h.act || "").includes("EXIT"));
+      // 4. Profit Booking Sells
+      const bookProfits = holdings.filter(h => (h.act || "").includes("BOOK"));
 
-      lines.push(`• *Portfolio Return:* ${eqPct >= 0 ? "+" : ""}${eqPct}% ${hideVals ? "(₹ Masked)" : `(Net P&L: ₹${Math.round(eqPnl).toLocaleString("en-IN")})`}`);
-      if (exits.length > 0) {
-        lines.push(`🚨 *Flagged Exits (${exits.length}):* ` + exits.map(h => `${h.n} (${h.pct.toFixed(1)}%, SL ₹${h.sl})`).join(", "));
+      lines.push("");
+      lines.push("🎯 *TODAY'S DYNAMIC ACTION RECOMMENDATIONS:*");
+
+      if (urgentExits.length > 0) {
+        lines.push(`🚨 *SELL / EXIT TRIGGERED (${urgentExits.length}):*`);
+        urgentExits.slice(0, 5).forEach(h => {
+          lines.push(`  • *${h.n}*: Down ${h.pct.toFixed(1)}% (Stop-Loss: ₹${h.sl}, LTP: ₹${h.ltp})`);
+        });
       } else {
-        lines.push(`✅ *Flagged Exits:* None breaching drawdown limit.`);
+        lines.push(`✅ *SELL / EXITS:* No positions breaching drawdown limit today.`);
       }
-      if (books.length > 0) {
-        lines.push(`🟣 *Profit Booking Candidates (${books.length}):* ` + books.map(h => `${h.n} (+${h.pct.toFixed(1)}%, Tgt ₹${h.tgt})`).join(", "));
+
+      if (bookProfits.length > 0) {
+        lines.push(`🟣 *PROFIT BOOKING SELL (${bookProfits.length}):*`);
+        bookProfits.slice(0, 5).forEach(h => {
+          lines.push(`  • *${h.n}*: Up +${h.pct.toFixed(1)}% (Target ₹${h.tgt} reached, LTP: ₹${h.ltp})`);
+        });
+      }
+
+      if (dipBuys.length > 0) {
+        lines.push(`🟢 *INTRADAY DIP-BUY CANDIDATES (${dipBuys.length}):*`);
+        dipBuys.slice(0, 4).forEach(h => {
+          lines.push(`  • *${h.n}*: Quality holding pulling back today (${h.today ? '₹' + Math.round(h.today) : ''}), LTP ₹${h.ltp}`);
+        });
+      } else if (scaleBuys.length > 0) {
+        lines.push(`🟢 *WINNER SCALING BUY ZONE:*`);
+        scaleBuys.slice(0, 3).forEach(h => {
+          lines.push(`  • *${h.n}*: Momentum leader (+${h.pct.toFixed(1)}%), eligible for scaling.`);
+        });
       }
     } else if (typeof lastGainzState !== "undefined" && lastGainzState) {
-      lines.push(`🎯 *F&O Options Signal:* ${activeUnderlying} · ${lastGainzState.signalState} · Contract: ${lastGainzState.contractSym || "ATM"} @ Spot ₹${lastGainzState.spot || 0}`);
+      const sig = lastGainzState.signal;
+      const isCE = sig === "BUY_CE";
+      const isPE = sig === "BUY_PE";
+      if (isCE || isPE) {
+        lines.push(`⚡ *F&O SIGNAL TRIGGERED:* ${isCE ? '🟢 BUY CALL' : '🔴 BUY PUT'}`);
+        lines.push(`• Underlying: *${activeUnderlying}* (Spot: ₹${lastGainzState.spot || 0})`);
+        lines.push(`• Contract: *${lastGainzState.recStrike} ${lastGainzState.recOptType}* @ Entry ₹${lastGainzState.entryPrem}`);
+        lines.push(`• SL: ₹${lastGainzState.slPrem} · Target: ₹${lastGainzState.tp1Prem} (RSI: ${lastGainzState.rsiVal})`);
+      } else {
+        lines.push(`⏸️ *F&O SIGNAL:* ${lastGainzState.rsiFilterReason || 'Waiting for high-probability momentum confirmation'}`);
+      }
     } else if (typeof activeInstrument !== "undefined") {
       const sigEl = document.querySelector(".header-signal-pill, .header-pill");
       lines.push(`🧪 *Mock Strategy Signal:* ${activeInstrument} · ${sigEl ? sigEl.textContent : "Active"}`);
     }
-    lines.push(`⚡ _Generated locally on-device by PIAI_`);
+    lines.push("");
+    lines.push(`⚡ _Generated in real-time on-device by PIAI_`);
     return lines.join(String.fromCharCode(10));
   }
 
@@ -2020,12 +1668,13 @@
       }
     }
     const st = computeOfficialNSEMarketStatus();
-    const subject = `PIAI Portfolio & Algo Action Alert — ${st.istDateStr}`;
+    const subject = `PIAI Dynamic Action Alert — ${st.istDateStr}`;
     const body = customText || buildActionableAlertDigestText().replace(/\*/g, "").replace(/_/g, "");
     const mailUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailUrl;
   }
 
+  // Smart Indian Stock Sector Classifier
   function inferIndianStockSector(name, ticker, rawSec) {
     const s = String(rawSec || "").trim();
     if (s && !/^(equity|position|stock|shares|nse|bse|nse_eq|bse_eq|delivery|cnc|normal)$/i.test(s)) {
@@ -2081,9 +1730,34 @@
   const STORAGE_KEY_BASELINE = "piai_daily_baseline_v2";
   const FEED_TIMEOUT_MS = 8000;
 
-  let holdings = [];
+  let holdings = [
+  {"n":"TCS","broker":"Kotak","ticker":"TCS.NS","sec":"💻 IT, Tech & Digital","qty":15,"avg":3850,"ltp":3940,"inv":57750,"cur":59100,"today":850},
+  {"n":"INFY","broker":"Kotak","ticker":"INFY.NS","sec":"💻 IT, Tech & Digital","qty":30,"avg":1680,"ltp":1725,"inv":50400,"cur":51750,"today":620},
+  {"n":"HDFCBANK","broker":"Kotak","ticker":"HDFCBANK.NS","sec":"🏦 Banking & Financial Services","qty":40,"avg":1580,"ltp":1640,"inv":63200,"cur":65600,"today":960},
+  {"n":"ICICIBANK","broker":"Dhan","ticker":"ICICIBANK.NS","sec":"🏦 Banking & Financial Services","qty":35,"avg":1120,"ltp":1210,"inv":39200,"cur":42350,"today":480},
+  {"n":"SBIN","broker":"Kotak","ticker":"SBIN.NS","sec":"🏦 Banking & Financial Services","qty":50,"avg":740,"ltp":795,"inv":37000,"cur":39750,"today":350},
+  {"n":"BAJFINANCE","broker":"INDmoney","ticker":"BAJFINANCE.NS","sec":"🏦 Banking & Financial Services","qty":6,"avg":6850,"ltp":7150,"inv":41100,"cur":42900,"today":520},
+  {"n":"TMPV","broker":"Kotak","ticker":"TMPV.NS","sec":"🚗 Automobile & EV Components","qty":45,"avg":860,"ltp":920,"inv":38700,"cur":41400,"today":640},
+  {"n":"MARUTI","broker":"Kotak","ticker":"MARUTI.NS","sec":"🚗 Automobile & EV Components","qty":4,"avg":11800,"ltp":12350,"inv":47200,"cur":49400,"today":780},
+  {"n":"RELIANCE","broker":"Dhan","ticker":"RELIANCE.NS","sec":"⚡ Energy, Oil & Power Utilities","qty":25,"avg":1260,"ltp":1320,"inv":31500,"cur":33000,"today":420},
+  {"n":"NTPC","broker":"Kotak","ticker":"NTPC.NS","sec":"⚡ Energy, Oil & Power Utilities","qty":80,"avg":355,"ltp":382,"inv":28400,"cur":30560,"today":280},
+  {"n":"SUNPHARMA","broker":"INDmoney","ticker":"SUNPHARMA.NS","sec":"💊 Pharma & Healthcare","qty":22,"avg":1640,"ltp":1760,"inv":36080,"cur":38720,"today":340},
+  {"n":"CIPLA","broker":"Kotak","ticker":"CIPLA.NS","sec":"💊 Pharma & Healthcare","qty":20,"avg":1430,"ltp":1510,"inv":28600,"cur":30200,"today":220},
+  {"n":"ITC","broker":"Kotak","ticker":"ITC.NS","sec":"🛒 FMCG, Retail & Consumer","qty":80,"avg":450,"ltp":485,"inv":36000,"cur":38800,"today":310},
+  {"n":"HINDUNILVR","broker":"Kotak","ticker":"HINDUNILVR.NS","sec":"🛒 FMCG, Retail & Consumer","qty":15,"avg":2380,"ltp":2460,"inv":35700,"cur":36900,"today":260},
+  {"n":"TITAN","broker":"Dhan","ticker":"TITAN.NS","sec":"🛒 FMCG, Retail & Consumer","qty":10,"avg":3400,"ltp":3580,"inv":34000,"cur":35800,"today":450},
+  {"n":"LT","broker":"Kotak","ticker":"LT.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":12,"avg":3380,"ltp":3520,"inv":40560,"cur":42240,"today":510},
+  {"n":"HAL","broker":"INDmoney","ticker":"HAL.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":8,"avg":4120,"ltp":4460,"inv":32960,"cur":35680,"today":490},
+  {"n":"BEL","broker":"Kotak","ticker":"BEL.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":90,"avg":275,"ltp":298,"inv":24750,"cur":26820,"today":270},
+  {"n":"TATASTEEL","broker":"Kotak","ticker":"TATASTEEL.NS","sec":"🔩 Metals, Mining & Cement","qty":150,"avg":135,"ltp":144,"inv":20250,"cur":21600,"today":190},
+  {"n":"BHARTIARTL","broker":"Dhan","ticker":"BHARTIARTL.NS","sec":"📡 Telecom & Connectivity","qty":25,"avg":1480,"ltp":1590,"inv":37000,"cur":39750,"today":420}
+];
   let mfs = [];
-  let etfs = [];
+  let etfs = [
+  {"n":"NIFTYBEES","broker":"Kotak","ticker":"NIFTYBEES.NS","sec":"ETF","qty":120,"avg":255,"ltp":268,"inv":30600,"cur":32160,"today":240},
+  {"n":"BANKBEES","broker":"Kotak","ticker":"BANKBEES.NS","sec":"ETF","qty":50,"avg":495,"ltp":518,"inv":24750,"cur":25900,"today":210},
+  {"n":"GOLDBEES","broker":"Dhan","ticker":"GOLDBEES.NS","sec":"ETF","qty":150,"avg":62,"ltp":68,"inv":9300,"cur":10200,"today":90}
+];
   let bonds = [];
   let watchlist = [];
   let simulatedHoldings = [];
@@ -2253,10 +1927,7 @@
     const { istDateStr, istTimeStr, isMarketOpen, statusBadgeHtml } = getISTDateInfo();
     const clk = document.getElementById("hdr-date-clock");
     if (clk) {
-      const syncStr = (lastSyncTelemetry && lastSyncTelemetry.lastRun && lastSyncTelemetry.lastRun !== "Never")
-        ? `<span class="badge badge-emerald">⚡ Live Synced: ${lastSyncTelemetry.lastRun}</span>`
-        : `<span class="badge badge-blue">⏳ Auto-Syncing...</span>`;
-      clk.innerHTML = `📅 ${istDateStr} · 🕒 ${istTimeStr} IST · ${statusBadgeHtml} · ${syncStr}`;
+      clk.innerHTML = `📅 ${istDateStr} · 🕒 ${istTimeStr} IST · ${statusBadgeHtml}`;
     }
     const badge = document.getElementById("badge-autosync");
     if (autoSyncIntervalSec > 0) {
@@ -4187,7 +3858,7 @@
       h.rawName = h.rawName || h.n;
       h.n = aliased.n;
       if (aliased.ticker) h.ticker = aliased.ticker;
-      h.sec = inferIndianStockSector(h.n, h.ticker, aliased.sec || h.sec);
+      if (aliased.sec) h.sec = aliased.sec;
       h.qty = parseFloat(h.qty) || 1;
       h.avg = parseFloat(h.avg) || 0;
       h.ltp = parseFloat(h.ltp) || h.avg;
@@ -4332,7 +4003,7 @@
     renderStocksView();
   }
 
-
+  
 
   function renderSinglePositionCardHtml(h, isEtf = false) {
     const hKey = getHoldingKey(h);
@@ -4535,6 +4206,19 @@
     collapsedSectors = JSON.parse(localStorage.getItem(STORAGE_KEY_COLLAPSED_SECTORS) || "{}") || {};
   } catch (e) { collapsedSectors = {}; }
 
+  let allSectorsCollapsedState = false;
+  function toggleAllSectorSections() {
+    allSectorsCollapsedState = !allSectorsCollapsedState;
+    holdings.forEach(h => {
+      const secName = inferIndianStockSector(h.n, h.ticker, h.sec);
+      collapsedSectors[secName] = allSectorsCollapsedState;
+    });
+    try { localStorage.setItem(STORAGE_KEY_COLLAPSED_SECTORS, JSON.stringify(collapsedSectors)); } catch (e) {}
+    const btn = document.getElementById("btn-toggle-all-sectors");
+    if (btn) btn.textContent = allSectorsCollapsedState ? "➕ Expand All Sectors" : "➖ Collapse All Sectors";
+    renderStocksView();
+  }
+
   function toggleSectorSectionCollapse(secName) {
     collapsedSectors[secName] = !collapsedSectors[secName];
     try { localStorage.setItem(STORAGE_KEY_COLLAPSED_SECTORS, JSON.stringify(collapsedSectors)); } catch (e) {}
@@ -4542,11 +4226,14 @@
   }
 
   function expandOrCollapseAllSectors(collapseFlag) {
+    allSectorsCollapsedState = !!collapseFlag;
     holdings.forEach(h => {
       const secName = inferIndianStockSector(h.n, h.ticker, h.sec);
       collapsedSectors[secName] = !!collapseFlag;
     });
     try { localStorage.setItem(STORAGE_KEY_COLLAPSED_SECTORS, JSON.stringify(collapsedSectors)); } catch (e) {}
+    const btn = document.getElementById("btn-toggle-all-sectors");
+    if (btn) btn.textContent = allSectorsCollapsedState ? "➕ Expand All Sectors" : "➖ Collapse All Sectors";
     renderStocksView();
   }
 
@@ -5161,14 +4848,9 @@
       const mBtn = document.getElementById("btn-more-tabs-menu");
       if (mBtn) mBtn.classList.remove("active");
     }
-    if (id === "admin" && !window._isDedicatedAdminPage) {
-      navigateToModule("index_admin.html");
-      return;
-    }
-    const el = document.getElementById("view-" + id);
-    if (!el) return;
     document.querySelectorAll(".tab-view").forEach(v => v.style.display = "none");
-    el.style.display = "block";
+    const el = document.getElementById("view-" + id);
+    if (el) el.style.display = "block";
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", (b.getAttribute("onclick") || "").includes("'" + id + "'")));
     triggerSmartDebouncedSync();
   }
@@ -5438,25 +5120,17 @@
   });
 
   function initApp() {
-    if (window._piaiBootCompleted) return;
-    window._piaiBootCompleted = true;
-    try { if (typeof loadSymbolAliasesAndCollapsed === "function") loadSymbolAliasesAndCollapsed(); } catch (e) {}
-    try { loadPersistedState(); } catch (e) {}
-    try { if (typeof renderSavedAliasesList === "function") renderSavedAliasesList(); } catch (e) {}
-    try { runPortfolioIntelligenceEngine(); } catch (e) {}
-    try { if (typeof runSimulation === "function") runSimulation(); } catch (e) {}
-    try { if (typeof calculateTaxHarvest === "function") calculateTaxHarvest(); } catch (e) {}
-    try { if (typeof calculateWealthProjection === "function") calculateWealthProjection(); } catch (e) {}
-    try { updateHeaderClock(); } catch (e) {}
-    setInterval(() => { try { updateHeaderClock(); } catch (e) {} }, 1000);
-    setTimeout(() => {
-      syncLiveNSEPrices(true);
-      if (typeof dhanConfig !== "undefined" && dhanConfig && dhanConfig.accessToken && typeof syncDhanLiveHoldings === "function") {
-        syncDhanLiveHoldings(false);
-      }
-    }, 60);
+    loadSymbolAliasesAndCollapsed();
+    loadPersistedState();
+    renderSavedAliasesList();
+    updateHeaderClock();
+    setInterval(updateHeaderClock, 1000);
+    runPortfolioIntelligenceEngine();
+    runSimulation();
+    calculateTaxHarvest();
+    calculateWealthProjection();
+    syncLiveNSEPrices(false);
   }
-  window.addEventListener("DOMContentLoaded", initApp);
 
   window.onload = initApp;
 </script>

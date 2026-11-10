@@ -304,9 +304,7 @@
       border: 1px solid var(--border);
     }
 
-    /* Standard Website Sticky Top Header:
-       Left = Brand Title + 5 Module Tabs (Portfolio, Algo, Options, Mock, Admin)
-       Top-Right = Date/Time + Market Status + Live Synced + Auto-Sync + Refresh Icon + Theme + Three-Dots Menu */
+    /* Standard Sticky Top App Header */
     .global-app-bar {
       background: var(--bar-bg);
       border-bottom: 1px solid var(--border);
@@ -431,7 +429,7 @@
       display: none !important;
     }
 
-    /* Minimal Secondary Sub-Header (Net Worth / Market Strip Only, No Duplicate Titles/Clocks) */
+    /* Minimal Secondary Sub-Header */
     .top-header {
       background: var(--header-grad) !important;
       border-bottom: 1px solid var(--border) !important;
@@ -487,7 +485,7 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Three-Dots More Dropdown Menu + Mobile Bottom-Sheet Action Drawer */
+    /* Three-Dots More Dropdown Menu & Mobile Bottom-Sheet Action Drawer */
     .more-tabs-wrapper {
       position: relative;
       display: inline-block;
@@ -498,11 +496,11 @@
       top: calc(100% + 6px);
       right: 0;
       min-width: 240px;
-      background: var(--bg-card);
+      background: var(--bg-card) !important;
       border: 1px solid var(--border-light);
       border-radius: 10px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
-      z-index: 9999;
+      z-index: 99999;
       padding: 6px;
     }
     .more-tabs-dropdown.align-left {
@@ -543,17 +541,6 @@
     .more-menu-item:hover, .more-menu-item.active {
       background: rgba(37, 99, 235, 0.12) !important;
       color: #2563eb !important;
-    }
-    .more-menu-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      z-index: 9990;
-      backdrop-filter: blur(2px);
-    }
-    .more-menu-backdrop.open {
-      display: block;
     }
 
     /* Collapsible Card Sections */
@@ -734,7 +721,7 @@
       min-height: 32px;
     }
 
-    /* Mobile-First Responsive Layout & Fixed Bottom-Sheet Three-Dots Menu */
+    /* Mobile-First Responsive Layout & Clean Dropdown Positioning */
     @media (max-width: 768px) {
       .global-app-bar { padding: 6px 10px; }
       .global-top-right { align-items: flex-start; width: 100%; }
@@ -753,31 +740,15 @@
         bottom: 68px !important;
         height: 68vh !important;
       }
-      /* On mobile viewports, render ANY open three-dots menu as a fixed, centered bottom-sheet drawer so it NEVER clips off-screen! */
       .more-tabs-dropdown.open {
-        position: fixed !important;
-        left: 12px !important;
-        right: 12px !important;
-        top: auto !important;
-        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        max-height: 72vh !important;
-        overflow-y: auto !important;
-        z-index: 99999 !important;
-        padding: 10px !important;
-        border-radius: 14px !important;
-        border: 2px solid var(--accent) !important;
-        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45) !important;
-      }
-      .more-menu-mobile-hdr {
-        display: flex !important;
+        right: 0 !important;
+        left: auto !important;
+        min-width: 250px !important;
+        max-width: calc(100vw - 20px) !important;
       }
       .more-menu-item {
-        padding: 11px 12px !important;
-        font-size: 0.85rem !important;
-        min-height: 42px !important;
+        padding: 9px 11px !important;
+        font-size: 0.8rem !important;
       }
     }
     @media (max-width: 480px) {
@@ -788,7 +759,6 @@
 </head>
 <body class="theme-light">
 <!-- STANDARD WEBSITE HEADER: LEFT = HEADING + 5 MODULE TABS | TOP-RIGHT = DATE/TIME + AUTO-SYNC + THEME + MORE -->
-<div class="more-menu-backdrop" id="piai-more-menu-backdrop" onclick="closeAllMoreMenus()"></div>
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
     <div class="global-left-brand-and-tabs">
@@ -809,10 +779,6 @@
         <div class="more-tabs-wrapper">
           <button type="button" class="btn-secondary" id="btn-top-more-actions" style="padding:4px 10px; font-size:0.78rem;" onclick="toggleInlineMoreMenu('top-util-dropdown', event)" title="More Actions">⋯</button>
           <div class="more-tabs-dropdown" id="top-util-dropdown">
-            <div class="more-menu-mobile-hdr">
-              <span>⚡ Quick Actions &amp; Tools</span>
-              <button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>
-            </div>
             <button type="button" class="more-menu-item" id="btn-collapse-all-secs" onclick="toggleAllPageSections()"><span>➖ Collapse All Sections</span></button>
             <button type="button" class="more-menu-item" onclick="sendPortfolioAlertViaWhatsApp()"><span>💬 Send Alert on WhatsApp</span></button>
             <button type="button" class="more-menu-item" onclick="sendPortfolioAlertViaEmail()"><span>✉️ Send Alert via Email</span></button>
@@ -1100,8 +1066,6 @@
           <input type="number" id="inp-starting-cap" class="inp-field" value="1000000" step="50000">
         </div>
         <button type="button" class="btn-emerald" style="padding:4px 10px; font-size:0.72rem;" onclick="saveMockFeedSettings()">💾 Save Feed &amp; Capital Settings</button>
-        <button type="button" class="btn-emerald" style="padding:4px 10px; font-size:0.72rem;" onclick="sendPortfolioAlertViaWhatsApp()">💬 WhatsApp Signal</button>
-        <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.72rem;" onclick="sendPortfolioAlertViaEmail()">✉️ Email Signal</button>
         <span id="feed-diag-msg" style="font-size:0.72rem; color:#0369a1; margin-left:8px;">Shared with PIAI</span>
       </div>
 
@@ -1197,7 +1161,7 @@
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
      - Dedicated Admin HTML Navigation (index_admin.html)
-     - Mobile-Safe Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
+     - Robust Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
      - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
      ========================================================================= */
   const STORAGE_KEY_THEME = "piai_theme_mode_v1";
@@ -1257,11 +1221,7 @@
   function closeAllMoreMenus() {
     document.querySelectorAll(".more-tabs-dropdown.open").forEach(dd => {
       dd.classList.remove("open");
-      dd.style.left = "";
-      dd.style.right = "";
     });
-    const bd = document.getElementById("piai-more-menu-backdrop");
-    if (bd) bd.classList.remove("open");
   }
 
   function toggleInlineMoreMenu(menuId, ev) {
@@ -1274,29 +1234,7 @@
     const wasOpen = target.classList.contains("open");
     closeAllMoreMenus();
     if (!wasOpen) {
-      // Ensure mobile header exists inside every dropdown for easy closing on mobile
-      if (!target.querySelector(".more-menu-mobile-hdr")) {
-        const hdr = document.createElement("div");
-        hdr.className = "more-menu-mobile-hdr";
-        hdr.innerHTML = `<span>⚡ Select Option</span><button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>`;
-        target.insertBefore(hdr, target.firstChild);
-      }
       target.classList.add("open");
-      const bd = document.getElementById("piai-more-menu-backdrop");
-      if (bd && window.innerWidth <= 768) {
-        bd.classList.add("open");
-      }
-      // On desktop/tablet (> 768px), clamp horizontal position so it never overflows left or right edge of viewport
-      if (window.innerWidth > 768) {
-        const rect = target.getBoundingClientRect();
-        if (rect.left < 8) {
-          target.style.left = "0px";
-          target.style.right = "auto";
-        } else if (rect.right > window.innerWidth - 8) {
-          target.style.right = "0px";
-          target.style.left = "auto";
-        }
-      }
     }
   }
 
@@ -1305,9 +1243,8 @@
   }
 
   document.addEventListener("click", (ev) => {
-    // If user clicked a menu item inside an open dropdown, close the dropdown right after the item's onclick runs
     if (ev.target.closest(".more-menu-item")) {
-      setTimeout(closeAllMoreMenus, 20);
+      setTimeout(closeAllMoreMenus, 30);
       return;
     }
     if (!ev.target.closest(".more-tabs-wrapper")) {
@@ -1315,7 +1252,7 @@
     }
   });
 
-  // Navigate to the dedicated index_admin.html page (or scroll to section if already on index_admin.html)
+  // Navigate to dedicated index_admin.html
   function openAdminModule() {
     closeAllMoreMenus();
     const path = (window.location.pathname || "").toLowerCase();
@@ -1480,35 +1417,72 @@
     if (waEl && !waEl.matches(":focus")) waEl.value = c.whatsapp || "";
   }
 
+  // Dynamic Alert Builder: ONLY includes actionable BUY/SELL signals triggered by today's market moves (Zero old history)
   function buildActionableAlertDigestText() {
     const st = computeOfficialNSEMarketStatus();
-    const lines = [`📊 *PIAI Portfolio & Algo Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
+    const lines = [`📊 *PIAI Real-Time Market Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
 
     if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
-      const exits = holdings.filter(h => (h.act || "").includes("EXIT"));
-      const books = holdings.filter(h => (h.act || "").includes("BOOK"));
-      const eqInv = holdings.reduce((s, h) => s + (h.inv || 0), 0);
-      const eqCur = holdings.reduce((s, h) => s + (h.cur || 0), 0);
-      const eqPnl = eqCur - eqInv;
-      const eqPct = eqInv > 0 ? ((eqPnl / eqInv) * 100).toFixed(2) : "0.00";
-      const hideVals = typeof privacyMaskActive !== "undefined" && privacyMaskActive;
+      // 1. Dynamic Intraday/Today's Buy Opportunities
+      const dipBuys = holdings.filter(h => {
+        const todayChg = h.today || 0;
+        return (todayChg < 0 && (h.pct || 0) > 0 && Math.abs(todayChg) > (h.cur || 1) * 0.015);
+      });
+      // 2. Dynamic Scaling Buy Opportunities
+      const scaleBuys = holdings.filter(h => (h.pct || 0) > 10 && (h.pct || 0) < 50 && (h.cur || 0) > 0);
+      // 3. Urgent Sell / Flagged Exits
+      const urgentExits = holdings.filter(h => (h.act || "").includes("EXIT"));
+      // 4. Profit Booking Sells
+      const bookProfits = holdings.filter(h => (h.act || "").includes("BOOK"));
 
-      lines.push(`• *Portfolio Return:* ${eqPct >= 0 ? "+" : ""}${eqPct}% ${hideVals ? "(₹ Masked)" : `(Net P&L: ₹${Math.round(eqPnl).toLocaleString("en-IN")})`}`);
-      if (exits.length > 0) {
-        lines.push(`🚨 *Flagged Exits (${exits.length}):* ` + exits.map(h => `${h.n} (${h.pct.toFixed(1)}%, SL ₹${h.sl})`).join(", "));
+      lines.push("");
+      lines.push("🎯 *TODAY'S DYNAMIC ACTION RECOMMENDATIONS:*");
+
+      if (urgentExits.length > 0) {
+        lines.push(`🚨 *SELL / EXIT TRIGGERED (${urgentExits.length}):*`);
+        urgentExits.slice(0, 5).forEach(h => {
+          lines.push(`  • *${h.n}*: Down ${h.pct.toFixed(1)}% (Stop-Loss: ₹${h.sl}, LTP: ₹${h.ltp})`);
+        });
       } else {
-        lines.push(`✅ *Flagged Exits:* None breaching drawdown limit.`);
+        lines.push(`✅ *SELL / EXITS:* No positions breaching drawdown limit today.`);
       }
-      if (books.length > 0) {
-        lines.push(`🟣 *Profit Booking Candidates (${books.length}):* ` + books.map(h => `${h.n} (+${h.pct.toFixed(1)}%, Tgt ₹${h.tgt})`).join(", "));
+
+      if (bookProfits.length > 0) {
+        lines.push(`🟣 *PROFIT BOOKING SELL (${bookProfits.length}):*`);
+        bookProfits.slice(0, 5).forEach(h => {
+          lines.push(`  • *${h.n}*: Up +${h.pct.toFixed(1)}% (Target ₹${h.tgt} reached, LTP: ₹${h.ltp})`);
+        });
+      }
+
+      if (dipBuys.length > 0) {
+        lines.push(`🟢 *INTRADAY DIP-BUY CANDIDATES (${dipBuys.length}):*`);
+        dipBuys.slice(0, 4).forEach(h => {
+          lines.push(`  • *${h.n}*: Quality holding pulling back today (${h.today ? '₹' + Math.round(h.today) : ''}), LTP ₹${h.ltp}`);
+        });
+      } else if (scaleBuys.length > 0) {
+        lines.push(`🟢 *WINNER SCALING BUY ZONE:*`);
+        scaleBuys.slice(0, 3).forEach(h => {
+          lines.push(`  • *${h.n}*: Momentum leader (+${h.pct.toFixed(1)}%), eligible for scaling.`);
+        });
       }
     } else if (typeof lastGainzState !== "undefined" && lastGainzState) {
-      lines.push(`🎯 *F&O Options Signal:* ${activeUnderlying} · ${lastGainzState.signalState} · Contract: ${lastGainzState.contractSym || "ATM"} @ Spot ₹${lastGainzState.spot || 0}`);
+      const sig = lastGainzState.signal;
+      const isCE = sig === "BUY_CE";
+      const isPE = sig === "BUY_PE";
+      if (isCE || isPE) {
+        lines.push(`⚡ *F&O SIGNAL TRIGGERED:* ${isCE ? '🟢 BUY CALL' : '🔴 BUY PUT'}`);
+        lines.push(`• Underlying: *${activeUnderlying}* (Spot: ₹${lastGainzState.spot || 0})`);
+        lines.push(`• Contract: *${lastGainzState.recStrike} ${lastGainzState.recOptType}* @ Entry ₹${lastGainzState.entryPrem}`);
+        lines.push(`• SL: ₹${lastGainzState.slPrem} · Target: ₹${lastGainzState.tp1Prem} (RSI: ${lastGainzState.rsiVal})`);
+      } else {
+        lines.push(`⏸️ *F&O SIGNAL:* ${lastGainzState.rsiFilterReason || 'Waiting for high-probability momentum confirmation'}`);
+      }
     } else if (typeof activeInstrument !== "undefined") {
       const sigEl = document.querySelector(".header-signal-pill, .header-pill");
       lines.push(`🧪 *Mock Strategy Signal:* ${activeInstrument} · ${sigEl ? sigEl.textContent : "Active"}`);
     }
-    lines.push(`⚡ _Generated locally on-device by PIAI_`);
+    lines.push("");
+    lines.push(`⚡ _Generated in real-time on-device by PIAI_`);
     return lines.join(String.fromCharCode(10));
   }
 
@@ -1541,12 +1515,13 @@
       }
     }
     const st = computeOfficialNSEMarketStatus();
-    const subject = `PIAI Portfolio & Algo Action Alert — ${st.istDateStr}`;
+    const subject = `PIAI Dynamic Action Alert — ${st.istDateStr}`;
     const body = customText || buildActionableAlertDigestText().replace(/\*/g, "").replace(/_/g, "");
     const mailUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailUrl;
   }
 
+  // Smart Indian Stock Sector Classifier
   function inferIndianStockSector(name, ticker, rawSec) {
     const s = String(rawSec || "").trim();
     if (s && !/^(equity|position|stock|shares|nse|bse|nse_eq|bse_eq|delivery|cnc|normal)$/i.test(s)) {
@@ -1747,60 +1722,30 @@
   /* =========================================================================
      10-SECOND AUTO-REFRESH TIMER + MANUAL REFRESH BUTTON
      ========================================================================= */
-  let forceMockSimWhenClosed = false;
-  function updateMockHeaderClockAndEcoState() {
-    const mktSt = computeOfficialNSEMarketStatus();
-    const clk = document.getElementById("mock-hdr-clock");
-    const syncTime = window._mockLastSyncedTimeStr || mktSt.istTimeStr;
-    if (clk) {
-      clk.innerHTML = `📅 ${mktSt.istDateStr} · 🕒 ${mktSt.istTimeStr} IST · ${mktSt.statusBadgeHtml} · <span class="badge badge-emerald">⚡ Live Synced: ${syncTime}</span>`;
-    }
-    const btn = document.getElementById("btn-autorefresh-toggle");
-    const ecoPause = (!mktSt.isMarketOpen && !forceMockSimWhenClosed && fullCandles.length > 0) || document.visibilityState === "hidden";
-    if (btn && tenSecAutoRefreshEnabled && ecoPause) {
-      btn.innerHTML = !mktSt.isMarketOpen ? `🌙 Eco-Paused (Market Closed) <span id="lbl-refresh-countdown" style="display:none;">10s</span>` : `🌙 Eco-Paused (Tab Hidden) <span id="lbl-refresh-countdown" style="display:none;">10s</span>`;
-    }
-    return ecoPause;
-  }
-
   function startTenSecTimer() {
-    updateMockHeaderClockAndEcoState();
     if (tenSecIntervalId) clearInterval(tenSecIntervalId);
     tenSecIntervalId = setInterval(() => {
-      const ecoPause = updateMockHeaderClockAndEcoState();
-      if (!tenSecAutoRefreshEnabled || ecoPause) return;
+      if (!tenSecAutoRefreshEnabled) return;
       tenSecCountdown--;
       if (tenSecCountdown <= 0) {
         tenSecCountdown = 10;
         refreshLiveTickAndSignals(false);
       }
-      const btn = document.getElementById("btn-autorefresh-toggle");
-      if (btn) {
-        btn.innerHTML = `🔄 Auto: <span id="lbl-refresh-countdown">${tenSecCountdown}s</span>`;
-      }
+      const lbl = document.getElementById("lbl-refresh-countdown");
+      if (lbl) lbl.textContent = `${tenSecCountdown}s`;
     }, 1000);
   }
 
   function toggleTenSecAutoRefresh() {
-    const mktSt = computeOfficialNSEMarketStatus();
-    if (!mktSt.isMarketOpen && tenSecAutoRefreshEnabled && !forceMockSimWhenClosed) {
-      forceMockSimWhenClosed = true;
-      tenSecCountdown = 10;
-      const btn = document.getElementById("btn-autorefresh-toggle");
-      if (btn) btn.innerHTML = `🔄 Auto: <span id="lbl-refresh-countdown">10s</span>`;
-      showToast("⚡ Active 10s Mock Tick Simulation enabled (override Eco-Pause)!");
-      return;
-    }
-    forceMockSimWhenClosed = false;
     tenSecAutoRefreshEnabled = !tenSecAutoRefreshEnabled;
     const btn = document.getElementById("btn-autorefresh-toggle");
     if (btn) {
+      btn.className = "badge " + (tenSecAutoRefreshEnabled ? "badge-blue" : "badge-amber");
       btn.innerHTML = tenSecAutoRefreshEnabled
-        ? `🔄 Auto: <span id="lbl-refresh-countdown">${tenSecCountdown}s</span>`
-        : `⏸️ Auto: OFF <span id="lbl-refresh-countdown" style="display:none;">10s</span>`;
+        ? `🔄 Auto-Refresh: <span id="lbl-refresh-countdown">${tenSecCountdown}s</span>`
+        : `⏸️ Auto-Refresh: PAUSED (<span id="lbl-refresh-countdown">Click to Resume</span>)`;
     }
-    updateMockHeaderClockAndEcoState();
-    showToast(tenSecAutoRefreshEnabled ? "🔄 Auto-Refresh Enabled (Eco-Pause Aware)" : "⏸️ Auto-Refresh Paused");
+    showToast(tenSecAutoRefreshEnabled ? "🔄 10-Second Auto-Refresh Enabled" : "⏸️ 10-Second Auto-Refresh Paused");
   }
 
   async function manualRefreshNow() {
@@ -2881,8 +2826,10 @@
 
   function recomputeMockEngine() {
     const mktSt = computeOfficialNSEMarketStatus();
-    window._mockLastSyncedTimeStr = mktSt.istTimeStr;
-    updateMockHeaderClockAndEcoState();
+    const mp = document.getElementById("mock-market-status-pill");
+    if (mp) mp.innerHTML = mktSt.statusBadgeHtml;
+    const ls = document.getElementById("hdr-last-sync-mock");
+    if (ls) ls.textContent = "Last synced: " + mktSt.istTimeStr;
     const vis = getVisibleCandles();
     const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
     const params = getSliderParams();
@@ -3110,8 +3057,8 @@
     const box = document.getElementById("mock-tv-iframe-wrap");
     if (!box) return;
     const tvMap = {
-      NIFTY: "NSE:NIFTY", BANKNIFTY: "NSE:BANKNIFTY", SENSEX: "BSE:SENSEX", FINNIFTY: "NSE:FINNIFTY",
-      MIDCPNIFTY: "NSE:MIDCPNIFTY", RELIANCE: "NSE:RELIANCE", HDFCBANK: "NSE:HDFCBANK", ICICIBANK: "NSE:ICICIBANK",
+      NIFTY: "NSE:NIFTYBEES", BANKNIFTY: "NSE:BANKBEES", SENSEX: "BSE:SENSEX", FINNIFTY: "NSE:HDFCBANK",
+      MIDCPNIFTY: "NSE:MID150BEES", RELIANCE: "NSE:RELIANCE", HDFCBANK: "NSE:HDFCBANK", ICICIBANK: "NSE:ICICIBANK",
       INFY: "NSE:INFY", TCS: "NSE:TCS", SBIN: "NSE:SBIN", TMPV: "NSE:TATAMOTORS"
     };
     const tvSym = tvMap[activeInstrument] || ("NSE:" + activeInstrument);
