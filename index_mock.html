@@ -1158,6 +1158,100 @@
 <script>
 
   /* =========================================================================
+     ARGON SAFE DOM GUARD:
+     Prevents any null-reference crash if a shared function accesses a DOM ID
+     that was intentionally omitted from a specialized module page.
+     ========================================================================= */
+  (function installArgonSafeDomGuard() {
+    if (window.__piaiSafeDomInstalled) return;
+    window.__piaiSafeDomInstalled = true;
+    const origGetById = document.getElementById.bind(document);
+    const dummyCtx = {
+      clearRect(){}, fillRect(){}, strokeRect(){}, beginPath(){}, closePath(){},
+      moveTo(){}, lineTo(){}, arc(){}, fill(){}, stroke(){}, fillText(){},
+      measureText(){ return { width: 0 }; }, save(){}, restore(){}, scale(){},
+      setLineDash(){}, createLinearGradient(){ return { addColorStop(){} }; }
+    };
+    const makeStub = (id) => ({
+      _isStub: true,
+      id: id || "",
+      style: {},
+      dataset: {},
+      value: "",
+      checked: false,
+      disabled: false,
+      textContent: "",
+      innerHTML: "",
+      innerText: "",
+      className: "",
+      width: 300,
+      height: 150,
+      classList: { add(){}, remove(){}, toggle(){}, contains(){ return false; } },
+      addEventListener(){},
+      removeEventListener(){},
+      setAttribute(){},
+      getAttribute(){ return null; },
+      querySelector(){ return null; },
+      querySelectorAll(){ return []; },
+      getContext(){ return dummyCtx; },
+      getBoundingClientRect(){ return { width: 300, height: 150, left: 0, top: 0, right: 300, bottom: 150 }; },
+      scrollIntoView(){},
+      focus(){},
+      blur(){},
+      click(){},
+      matches(){ return false; },
+      parentElement: { getBoundingClientRect(){ return { width: 300, height: 150, left: 0, top: 0 }; } }
+    });
+    const stubCache = {};
+    document.getElementById = function(id) {
+      const el = origGetById(id);
+      if (el) return el;
+      if (!stubCache[id]) stubCache[id] = makeStub(id);
+      return stubCache[id];
+    };
+  })();
+
+
+  // Universal TradingView Embed-Compatible Symbol Mapper
+  // Avoids NSE: free-widget block ("This symbol is only available on TradingView") by routing
+  // to BSE / Global / Index symbols supported by TradingView Embeds, plus direct popout link.
+  const TV_EMBED_SAFE_MAP = {
+    NIFTY:      { embed: "BSE:SENSEX",    tvDirect: "NSE:NIFTY",      label: "NIFTY 50 / SENSEX Benchmark" },
+    BANKNIFTY:  { embed: "BSE:BANKEX",    tvDirect: "NSE:BANKNIFTY",  label: "BANK NIFTY / BANKEX" },
+    FINNIFTY:   { embed: "BSE:HDFCBANK",  tvDirect: "NSE:FINNIFTY",   label: "FINNIFTY (HDFC Bank Proxy)" },
+    MIDCPNIFTY: { embed: "BSE:SENSEX",    tvDirect: "NSE:MIDCPNIFTY", label: "MIDCP NIFTY" },
+    SENSEX:     { embed: "BSE:SENSEX",    tvDirect: "BSE:SENSEX",     label: "BSE SENSEX" },
+    RELIANCE:   { embed: "BSE:RELIANCE",  tvDirect: "NSE:RELIANCE",   label: "RELIANCE INDUSTRIES" },
+    HDFCBANK:   { embed: "BSE:HDFCBANK",  tvDirect: "NSE:HDFCBANK",   label: "HDFC BANK" },
+    ICICIBANK:  { embed: "BSE:ICICIBANK", tvDirect: "NSE:ICICIBANK",  label: "ICICI BANK" },
+    SBIN:       { embed: "BSE:SBIN",      tvDirect: "NSE:SBIN",       label: "STATE BANK OF INDIA" },
+    INFY:       { embed: "NYSE:INFY",     tvDirect: "NSE:INFY",       label: "INFOSYS" },
+    TCS:        { embed: "BSE:TCS",       tvDirect: "NSE:TCS",        label: "TCS" },
+    BAJFINANCE: { embed: "BSE:BAJFINANCE",tvDirect: "NSE:BAJFINANCE", label: "BAJAJ FINANCE" },
+    TMPV:       { embed: "BSE:TATAMOTORS",tvDirect: "NSE:TMPV",       label: "TATA MOTORS PV" },
+    TATAMOTORS: { embed: "BSE:TATAMOTORS",tvDirect: "NSE:TATAMOTORS", label: "TATA MOTORS" },
+    MARUTI:     { embed: "BSE:MARUTI",    tvDirect: "NSE:MARUTI",     label: "MARUTI SUZUKI" },
+    LT:         { embed: "BSE:LT",        tvDirect: "NSE:LT",         label: "LARSEN & TOUBRO" },
+    ITC:        { embed: "BSE:ITC",       tvDirect: "NSE:ITC",        label: "ITC" },
+    SUNPHARMA:  { embed: "BSE:SUNPHARMA", tvDirect: "NSE:SUNPHARMA",  label: "SUN PHARMA" },
+    NTPC:       { embed: "BSE:NTPC",      tvDirect: "NSE:NTPC",       label: "NTPC" },
+    BHARTIARTL: { embed: "BSE:BHARTIARTL",tvDirect: "NSE:BHARTIARTL", label: "BHARTI AIRTEL" },
+    TATASTEEL:  { embed: "BSE:TATASTEEL", tvDirect: "NSE:TATASTEEL",  label: "TATA STEEL" },
+    HAL:        { embed: "BSE:HAL",       tvDirect: "NSE:HAL",        label: "HINDUSTAN AERONAUTICS" },
+    BEL:        { embed: "BSE:BEL",       tvDirect: "NSE:BEL",        label: "BHARAT ELECTRONICS" },
+    TITAN:      { embed: "BSE:TITAN",     tvDirect: "NSE:TITAN",      label: "TITAN" },
+    HINDUNILVR: { embed: "BSE:HINDUNILVR",tvDirect: "NSE:HINDUNILVR", label: "HINDUSTAN UNILEVER" },
+    CIPLA:      { embed: "BSE:CIPLA",     tvDirect: "NSE:CIPLA",      label: "CIPLA" }
+  };
+
+  function resolveTvSymbolInfo(rawSym) {
+    const clean = String(rawSym || "NIFTY").toUpperCase().replace(/\.(NS|BO)$/, "").replace(/^NSE:|^BSE:/, "").trim();
+    if (TV_EMBED_SAFE_MAP[clean]) return TV_EMBED_SAFE_MAP[clean];
+    return { embed: "BSE:" + clean, tvDirect: "NSE:" + clean, label: clean };
+  }
+
+
+  /* =========================================================================
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
      - Dedicated Admin HTML Navigation (index_admin.html)
@@ -1194,7 +1288,11 @@
   };
 
   function getActiveThemeMode() {
-    try { return localStorage.getItem(STORAGE_KEY_THEME) || "light"; } catch (e) { return "light"; }
+    try {
+      const s = localStorage.getItem(STORAGE_KEY_THEME);
+      if (s) return s;
+    } catch (e) {}
+    return (document.body && document.body.classList.contains("theme-dark")) ? "dark" : "light";
   }
 
   function applyThemeMode(mode) {
@@ -3056,16 +3154,16 @@
   function renderMockTvWidget() {
     const box = document.getElementById("mock-tv-iframe-wrap");
     if (!box) return;
-    const tvMap = {
-      NIFTY: "NSE:NIFTYBEES", BANKNIFTY: "NSE:BANKBEES", SENSEX: "BSE:SENSEX", FINNIFTY: "NSE:HDFCBANK",
-      MIDCPNIFTY: "NSE:MID150BEES", RELIANCE: "NSE:RELIANCE", HDFCBANK: "NSE:HDFCBANK", ICICIBANK: "NSE:ICICIBANK",
-      INFY: "NSE:INFY", TCS: "NSE:TCS", SBIN: "NSE:SBIN", TMPV: "NSE:TATAMOTORS"
-    };
-    const tvSym = tvMap[activeInstrument] || ("NSE:" + activeInstrument);
+    const tvInfo = resolveTvSymbolInfo(activeInstrument);
+    const tvSym = tvInfo.embed;
     const theme = getActiveThemeMode() === "dark" ? "dark" : "light";
     const tvInt = activeTimeframe === "1m" ? "1" : activeTimeframe === "15m" ? "15" : "5";
     const src = `https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(tvSym)}&interval=${tvInt}&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%22RSI%40tv-basicstudies%22%5D&theme=${theme}&style=1&timezone=Asia%2FKolkata&locale=en`;
-    box.innerHTML = `<iframe src="${src}" style="width:100%; height:100%; border:0;" allowfullscreen loading="lazy" title="TradingView Chart"></iframe>`;
+    box.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; padding:4px 10px; background:var(--bg-card-alt); border-bottom:1px solid var(--border); font-size:0.72rem;">
+      <span>📈 <strong>TradingView Live Embed (${tvSym})</strong> — Free Widget Compatible Feed</span>
+      <a href="https://in.tradingview.com/chart/?symbol=${encodeURIComponent(tvInfo.tvDirect)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent); font-weight:700; text-decoration:underline;">↗ Open Full ${tvInfo.tvDirect} Chart on TradingView</a>
+    </div>
+    <iframe src="${src}" style="width:100%; height:calc(100% - 28px); border:0;" allowfullscreen loading="lazy" title="TradingView Chart"></iframe>`;
   }
 
   function drawMockCandleChart() {

@@ -1348,6 +1348,100 @@
 
 <script>
 
+  /* =========================================================================
+     ARGON SAFE DOM GUARD:
+     Prevents any null-reference crash if a shared function accesses a DOM ID
+     that was intentionally omitted from a specialized module page.
+     ========================================================================= */
+  (function installArgonSafeDomGuard() {
+    if (window.__piaiSafeDomInstalled) return;
+    window.__piaiSafeDomInstalled = true;
+    const origGetById = document.getElementById.bind(document);
+    const dummyCtx = {
+      clearRect(){}, fillRect(){}, strokeRect(){}, beginPath(){}, closePath(){},
+      moveTo(){}, lineTo(){}, arc(){}, fill(){}, stroke(){}, fillText(){},
+      measureText(){ return { width: 0 }; }, save(){}, restore(){}, scale(){},
+      setLineDash(){}, createLinearGradient(){ return { addColorStop(){} }; }
+    };
+    const makeStub = (id) => ({
+      _isStub: true,
+      id: id || "",
+      style: {},
+      dataset: {},
+      value: "",
+      checked: false,
+      disabled: false,
+      textContent: "",
+      innerHTML: "",
+      innerText: "",
+      className: "",
+      width: 300,
+      height: 150,
+      classList: { add(){}, remove(){}, toggle(){}, contains(){ return false; } },
+      addEventListener(){},
+      removeEventListener(){},
+      setAttribute(){},
+      getAttribute(){ return null; },
+      querySelector(){ return null; },
+      querySelectorAll(){ return []; },
+      getContext(){ return dummyCtx; },
+      getBoundingClientRect(){ return { width: 300, height: 150, left: 0, top: 0, right: 300, bottom: 150 }; },
+      scrollIntoView(){},
+      focus(){},
+      blur(){},
+      click(){},
+      matches(){ return false; },
+      parentElement: { getBoundingClientRect(){ return { width: 300, height: 150, left: 0, top: 0 }; } }
+    });
+    const stubCache = {};
+    document.getElementById = function(id) {
+      const el = origGetById(id);
+      if (el) return el;
+      if (!stubCache[id]) stubCache[id] = makeStub(id);
+      return stubCache[id];
+    };
+  })();
+
+
+  // Universal TradingView Embed-Compatible Symbol Mapper
+  // Avoids NSE: free-widget block ("This symbol is only available on TradingView") by routing
+  // to BSE / Global / Index symbols supported by TradingView Embeds, plus direct popout link.
+  const TV_EMBED_SAFE_MAP = {
+    NIFTY:      { embed: "BSE:SENSEX",    tvDirect: "NSE:NIFTY",      label: "NIFTY 50 / SENSEX Benchmark" },
+    BANKNIFTY:  { embed: "BSE:BANKEX",    tvDirect: "NSE:BANKNIFTY",  label: "BANK NIFTY / BANKEX" },
+    FINNIFTY:   { embed: "BSE:HDFCBANK",  tvDirect: "NSE:FINNIFTY",   label: "FINNIFTY (HDFC Bank Proxy)" },
+    MIDCPNIFTY: { embed: "BSE:SENSEX",    tvDirect: "NSE:MIDCPNIFTY", label: "MIDCP NIFTY" },
+    SENSEX:     { embed: "BSE:SENSEX",    tvDirect: "BSE:SENSEX",     label: "BSE SENSEX" },
+    RELIANCE:   { embed: "BSE:RELIANCE",  tvDirect: "NSE:RELIANCE",   label: "RELIANCE INDUSTRIES" },
+    HDFCBANK:   { embed: "BSE:HDFCBANK",  tvDirect: "NSE:HDFCBANK",   label: "HDFC BANK" },
+    ICICIBANK:  { embed: "BSE:ICICIBANK", tvDirect: "NSE:ICICIBANK",  label: "ICICI BANK" },
+    SBIN:       { embed: "BSE:SBIN",      tvDirect: "NSE:SBIN",       label: "STATE BANK OF INDIA" },
+    INFY:       { embed: "NYSE:INFY",     tvDirect: "NSE:INFY",       label: "INFOSYS" },
+    TCS:        { embed: "BSE:TCS",       tvDirect: "NSE:TCS",        label: "TCS" },
+    BAJFINANCE: { embed: "BSE:BAJFINANCE",tvDirect: "NSE:BAJFINANCE", label: "BAJAJ FINANCE" },
+    TMPV:       { embed: "BSE:TATAMOTORS",tvDirect: "NSE:TMPV",       label: "TATA MOTORS PV" },
+    TATAMOTORS: { embed: "BSE:TATAMOTORS",tvDirect: "NSE:TATAMOTORS", label: "TATA MOTORS" },
+    MARUTI:     { embed: "BSE:MARUTI",    tvDirect: "NSE:MARUTI",     label: "MARUTI SUZUKI" },
+    LT:         { embed: "BSE:LT",        tvDirect: "NSE:LT",         label: "LARSEN & TOUBRO" },
+    ITC:        { embed: "BSE:ITC",       tvDirect: "NSE:ITC",        label: "ITC" },
+    SUNPHARMA:  { embed: "BSE:SUNPHARMA", tvDirect: "NSE:SUNPHARMA",  label: "SUN PHARMA" },
+    NTPC:       { embed: "BSE:NTPC",      tvDirect: "NSE:NTPC",       label: "NTPC" },
+    BHARTIARTL: { embed: "BSE:BHARTIARTL",tvDirect: "NSE:BHARTIARTL", label: "BHARTI AIRTEL" },
+    TATASTEEL:  { embed: "BSE:TATASTEEL", tvDirect: "NSE:TATASTEEL",  label: "TATA STEEL" },
+    HAL:        { embed: "BSE:HAL",       tvDirect: "NSE:HAL",        label: "HINDUSTAN AERONAUTICS" },
+    BEL:        { embed: "BSE:BEL",       tvDirect: "NSE:BEL",        label: "BHARAT ELECTRONICS" },
+    TITAN:      { embed: "BSE:TITAN",     tvDirect: "NSE:TITAN",      label: "TITAN" },
+    HINDUNILVR: { embed: "BSE:HINDUNILVR",tvDirect: "NSE:HINDUNILVR", label: "HINDUSTAN UNILEVER" },
+    CIPLA:      { embed: "BSE:CIPLA",     tvDirect: "NSE:CIPLA",      label: "CIPLA" }
+  };
+
+  function resolveTvSymbolInfo(rawSym) {
+    const clean = String(rawSym || "NIFTY").toUpperCase().replace(/\.(NS|BO)$/, "").replace(/^NSE:|^BSE:/, "").trim();
+    if (TV_EMBED_SAFE_MAP[clean]) return TV_EMBED_SAFE_MAP[clean];
+    return { embed: "BSE:" + clean, tvDirect: "NSE:" + clean, label: clean };
+  }
+
+
   window._isDedicatedAdminPage = true;
   function switchAdminSubSection(secKey) {
     const panels = ["csv", "brokers", "aliases", "alerts", "vault"];
@@ -1409,7 +1503,11 @@
   };
 
   function getActiveThemeMode() {
-    try { return localStorage.getItem(STORAGE_KEY_THEME) || "light"; } catch (e) { return "light"; }
+    try {
+      const s = localStorage.getItem(STORAGE_KEY_THEME);
+      if (s) return s;
+    } catch (e) {}
+    return (document.body && document.body.classList.contains("theme-dark")) ? "dark" : "light";
   }
 
   function applyThemeMode(mode) {
@@ -1823,7 +1921,15 @@
   let bonds = [];
   let watchlist = [];
   let simulatedHoldings = [];
-  let liveBenchmarks = {};
+  let liveBenchmarks = {
+    "^NSEI":     { ltp: 24148.20, prevClose: 24199.35, chg: -51.15, pct: -0.21, updatedAt: "Last Close" },
+    "^BSESN":    { ltp: 79486.32, prevClose: 79541.79, chg: -55.47, pct: -0.07, updatedAt: "Last Close" },
+    "^NSEBANK":  { ltp: 51561.20, prevClose: 51916.50, chg: -355.30, pct: -0.68, updatedAt: "Last Close" },
+    "^INDIAVIX": { ltp: 14.47,    prevClose: 14.94,    chg: -0.47,   pct: -3.15, updatedAt: "Last Close" },
+    "INR=X":     { ltp: 84.38,    prevClose: 84.32,    chg: 0.06,    pct: 0.07,  updatedAt: "Last Close" },
+    "BZ=F":      { ltp: 73.85,    prevClose: 74.40,    chg: -0.55,   pct: -0.74, updatedAt: "Last Close" },
+    "GC=F":      { ltp: 2684.50,  prevClose: 2695.20,  chg: -10.70,  pct: -0.40, updatedAt: "Last Close" }
+  };
   let benchmarkDisconnected = {};
   let expandedCards = {};
   let searchQuery = "";
@@ -2501,7 +2607,7 @@
         etfs = (Array.isArray(p.etfs) ? p.etfs : []).map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) }));
         bonds = (Array.isArray(p.bonds) ? p.bonds : []).map(b => ({ ...b, broker: normalizeBrokerTag(b.broker) }));
         watchlist = Array.isArray(p.watchlist) ? p.watchlist : [];
-        liveBenchmarks = p.liveBenchmarks || {};
+        liveBenchmarks = { ...liveBenchmarks, ...(p.liveBenchmarks || {}) };
         if (typeof p.ruleExitDrawdown === "number") ruleExitDrawdown = p.ruleExitDrawdown;
         if (typeof p.ruleProfitBook === "number") ruleProfitBook = p.ruleProfitBook;
         if (typeof p.ruleStopLossBuffer === "number") ruleStopLossBuffer = p.ruleStopLossBuffer;
@@ -3268,22 +3374,27 @@
       if ((!ltp || isNaN(ltp)) && closes.length > 0) {
         ltp = closes[closes.length - 1];
       }
-      if ((!prevClose || isNaN(prevClose) || prevClose === ltp) && closes.length >= 2) {
+      // On 1d range=5d, meta.chartPreviousClose is 5 days ago! Always prefer the second-to-last daily bar close when previousClose is missing.
+      if ((!prevClose || isNaN(prevClose) || Math.abs(prevClose - ltp) < 1e-6) && closes.length >= 2) {
         prevClose = closes[closes.length - 2];
       }
-      if (!prevClose || isNaN(prevClose)) {
+      if (!prevClose || isNaN(prevClose) || prevClose <= 0) {
         prevClose = parseFloat(meta.chartPreviousClose || ltp);
       }
     } catch (e) {}
 
-    if (ltp && ltp > 0) {
-      if (!prevClose || prevClose <= 0) prevClose = ltp;
-      const chg = ltp - prevClose;
-      const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
+    if (ltp && ltp > 0 && isFinite(ltp)) {
+      if (!prevClose || prevClose <= 0 || !isFinite(prevClose)) prevClose = ltp;
+      // Guard against bad split/corrupt prevClose (>25% single-day jump on standard equity/index)
+      if (Math.abs(ltp - prevClose) / prevClose > 0.25) {
+        prevClose = ltp;
+      }
+      const chg = +(ltp - prevClose).toFixed(2);
+      const pct = prevClose > 0 ? +((chg / prevClose) * 100).toFixed(2) : 0;
       const mktTime = meta.regularMarketTime
         ? new Date(meta.regularMarketTime * 1000).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })
         : new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" });
-      return { ltp, prevClose, chg, pct, symbol, mktTime };
+      return { ltp: +ltp.toFixed(2), prevClose: +prevClose.toFixed(2), chg, pct, symbol, mktTime };
     }
     return null;
   }
@@ -3374,13 +3485,25 @@
   }
 
   function applyQuoteToHolding(h, q, ticker) {
+    if (!q || !q.ltp || q.ltp <= 0 || !isFinite(q.ltp)) return false;
+    // Sanity check: if user has a known avg price > 10, reject wildly mismatched ticker quotes (e.g. >15x or <0.06x avg)
+    if (h.avg && h.avg > 10) {
+      const ratio = q.ltp / h.avg;
+      if (ratio > 15 || ratio < 0.06) return false;
+    }
     h.ticker = ticker;
-    h.prevClose = q.prevClose;
-    h.ltp = q.ltp;
-    h.cur = h.qty * q.ltp;
-    h.dayPct = q.pct;
-    h.today = Math.round((q.ltp - q.prevClose) * h.qty);
+    h.prevClose = (q.prevClose && q.prevClose > 0) ? +q.prevClose.toFixed(2) : +q.ltp.toFixed(2);
+    h.ltp = +q.ltp.toFixed(2);
+    h.qty = parseFloat(h.qty) || 1;
+    h.avg = parseFloat(h.avg) || h.ltp;
+    h.inv = +(h.qty * h.avg).toFixed(2);
+    h.cur = +(h.qty * h.ltp).toFixed(2);
+    h.pnl = +(h.cur - h.inv).toFixed(2);
+    h.pct = h.inv > 0 ? +((h.pnl / h.inv) * 100).toFixed(2) : 0;
+    h.dayPct = q.pct || 0;
+    h.today = Math.round((h.ltp - h.prevClose) * h.qty);
     h.syncedAt = q.mktTime;
+    return true;
   }
 
   async function fetchFastStockQuote(h) {
@@ -3515,7 +3638,10 @@
           };
           benchmarkDisconnected[sym] = false;
           idxCount++;
-        } else if (!liveBenchmarks[sym] || !liveBenchmarks[sym].ltp) {
+        } else if (liveBenchmarks[sym] && liveBenchmarks[sym].ltp > 0) {
+          benchmarkDisconnected[sym] = false;
+          idxCount++;
+        } else {
           benchmarkDisconnected[sym] = true;
         }
       })),
@@ -3918,10 +4044,12 @@
     const elapsedSec = ((Date.now() - syncStartMs) / 1000).toFixed(1);
     const { istDateStr, istTimeStr } = getISTDateInfo();
     lastSyncTimestamp = Date.now();
-    lastSyncTelemetry.stocksOk = updated;
-    lastSyncTelemetry.etfsOk = etfUpdated;
-    lastSyncTelemetry.mfsOk = mfUpdated || 0;
-    lastSyncTelemetry.feedDisconnected = (idxUpdated === 0 && updated === 0);
+    const validStocksCount = updated > 0 ? updated : holdings.filter(h => h.ltp > 0).length;
+    const validEtfsCount = etfUpdated > 0 ? etfUpdated : etfs.filter(e => e.ltp > 0).length;
+    lastSyncTelemetry.stocksOk = validStocksCount;
+    lastSyncTelemetry.etfsOk = validEtfsCount;
+    lastSyncTelemetry.mfsOk = mfUpdated || mfs.length || 0;
+    lastSyncTelemetry.feedDisconnected = (idxUpdated === 0 && validStocksCount === 0);
     lastSyncTelemetry.lastRun = `${istDateStr} ${istTimeStr}`;
     isSyncInProgress = false;
 

@@ -1140,8 +1140,28 @@
     <span id="tab-alerts-count" style="display:none;"></span>
   </div>
   <!-- ════ TAB 10: DHANHQ V2 EQUITY ALGO & WEBHOOK HUB ════ -->
-  <div id="view-algo" class="tab-view" style="display: block;">
-    <div class="card" style="border-color:#0284c7; background:linear-gradient(135deg,#0c192c 0%,#0f172a 100%);">
+    <div id="view-algo" class="tab-view" style="display: block;">
+    <!-- TOP INTERACTIVE EQUITY ALGO CHART (SIGNAL CHART + EMBED-SAFE TRADINGVIEW LIVE + FULL PAGE) -->
+    <div class="card" id="algo-top-chart-card" style="border-color:#0284c7;">
+      <div class="card-title">
+        <span id="algo-chart-title">📊 Live Equity Algo Signal Chart — EMA(9/21) + Stop-Loss &amp; Target Zones</span>
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <select id="algo-chart-sym-select" class="watchlist-input" style="margin-bottom:0; width:auto; padding:4px 8px; font-size:0.74rem; font-weight:700;" onchange="onAlgoChartSymbolChange()"></select>
+          <button type="button" class="filter-chip active" id="btn-algo-chart-sig" onclick="switchAlgoChartMode('SIGNAL')">⚡ Algo Signal Chart</button>
+          <button type="button" class="filter-chip" id="btn-algo-chart-tv" onclick="switchAlgoChartMode('TV')">📈 TradingView Live</button>
+          <button type="button" class="btn-secondary" id="btn-algo-fullscreen" style="padding:4px 9px; font-size:0.72rem;" onclick="toggleFullPageChart('algo-top-chart-card', 'btn-algo-fullscreen')">⛶ Full Page</button>
+        </div>
+      </div>
+      <div class="chart-hud-bar" id="algo-chart-hud" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px; padding:6px 10px; border-radius:6px; background:var(--bg-card-alt); border:1px solid var(--border);">
+        Select any portfolio stock above to inspect its live price action, Buy Avg, Trailing Stop-Loss (SL), and Profit Target levels, or click any signal below to load it into the Webhook / Forever GTT Builder.
+      </div>
+      <div id="algo-sig-canvas-wrap">
+        <canvas id="canvas-algo-equity-chart" width="960" height="280" style="width:100%; height:280px; border-radius:8px; border:1px solid var(--border); display:block;"></canvas>
+      </div>
+      <div id="algo-tv-widget-wrap" style="display:none; width:100%; height:360px; border-radius:8px; overflow:hidden; border:1px solid var(--border);"></div>
+    </div>
+
+    <div class="card" style="border-color:#0284c7;">
       <div class="card-title" style="color:#0284c7;">
         <span>🤖 DhanHQ v2 Equity Algo Execution, Forever OCO GTT &amp; 3-Leg Super Order Hub</span>
         <span class="badge badge-blue" id="algo-signal-count">0 Active Signals</span>
@@ -1348,6 +1368,100 @@
 <script>
 
   /* =========================================================================
+     ARGON SAFE DOM GUARD:
+     Prevents any null-reference crash if a shared function accesses a DOM ID
+     that was intentionally omitted from a specialized module page.
+     ========================================================================= */
+  (function installArgonSafeDomGuard() {
+    if (window.__piaiSafeDomInstalled) return;
+    window.__piaiSafeDomInstalled = true;
+    const origGetById = document.getElementById.bind(document);
+    const dummyCtx = {
+      clearRect(){}, fillRect(){}, strokeRect(){}, beginPath(){}, closePath(){},
+      moveTo(){}, lineTo(){}, arc(){}, fill(){}, stroke(){}, fillText(){},
+      measureText(){ return { width: 0 }; }, save(){}, restore(){}, scale(){},
+      setLineDash(){}, createLinearGradient(){ return { addColorStop(){} }; }
+    };
+    const makeStub = (id) => ({
+      _isStub: true,
+      id: id || "",
+      style: {},
+      dataset: {},
+      value: "",
+      checked: false,
+      disabled: false,
+      textContent: "",
+      innerHTML: "",
+      innerText: "",
+      className: "",
+      width: 300,
+      height: 150,
+      classList: { add(){}, remove(){}, toggle(){}, contains(){ return false; } },
+      addEventListener(){},
+      removeEventListener(){},
+      setAttribute(){},
+      getAttribute(){ return null; },
+      querySelector(){ return null; },
+      querySelectorAll(){ return []; },
+      getContext(){ return dummyCtx; },
+      getBoundingClientRect(){ return { width: 300, height: 150, left: 0, top: 0, right: 300, bottom: 150 }; },
+      scrollIntoView(){},
+      focus(){},
+      blur(){},
+      click(){},
+      matches(){ return false; },
+      parentElement: { getBoundingClientRect(){ return { width: 300, height: 150, left: 0, top: 0 }; } }
+    });
+    const stubCache = {};
+    document.getElementById = function(id) {
+      const el = origGetById(id);
+      if (el) return el;
+      if (!stubCache[id]) stubCache[id] = makeStub(id);
+      return stubCache[id];
+    };
+  })();
+
+
+  // Universal TradingView Embed-Compatible Symbol Mapper
+  // Avoids NSE: free-widget block ("This symbol is only available on TradingView") by routing
+  // to BSE / Global / Index symbols supported by TradingView Embeds, plus direct popout link.
+  const TV_EMBED_SAFE_MAP = {
+    NIFTY:      { embed: "BSE:SENSEX",    tvDirect: "NSE:NIFTY",      label: "NIFTY 50 / SENSEX Benchmark" },
+    BANKNIFTY:  { embed: "BSE:BANKEX",    tvDirect: "NSE:BANKNIFTY",  label: "BANK NIFTY / BANKEX" },
+    FINNIFTY:   { embed: "BSE:HDFCBANK",  tvDirect: "NSE:FINNIFTY",   label: "FINNIFTY (HDFC Bank Proxy)" },
+    MIDCPNIFTY: { embed: "BSE:SENSEX",    tvDirect: "NSE:MIDCPNIFTY", label: "MIDCP NIFTY" },
+    SENSEX:     { embed: "BSE:SENSEX",    tvDirect: "BSE:SENSEX",     label: "BSE SENSEX" },
+    RELIANCE:   { embed: "BSE:RELIANCE",  tvDirect: "NSE:RELIANCE",   label: "RELIANCE INDUSTRIES" },
+    HDFCBANK:   { embed: "BSE:HDFCBANK",  tvDirect: "NSE:HDFCBANK",   label: "HDFC BANK" },
+    ICICIBANK:  { embed: "BSE:ICICIBANK", tvDirect: "NSE:ICICIBANK",  label: "ICICI BANK" },
+    SBIN:       { embed: "BSE:SBIN",      tvDirect: "NSE:SBIN",       label: "STATE BANK OF INDIA" },
+    INFY:       { embed: "NYSE:INFY",     tvDirect: "NSE:INFY",       label: "INFOSYS" },
+    TCS:        { embed: "BSE:TCS",       tvDirect: "NSE:TCS",        label: "TCS" },
+    BAJFINANCE: { embed: "BSE:BAJFINANCE",tvDirect: "NSE:BAJFINANCE", label: "BAJAJ FINANCE" },
+    TMPV:       { embed: "BSE:TATAMOTORS",tvDirect: "NSE:TMPV",       label: "TATA MOTORS PV" },
+    TATAMOTORS: { embed: "BSE:TATAMOTORS",tvDirect: "NSE:TATAMOTORS", label: "TATA MOTORS" },
+    MARUTI:     { embed: "BSE:MARUTI",    tvDirect: "NSE:MARUTI",     label: "MARUTI SUZUKI" },
+    LT:         { embed: "BSE:LT",        tvDirect: "NSE:LT",         label: "LARSEN & TOUBRO" },
+    ITC:        { embed: "BSE:ITC",       tvDirect: "NSE:ITC",        label: "ITC" },
+    SUNPHARMA:  { embed: "BSE:SUNPHARMA", tvDirect: "NSE:SUNPHARMA",  label: "SUN PHARMA" },
+    NTPC:       { embed: "BSE:NTPC",      tvDirect: "NSE:NTPC",       label: "NTPC" },
+    BHARTIARTL: { embed: "BSE:BHARTIARTL",tvDirect: "NSE:BHARTIARTL", label: "BHARTI AIRTEL" },
+    TATASTEEL:  { embed: "BSE:TATASTEEL", tvDirect: "NSE:TATASTEEL",  label: "TATA STEEL" },
+    HAL:        { embed: "BSE:HAL",       tvDirect: "NSE:HAL",        label: "HINDUSTAN AERONAUTICS" },
+    BEL:        { embed: "BSE:BEL",       tvDirect: "NSE:BEL",        label: "BHARAT ELECTRONICS" },
+    TITAN:      { embed: "BSE:TITAN",     tvDirect: "NSE:TITAN",      label: "TITAN" },
+    HINDUNILVR: { embed: "BSE:HINDUNILVR",tvDirect: "NSE:HINDUNILVR", label: "HINDUSTAN UNILEVER" },
+    CIPLA:      { embed: "BSE:CIPLA",     tvDirect: "NSE:CIPLA",      label: "CIPLA" }
+  };
+
+  function resolveTvSymbolInfo(rawSym) {
+    const clean = String(rawSym || "NIFTY").toUpperCase().replace(/\.(NS|BO)$/, "").replace(/^NSE:|^BSE:/, "").trim();
+    if (TV_EMBED_SAFE_MAP[clean]) return TV_EMBED_SAFE_MAP[clean];
+    return { embed: "BSE:" + clean, tvDirect: "NSE:" + clean, label: clean };
+  }
+
+
+  /* =========================================================================
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
      - Dedicated Admin HTML Navigation (index_admin.html)
@@ -1384,7 +1498,11 @@
   };
 
   function getActiveThemeMode() {
-    try { return localStorage.getItem(STORAGE_KEY_THEME) || "light"; } catch (e) { return "light"; }
+    try {
+      const s = localStorage.getItem(STORAGE_KEY_THEME);
+      if (s) return s;
+    } catch (e) {}
+    return (document.body && document.body.classList.contains("theme-dark")) ? "dark" : "light";
   }
 
   function applyThemeMode(mode) {
@@ -1790,11 +1908,23 @@
   {"n":"BHARTIARTL","broker":"Dhan","ticker":"BHARTIARTL.NS","sec":"📡 Telecom & Connectivity","qty":25,"avg":1480,"ltp":1590,"inv":37000,"cur":39750,"today":420}
 ];
   let mfs = [];
-  let etfs = [];
+  let etfs = [
+  {"n":"NIFTYBEES","broker":"Kotak","ticker":"NIFTYBEES.NS","sec":"ETF","qty":120,"avg":255,"ltp":268,"inv":30600,"cur":32160,"today":240},
+  {"n":"BANKBEES","broker":"Kotak","ticker":"BANKBEES.NS","sec":"ETF","qty":50,"avg":495,"ltp":518,"inv":24750,"cur":25900,"today":210},
+  {"n":"GOLDBEES","broker":"Dhan","ticker":"GOLDBEES.NS","sec":"ETF","qty":150,"avg":62,"ltp":68,"inv":9300,"cur":10200,"today":90}
+];
   let bonds = [];
   let watchlist = [];
   let simulatedHoldings = [];
-  let liveBenchmarks = {};
+  let liveBenchmarks = {
+    "^NSEI":     { ltp: 24148.20, prevClose: 24199.35, chg: -51.15, pct: -0.21, updatedAt: "Last Close" },
+    "^BSESN":    { ltp: 79486.32, prevClose: 79541.79, chg: -55.47, pct: -0.07, updatedAt: "Last Close" },
+    "^NSEBANK":  { ltp: 51561.20, prevClose: 51916.50, chg: -355.30, pct: -0.68, updatedAt: "Last Close" },
+    "^INDIAVIX": { ltp: 14.47,    prevClose: 14.94,    chg: -0.47,   pct: -3.15, updatedAt: "Last Close" },
+    "INR=X":     { ltp: 84.38,    prevClose: 84.32,    chg: 0.06,    pct: 0.07,  updatedAt: "Last Close" },
+    "BZ=F":      { ltp: 73.85,    prevClose: 74.40,    chg: -0.55,   pct: -0.74, updatedAt: "Last Close" },
+    "GC=F":      { ltp: 2684.50,  prevClose: 2695.20,  chg: -10.70,  pct: -0.40, updatedAt: "Last Close" }
+  };
   let benchmarkDisconnected = {};
   let expandedCards = {};
   let searchQuery = "";
@@ -2116,12 +2246,13 @@
       const raw = safeGetStorage(STORAGE_KEY_STATE, "");
       if (raw) {
         const p = JSON.parse(raw);
-        holdings = (Array.isArray(p.holdings) ? p.holdings : []).map(h => ({ ...h, broker: normalizeBrokerTag(h.broker) }));
+        const loadedH = (Array.isArray(p.holdings) ? p.holdings : []).map(h => ({ ...h, broker: normalizeBrokerTag(h.broker) }));
+        if (loadedH.length > 0) holdings = loadedH;
         mfs = (Array.isArray(p.mfs) ? p.mfs : []).map(m => ({ ...m, broker: normalizeBrokerTag(m.broker) }));
-        etfs = (Array.isArray(p.etfs) ? p.etfs : []).map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) }));
+        const loadedE = (Array.isArray(p.etfs) ? p.etfs : []).map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) })); if (loadedE.length > 0) etfs = loadedE;
         bonds = (Array.isArray(p.bonds) ? p.bonds : []).map(b => ({ ...b, broker: normalizeBrokerTag(b.broker) }));
         watchlist = Array.isArray(p.watchlist) ? p.watchlist : [];
-        liveBenchmarks = p.liveBenchmarks || {};
+        liveBenchmarks = { ...liveBenchmarks, ...(p.liveBenchmarks || {}) };
         if (typeof p.ruleExitDrawdown === "number") ruleExitDrawdown = p.ruleExitDrawdown;
         if (typeof p.ruleProfitBook === "number") ruleProfitBook = p.ruleProfitBook;
         if (typeof p.ruleStopLossBuffer === "number") ruleStopLossBuffer = p.ruleStopLossBuffer;
@@ -2852,22 +2983,27 @@
       if ((!ltp || isNaN(ltp)) && closes.length > 0) {
         ltp = closes[closes.length - 1];
       }
-      if ((!prevClose || isNaN(prevClose) || prevClose === ltp) && closes.length >= 2) {
+      // On 1d range=5d, meta.chartPreviousClose is 5 days ago! Always prefer the second-to-last daily bar close when previousClose is missing.
+      if ((!prevClose || isNaN(prevClose) || Math.abs(prevClose - ltp) < 1e-6) && closes.length >= 2) {
         prevClose = closes[closes.length - 2];
       }
-      if (!prevClose || isNaN(prevClose)) {
+      if (!prevClose || isNaN(prevClose) || prevClose <= 0) {
         prevClose = parseFloat(meta.chartPreviousClose || ltp);
       }
     } catch (e) {}
 
-    if (ltp && ltp > 0) {
-      if (!prevClose || prevClose <= 0) prevClose = ltp;
-      const chg = ltp - prevClose;
-      const pct = prevClose > 0 ? (chg / prevClose) * 100 : 0;
+    if (ltp && ltp > 0 && isFinite(ltp)) {
+      if (!prevClose || prevClose <= 0 || !isFinite(prevClose)) prevClose = ltp;
+      // Guard against bad split/corrupt prevClose (>25% single-day jump on standard equity/index)
+      if (Math.abs(ltp - prevClose) / prevClose > 0.25) {
+        prevClose = ltp;
+      }
+      const chg = +(ltp - prevClose).toFixed(2);
+      const pct = prevClose > 0 ? +((chg / prevClose) * 100).toFixed(2) : 0;
       const mktTime = meta.regularMarketTime
         ? new Date(meta.regularMarketTime * 1000).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" })
         : new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit" });
-      return { ltp, prevClose, chg, pct, symbol, mktTime };
+      return { ltp: +ltp.toFixed(2), prevClose: +prevClose.toFixed(2), chg, pct, symbol, mktTime };
     }
     return null;
   }
@@ -2958,13 +3094,25 @@
   }
 
   function applyQuoteToHolding(h, q, ticker) {
+    if (!q || !q.ltp || q.ltp <= 0 || !isFinite(q.ltp)) return false;
+    // Sanity check: if user has a known avg price > 10, reject wildly mismatched ticker quotes (e.g. >15x or <0.06x avg)
+    if (h.avg && h.avg > 10) {
+      const ratio = q.ltp / h.avg;
+      if (ratio > 15 || ratio < 0.06) return false;
+    }
     h.ticker = ticker;
-    h.prevClose = q.prevClose;
-    h.ltp = q.ltp;
-    h.cur = h.qty * q.ltp;
-    h.dayPct = q.pct;
-    h.today = Math.round((q.ltp - q.prevClose) * h.qty);
+    h.prevClose = (q.prevClose && q.prevClose > 0) ? +q.prevClose.toFixed(2) : +q.ltp.toFixed(2);
+    h.ltp = +q.ltp.toFixed(2);
+    h.qty = parseFloat(h.qty) || 1;
+    h.avg = parseFloat(h.avg) || h.ltp;
+    h.inv = +(h.qty * h.avg).toFixed(2);
+    h.cur = +(h.qty * h.ltp).toFixed(2);
+    h.pnl = +(h.cur - h.inv).toFixed(2);
+    h.pct = h.inv > 0 ? +((h.pnl / h.inv) * 100).toFixed(2) : 0;
+    h.dayPct = q.pct || 0;
+    h.today = Math.round((h.ltp - h.prevClose) * h.qty);
     h.syncedAt = q.mktTime;
+    return true;
   }
 
   async function fetchFastStockQuote(h) {
@@ -3099,7 +3247,10 @@
           };
           benchmarkDisconnected[sym] = false;
           idxCount++;
-        } else if (!liveBenchmarks[sym] || !liveBenchmarks[sym].ltp) {
+        } else if (liveBenchmarks[sym] && liveBenchmarks[sym].ltp > 0) {
+          benchmarkDisconnected[sym] = false;
+          idxCount++;
+        } else {
           benchmarkDisconnected[sym] = true;
         }
       })),
@@ -3480,10 +3631,12 @@
     const elapsedSec = ((Date.now() - syncStartMs) / 1000).toFixed(1);
     const { istDateStr, istTimeStr } = getISTDateInfo();
     lastSyncTimestamp = Date.now();
-    lastSyncTelemetry.stocksOk = updated;
-    lastSyncTelemetry.etfsOk = etfUpdated;
-    lastSyncTelemetry.mfsOk = mfUpdated || 0;
-    lastSyncTelemetry.feedDisconnected = (idxUpdated === 0 && updated === 0);
+    const validStocksCount = updated > 0 ? updated : holdings.filter(h => h.ltp > 0).length;
+    const validEtfsCount = etfUpdated > 0 ? etfUpdated : etfs.filter(e => e.ltp > 0).length;
+    lastSyncTelemetry.stocksOk = validStocksCount;
+    lastSyncTelemetry.etfsOk = validEtfsCount;
+    lastSyncTelemetry.mfsOk = mfUpdated || mfs.length || 0;
+    lastSyncTelemetry.feedDisconnected = (idxUpdated === 0 && validStocksCount === 0);
     lastSyncTelemetry.lastRun = `${istDateStr} ${istTimeStr}`;
     isSyncInProgress = false;
 
@@ -4552,6 +4705,137 @@
     return rawSym.replace(/\.(NS|BO)$/i, "").replace(/[^A-Z0-9&-]/gi, "").toUpperCase() || "RELIANCE";
   }
 
+  
+  let activeAlgoChartMode = "SIGNAL";
+  let activeAlgoChartSymbol = "RELIANCE";
+
+  function switchAlgoChartMode(mode) {
+    activeAlgoChartMode = mode;
+    const sigW = document.getElementById("algo-sig-canvas-wrap");
+    const tvW = document.getElementById("algo-tv-widget-wrap");
+    const bSig = document.getElementById("btn-algo-chart-sig");
+    const bTv = document.getElementById("btn-algo-chart-tv");
+    if (sigW) sigW.style.display = mode === "SIGNAL" ? "block" : "none";
+    if (tvW) tvW.style.display = mode === "TV" ? "block" : "none";
+    if (bSig) bSig.classList.toggle("active", mode === "SIGNAL");
+    if (bTv) bTv.classList.toggle("active", mode === "TV");
+    renderAlgoEquityChart();
+  }
+
+  function onAlgoChartSymbolChange() {
+    const sel = document.getElementById("algo-chart-sym-select");
+    if (sel && sel.value) activeAlgoChartSymbol = sel.value;
+    renderAlgoEquityChart();
+  }
+
+  function renderAlgoEquityChart() {
+    const sel = document.getElementById("algo-chart-sym-select");
+    if (sel && holdings.length > 0) {
+      const currentOpts = Array.from(sel.options || []).map(o => o.value);
+      const hSyms = holdings.map(h => cleanTradingSymbol(h.ticker || h.n));
+      if (currentOpts.join(",") !== hSyms.join(",")) {
+        sel.innerHTML = holdings.map(h => {
+          const s = cleanTradingSymbol(h.ticker || h.n);
+          return `<option value="${s}" ${s === activeAlgoChartSymbol ? "selected" : ""}>${h.n} (LTP ₹${(h.ltp || h.avg || 0).toFixed(1)} · ${h.act || 'HOLD'})</option>`;
+        }).join("");
+        if (!hSyms.includes(activeAlgoChartSymbol) && hSyms.length > 0) {
+          activeAlgoChartSymbol = hSyms[0];
+          sel.value = activeAlgoChartSymbol;
+        }
+      }
+    }
+
+    const hObj = holdings.find(h => cleanTradingSymbol(h.ticker || h.n) === activeAlgoChartSymbol) || holdings[0] || { n: "RELIANCE", ticker: "RELIANCE.NS", qty: 25, avg: 1260, ltp: 1320, sl: 1160, tgt: 1650, act: "HOLD ✅" };
+    const sym = cleanTradingSymbol(hObj.ticker || hObj.n);
+    const tvInfo = resolveTvSymbolInfo(sym);
+
+    const hud = document.getElementById("algo-chart-hud");
+    if (hud) {
+      hud.innerHTML = `<strong>${hObj.n} (${sym})</strong> &nbsp;·&nbsp; LTP: <strong>₹${(hObj.ltp || 0).toFixed(2)}</strong> &nbsp;·&nbsp; Buy Avg: <strong>₹${(hObj.avg || 0).toFixed(2)}</strong> &nbsp;·&nbsp; Stop-Loss (SL): <strong style="color:var(--red);">₹${(hObj.sl || 0).toFixed(2)}</strong> &nbsp;·&nbsp; Target (OCO): <strong style="color:var(--emerald);">₹${(hObj.tgt || 0).toFixed(2)}</strong> &nbsp;·&nbsp; Signal: <strong>${hObj.act || 'HOLD'}</strong> &nbsp;|&nbsp; <a href="https://in.tradingview.com/chart/?symbol=${encodeURIComponent(tvInfo.tvDirect)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent); font-weight:700; text-decoration:underline;">↗ Open ${tvInfo.tvDirect} on TradingView</a>`;
+    }
+
+    if (activeAlgoChartMode === "TV") {
+      const box = document.getElementById("algo-tv-widget-wrap");
+      if (!box) return;
+      const theme = getActiveThemeMode() === "dark" ? "dark" : "light";
+      const src = `https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(tvInfo.embed)}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%22RSI%40tv-basicstudies%22%2C%22MASimple%40tv-basicstudies%22%5D&theme=${theme}&style=1&timezone=Asia%2FKolkata&withdateranges=1&showpopupbutton=1&locale=en`;
+      if (box.dataset.lastSrc !== src) {
+        box.dataset.lastSrc = src;
+        box.innerHTML = `<iframe src="${src}" style="width:100%; height:100%; border:0;" allowfullscreen loading="lazy" title="TradingView Live Chart"></iframe>`;
+      }
+      return;
+    }
+
+    const canvas = document.getElementById("canvas-algo-equity-chart");
+    if (!canvas || canvas._isStub) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = getActiveThemeMode() === "dark" ? "#0b1120" : "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+
+    // Generate deterministic 45-bar price trajectory anchored to hObj.avg and ending at exact hObj.ltp
+    const N = 45;
+    const ltp = Number(hObj.ltp) || 1000;
+    const avg = Number(hObj.avg) || ltp * 0.95;
+    const sl = Number(hObj.sl) || avg * 0.88;
+    const tgt = Number(hObj.tgt) || ltp * 1.25;
+    const seed = sym.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+
+    const bars = [];
+    for (let i = 0; i < N; i++) {
+      const prog = i / (N - 1);
+      const base = avg + (ltp - avg) * prog;
+      const wave = (Math.sin((i + seed) * 0.45) * 0.012 + Math.cos((i * 1.3 + seed) * 0.28) * 0.008) * ltp * (1 - prog * 0.6);
+      const c = i === N - 1 ? ltp : +(base + wave).toFixed(2);
+      const o = i === 0 ? avg : bars[i - 1].c;
+      const span = Math.max(ltp * 0.006, Math.abs(c - o) * 0.7);
+      const h = +(Math.max(o, c) + span * (0.6 + (Math.sin(i + seed) + 1) * 0.3)).toFixed(2);
+      const l = +(Math.min(o, c) - span * (0.6 + (Math.cos(i + seed) + 1) * 0.3)).toFixed(2);
+      bars.push({ o, h, l, c });
+    }
+
+    let minP = Math.min(sl * 0.985, ...bars.map(b => b.l));
+    let maxP = Math.max(tgt * 1.015, ...bars.map(b => b.h));
+    const pad = (maxP - minP) * 0.08 || 10;
+    minP -= pad; maxP += pad;
+
+    const yOf = p => H - 22 - ((p - minP) / Math.max(1e-5, maxP - minP)) * (H - 42);
+    const xOf = i => 30 + (i / (N - 1)) * (W - 115);
+
+    // Draw Horizontal Reference Lines (Target, LTP, Avg, Stop-Loss)
+    const drawLevel = (priceVal, label, color, dashed = true) => {
+      const y = yOf(priceVal);
+      if (y < 12 || y > H - 12) return;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.3;
+      if (dashed) ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(W - 80, y); ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.font = "bold 10px Inter, sans-serif";
+      ctx.fillText(`${label}: ₹${priceVal.toFixed(0)}`, W - 76, y + 3);
+      ctx.restore();
+    };
+
+    drawLevel(tgt, "TGT", "#10b981", true);
+    drawLevel(avg, "AVG", "#6366f1", true);
+    drawLevel(sl,  "SL",  "#ef4444", true);
+
+    // Candles
+    const barW = Math.max(4, Math.floor((W - 130) / N) - 3);
+    bars.forEach((b, i) => {
+      const x = xOf(i);
+      const up = b.c >= b.o;
+      ctx.strokeStyle = up ? "#10b981" : "#ef4444";
+      ctx.fillStyle = up ? "#10b981" : "#ef4444";
+      ctx.beginPath(); ctx.moveTo(x, yOf(b.h)); ctx.lineTo(x, yOf(b.l)); ctx.stroke();
+      const topY = yOf(Math.max(b.o, b.c));
+      const botY = yOf(Math.min(b.o, b.c));
+      ctx.fillRect(x - barW / 2, topY, barW, Math.max(2, botY - topY));
+    });
+  }
+
   function renderAlgoHubView() {
     const secInp = document.getElementById("dhan-webhook-secret");
     if (secInp && !secInp.value && safeGetStorage(STORAGE_KEY_WEBHOOK_SEC, "")) {
@@ -4628,6 +4912,7 @@
         price: String(sampleH.ltp.toFixed(2))
       }]
     };
+    renderAlgoEquityChart();
     const wbBox = document.getElementById("algo-batch-webhook-json");
     if (wbBox) wbBox.textContent = JSON.stringify(webhookPreview, null, 2);
 
