@@ -338,7 +338,7 @@
     .chat-send-btn { background: #2563eb; color: #0f172a; border: none; border-radius: 8px; padding: 0 12px; font-weight: 600; cursor: pointer; }
   
     /* =====================================================================
-       PIAI DUAL THEME (LIGHT & DARK) + MOBILE/LAPTOP RESPONSIVE DESIGN SYSTEM
+       PIAI DUAL THEME (LIGHT & DARK) + STANDARD TOP-RIGHT HEADER SYSTEM
        ===================================================================== */
     :root, body.theme-light {
       --bg-dark: #f1f5f9 !important;
@@ -401,39 +401,53 @@
       border: 1px solid var(--border);
     }
 
-    /* Unified Global Top App Navigation Bar */
+    /* Standard Website Sticky Top Header:
+       Left = Brand Title + 5 Module Tabs (Portfolio, Algo, Options, Mock, Admin)
+       Top-Right = Date/Time + Market Status + Live Synced + Auto-Sync + Refresh Icon + Theme + Three-Dots Menu */
     .global-app-bar {
       background: var(--bar-bg);
       border-bottom: 1px solid var(--border);
-      padding: 6px 12px;
+      padding: 8px 14px;
       position: sticky;
       top: 0;
-      z-index: 90;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+      z-index: 95;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     }
     .global-app-bar-inner {
-      max-width: 1240px;
+      max-width: 1260px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
+    }
+    .global-left-brand-and-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .global-brand-heading {
+      font-size: 1.0rem;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      letter-spacing: -0.01em;
     }
     .app-module-tabs {
       display: flex;
       gap: 5px;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
       align-items: center;
+      flex-wrap: wrap;
     }
     .app-nav-tab {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 6px 11px;
+      padding: 6px 10px;
       border-radius: 8px;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: var(--text-main);
       background: var(--bg-card-alt);
@@ -446,25 +460,86 @@
       background: #2563eb !important;
       color: #ffffff !important;
       border-color: #1d4ed8 !important;
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
-    }
-    .global-util-btns {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      flex-wrap: wrap;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
     }
 
-    /* Minimal Single-Line PIAI Heading (Never wraps onto 2 lines on mobile) */
-    .header-title, .brand-title {
+    /* Top-Right Standard Website Status & Controls Area */
+    .global-top-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      margin-left: auto;
+    }
+    .top-right-row-1 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .top-right-datetime {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .unified-sync-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px 5px;
+    }
+    .sync-icon-btn {
+      background: #059669 !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 6px !important;
+      width: 24px;
+      height: 24px;
+      padding: 0 !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: none !important;
+    }
+    .sync-interval-btn {
+      background: transparent !important;
       color: var(--text-main) !important;
-      font-size: 1.02rem !important;
-      font-weight: 800 !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      max-width: 100%;
-      display: block !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 2px 5px !important;
+      font-size: 0.71rem !important;
+      font-weight: 700 !important;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .unified-sync-sub {
+      display: none !important;
+    }
+
+    /* Minimal Secondary Sub-Header (Net Worth / Market Strip Only, No Duplicate Titles/Clocks) */
+    .top-header {
+      background: var(--header-grad) !important;
+      border-bottom: 1px solid var(--border) !important;
+      position: relative !important;
+      padding: 6px 14px !important;
+    }
+    .header-title, .brand-title {
+      display: none !important;
+    }
+    .header-tag {
+      display: none !important;
     }
 
     /* Full-Page Chart Overlay Mode */
@@ -480,64 +555,11 @@
       padding: 14px !important;
       background: var(--bg-card) !important;
     }
-    .card.fullscreen-chart-card canvas {
-      height: calc(100vh - 140px) !important;
-    }
+    .card.fullscreen-chart-card canvas,
     .card.fullscreen-chart-card #opt-tv-widget-wrap,
     .card.fullscreen-chart-card #mock-tv-iframe-wrap,
     .card.fullscreen-chart-card #mock-sig-canvas-wrap {
       height: calc(100vh - 140px) !important;
-    }
-
-    /* Unified Single-Place Auto-Sync + Refresh Icon + Last Synced Below */
-    .unified-sync-box {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: flex-end;
-      justify-content: center;
-      line-height: 1.15;
-    }
-    .unified-sync-top {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: var(--bg-card-alt);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 2px 4px;
-    }
-    .sync-icon-btn {
-      background: #059669 !important;
-      color: #ffffff !important;
-      border: none !important;
-      border-radius: 6px !important;
-      width: 26px;
-      height: 26px;
-      padding: 0 !important;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: none !important;
-    }
-    .sync-interval-btn {
-      background: transparent !important;
-      color: var(--text-main) !important;
-      border: none !important;
-      box-shadow: none !important;
-      padding: 3px 6px !important;
-      font-size: 0.72rem !important;
-      font-weight: 700 !important;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .unified-sync-sub {
-      font-size: 0.64rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-      white-space: nowrap;
     }
 
     /* Compact Refresh Icon Button */
@@ -562,7 +584,7 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Three-Dots More Tools Dropdown Menu */
+    /* Three-Dots More Dropdown Menu + Mobile Bottom-Sheet Action Drawer */
     .more-tabs-wrapper {
       position: relative;
       display: inline-block;
@@ -571,19 +593,34 @@
       display: none;
       position: absolute;
       top: calc(100% + 6px);
-      left: 0;
-      min-width: 225px;
+      right: 0;
+      min-width: 240px;
       background: var(--bg-card);
       border: 1px solid var(--border-light);
       border-radius: 10px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
-      z-index: 120;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
+      z-index: 9999;
       padding: 6px;
+    }
+    .more-tabs-dropdown.align-left {
+      left: 0;
+      right: auto;
     }
     .more-tabs-dropdown.open {
       display: flex;
       flex-direction: column;
       gap: 4px;
+    }
+    .more-menu-mobile-hdr {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px 8px 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--accent);
     }
     .more-menu-item {
       background: transparent !important;
@@ -592,16 +629,28 @@
       box-shadow: none !important;
       text-align: left;
       padding: 8px 10px !important;
-      font-size: 0.78rem !important;
+      font-size: 0.77rem !important;
       border-radius: 7px !important;
       display: flex;
       justify-content: space-between;
       align-items: center;
       width: 100%;
+      cursor: pointer;
     }
     .more-menu-item:hover, .more-menu-item.active {
       background: rgba(37, 99, 235, 0.12) !important;
       color: #2563eb !important;
+    }
+    .more-menu-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 9990;
+      backdrop-filter: blur(2px);
+    }
+    .more-menu-backdrop.open {
+      display: block;
     }
 
     /* Collapsible Card Sections */
@@ -624,22 +673,33 @@
       margin-left: 6px;
     }
 
-    /* Theme Surfaces */
-    .top-header {
-      background: var(--header-grad) !important;
-      border-bottom: 1px solid var(--border) !important;
-      position: relative !important;
-      padding: 8px 14px !important;
-    }
-    .card-title {
-      color: var(--text-main) !important;
-    }
+    /* Cards & Surfaces */
+    .card-title { color: var(--text-main) !important; }
     .card, .kpi-card, .stock-card, .upload-card, .control-bar, .toolbar-card, .simple-bar, .strategy-spotlight, details.advanced-drawer {
       background: var(--bg-card) !important;
       border: 1px solid var(--border) !important;
       color: var(--text-main) !important;
+      border-radius: 12px !important;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      transition: box-shadow 0.18s ease, border-color 0.18s ease;
     }
+    .kpi-card:hover, .stock-card:hover {
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08) !important;
+    }
+    .sector-header-banner {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      border-radius: 10px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+    }
+    .sector-header-banner:hover { border-color: var(--accent); }
     .setup-steps, .replay-bar, .algo-card, .rec-card, .sim-toggle-row, .action-item, .stock-expanded {
       background: var(--bg-card-alt) !important;
       border-color: var(--border) !important;
@@ -682,10 +742,10 @@
     body.theme-dark .badge-amber { background: rgba(245,158,11,0.16) !important; color: #fde68a !important; border: 1px solid rgba(245,158,11,0.35) !important; }
     body.theme-dark .badge-purple { background: rgba(168,85,247,0.16) !important; color: #e9d5ff !important; border: 1px solid rgba(168,85,247,0.35) !important; }
 
-    .nav-tabs {
+    .nav-tabs, .filter-bar {
       border-bottom: 2px solid var(--border) !important;
       overflow: visible !important;
-      flex-wrap: wrap;
+      flex-wrap: wrap !important;
     }
     .tab-btn {
       background: var(--bg-card-alt) !important;
@@ -757,7 +817,6 @@
       border-color: #fca5a5 !important;
     }
 
-    /* Interactive Chart Crosshair HUD Overlay */
     .chart-hud-bar {
       display: flex;
       gap: 10px;
@@ -772,10 +831,12 @@
       min-height: 32px;
     }
 
+    /* Mobile-First Responsive Layout & Fixed Bottom-Sheet Three-Dots Menu */
     @media (max-width: 768px) {
-      .global-app-bar { padding: 5px 8px; }
+      .global-app-bar { padding: 6px 10px; }
+      .global-top-right { align-items: flex-start; width: 100%; }
+      .top-right-row-1, .top-right-datetime { justify-content: flex-start; width: 100%; }
       .app-nav-tab { padding: 5px 8px; font-size: 0.71rem; }
-      .header-title, .brand-title { font-size: 0.94rem !important; }
       .container { padding: 0 10px !important; margin: 10px auto !important; }
       .grid-2, .grid-equal { grid-template-columns: 1fr !important; }
       .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
@@ -789,6 +850,32 @@
         bottom: 68px !important;
         height: 68vh !important;
       }
+      /* On mobile viewports, render ANY open three-dots menu as a fixed, centered bottom-sheet drawer so it NEVER clips off-screen! */
+      .more-tabs-dropdown.open {
+        position: fixed !important;
+        left: 12px !important;
+        right: 12px !important;
+        top: auto !important;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        max-height: 72vh !important;
+        overflow-y: auto !important;
+        z-index: 99999 !important;
+        padding: 10px !important;
+        border-radius: 14px !important;
+        border: 2px solid var(--accent) !important;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45) !important;
+      }
+      .more-menu-mobile-hdr {
+        display: flex !important;
+      }
+      .more-menu-item {
+        padding: 11px 12px !important;
+        font-size: 0.85rem !important;
+        min-height: 42px !important;
+      }
     }
     @media (max-width: 480px) {
       .kpi-grid { grid-template-columns: 1fr !important; }
@@ -797,25 +884,42 @@
   </style>
 </head>
 <body class="theme-light">
-<!-- UNIFIED GLOBAL APP NAVIGATION BAR -->
+<!-- STANDARD WEBSITE HEADER: LEFT = HEADING + 5 MODULE TABS | TOP-RIGHT = DATE/TIME + AUTO-SYNC + THEME + MORE -->
+<div class="more-menu-backdrop" id="piai-more-menu-backdrop" onclick="closeAllMoreMenus()"></div>
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
-    <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
-      <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button>
-    </div>
-    <div class="global-util-btns">
-        <button type="button" class="btn-secondary" id="btn-privacy-mask" style="padding:5px 8px; font-size:0.71rem;" onclick="togglePrivacyMaskMode()" title="Mask ₹ values">👁️ Privacy</button>
-        <button type="button" class="btn-secondary" id="btn-vault-lock-top" style="padding:5px 8px; font-size:0.71rem;" onclick="openOrTriggerVaultLock()" title="Lock Portfolio Security Vault">🔒 Vault</button>
-      <button type="button" class="btn-secondary" id="nav-tab-admin" style="padding:5px 8px; font-size:0.71rem;" onclick="switchTab('admin')" title="Open Brokers &amp; Admin Settings">⚙️ Admin</button>
-      <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAppTheme()" title="Switch between Light and Dark theme">☀️ Light</button>
-      <button type="button" class="btn-secondary" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAllPageSections()" id="btn-collapse-all-secs" title="Expand or Collapse all page cards">➖ Collapse All</button>
-      <div class="unified-sync-box">
-        <div class="unified-sync-top">
-          <button type="button" class="sync-icon-btn" id="btn-live-sync" onclick="syncLiveNSEPrices(true)" title="Manual Refresh Now">↻</button>
-          <button type="button" class="sync-interval-btn" id="badge-autosync" onclick="cycleAutoSyncInterval()" title="Click to cycle Auto-Sync interval">🔄 Auto: 60s</button>
-        </div>
-        <div class="unified-sync-sub" id="hdr-timestamp">Last synced: Just now</div>
+    <div class="global-left-brand-and-tabs">
+      <span class="global-brand-heading">📊 PIAI Portfolio</span>
+      <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
+        <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
       </div>
+    </div>
+
+    <div class="global-top-right">
+      <div class="top-right-row-1">
+        <span class="top-right-datetime" id="hdr-date-clock">📅 Loading IST Clock...</span>
+        <div class="unified-sync-inline">
+          <button type="button" class="sync-icon-btn" id="btn-live-sync" onclick="syncLiveNSEPrices(true)" title="Refresh Live Data Now">↻</button>
+          <button type="button" class="sync-interval-btn" id="badge-autosync" onclick="cycleAutoSyncInterval()" title="Click to cycle Auto-Sync">🔄 Auto: 60s</button>
+        </div>
+        <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:4px 9px; font-size:0.72rem;" onclick="toggleAppTheme()" title="Switch to Dark Mode">🌙 Dark</button>
+        <div class="more-tabs-wrapper">
+          <button type="button" class="btn-secondary" id="btn-top-more-actions" style="padding:4px 10px; font-size:0.78rem;" onclick="toggleInlineMoreMenu('top-util-dropdown', event)" title="More Actions">⋯</button>
+          <div class="more-tabs-dropdown" id="top-util-dropdown">
+            <div class="more-menu-mobile-hdr">
+              <span>⚡ Quick Actions &amp; Tools</span>
+              <button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>
+            </div>
+            <button type="button" class="more-menu-item" id="btn-privacy-mask" onclick="togglePrivacyMaskMode()"><span>👁️ Privacy Mask</span></button>
+            <button type="button" class="more-menu-item" id="btn-vault-lock-top" onclick="openOrTriggerVaultLock()"><span>🔒 Vault Lock</span></button>
+            <button type="button" class="more-menu-item" id="btn-collapse-all-secs" onclick="toggleAllPageSections()"><span>➖ Collapse All Sections</span></button>
+            <button type="button" class="more-menu-item" onclick="sendPortfolioAlertViaWhatsApp()"><span>💬 Send Alert on WhatsApp</span></button>
+            <button type="button" class="more-menu-item" onclick="sendPortfolioAlertViaEmail()"><span>✉️ Send Alert via Email</span></button>
+            <button type="button" class="more-menu-item" onclick="navigateToModule('index_admin.html')"><span>⚙️ Open Dedicated Admin Page</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="unified-sync-sub" id="hdr-timestamp" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -823,7 +927,7 @@
 <div class="top-header">
   <div class="header-top">
     <div>
-      <div class="header-tag" id="hdr-date-clock">📅 Loading Today's Date &amp; IST Market Clock...</div>
+      
       <div class="header-title">📊 PIAI Portfolio<span id="hdr-feed-source" style="display:none;"></span></div>
       
     </div>
@@ -860,13 +964,14 @@
       <button type="button" class="tab-btn" id="btn-more-tabs-menu" onclick="toggleMoreToolsDropdown(event)" title="More Portfolio Tools">
         ⋯ More Tools <span id="lbl-active-more-tool"></span> ▾
       </button>
-      <div class="more-tabs-dropdown" id="more-tools-dropdown">
+      <div class="more-tabs-dropdown align-left" id="more-tools-dropdown">
         <button type="button" class="more-menu-item" id="nav-tab-recs" onclick="selectMoreToolTab('recs', '🎯 Buy &amp; Scaling')"><span>🎯 Buy &amp; Scaling Recs</span></button>
         <button type="button" class="more-menu-item" id="nav-tab-alerts" onclick="selectMoreToolTab('alerts', '🚨 Exit &amp; Risk Radar')"><span>🚨 Exit &amp; Risk Radar</span> <span id="tab-alerts-count">(0)</span></button>
         <button type="button" class="more-menu-item" id="nav-tab-charts" onclick="selectMoreToolTab('charts', '📉 Visual Analytics')"><span>📉 Visual Analytics</span></button>
         <button type="button" class="more-menu-item" id="nav-tab-sim" onclick="selectMoreToolTab('sim', '🔮 What-If Simulator')"><span>🔮 What-If Simulator</span></button>
         <button type="button" class="more-menu-item" id="nav-tab-tax" onclick="selectMoreToolTab('tax', '🧾 Tax Harvest')"><span>🧾 Tax Harvest</span></button>
         <button type="button" class="more-menu-item" id="nav-tab-wealth" onclick="selectMoreToolTab('wealth', '🚀 Wealth Projector')"><span>🚀 Wealth Projector</span></button>
+        <button type="button" class="more-menu-item" onclick="navigateToModule('index_admin.html')"><span>⚙️ Brokers &amp; Admin Hub ➔</span></button>
       </div>
     </div>
   </div>
@@ -908,7 +1013,13 @@
     </div>
 
     <div class="card">
-      <div class="card-title"><span>⚡ Priority Portfolio Actions</span></div>
+      <div class="card-title">
+        <span>⚡ Priority Portfolio Actions</span>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn-emerald" style="padding:4px 10px; font-size:0.72rem;" onclick="sendPortfolioAlertViaWhatsApp()">💬 Send Alert on WhatsApp</button>
+          <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.72rem;" onclick="sendPortfolioAlertViaEmail()">✉️ Send Alert via Email</button>
+        </div>
+      </div>
       <div id="dash-priority-actions"></div>
     </div>
 
@@ -921,17 +1032,23 @@
   <!-- ════ TAB 2: STOCKS (BROKER-WISE WITH EXPAND/COLLAPSE) ════ -->
   <div id="view-stocks" class="tab-view" style="display: none;">
     <div id="broker-summary-pills" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;"></div>
-    <div class="filter-bar">
-      <input type="text" id="stock-search" class="search-input" style="max-width:240px;" placeholder="🔍 Search stock, ticker, broker, sector..." oninput="handleSearch()">
+    <div class="filter-bar" style="align-items:center;">
+      <input type="text" id="stock-search" class="search-input" style="max-width:220px;" placeholder="🔍 Search stock, ticker, sector..." oninput="handleSearch()">
       <button type="button" class="filter-chip active" onclick="setStockFilter('ALL', this)">All</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('WINNERS', this)">🟢 Winners</button>
       <button type="button" class="filter-chip" onclick="setStockFilter('LOSERS', this)">🔴 Losers</button>
-      <button type="button" class="filter-chip" onclick="setStockFilter('EXIT', this)">🚨 Flagged Exits</button>
-      <button type="button" class="filter-chip" onclick="setStockFilter('BOOK', this)">🟣 Profit Booking</button>
+      <div class="more-tabs-wrapper">
+        <button type="button" class="filter-chip" onclick="toggleInlineMoreMenu('stock-filter-more-dd', event)" title="More Filters &amp; Sector Actions">⋯ More</button>
+        <div class="more-tabs-dropdown align-left" id="stock-filter-more-dd">
+          <button type="button" class="more-menu-item" onclick="setStockFilter('EXIT', this)"><span>🚨 Flagged Exits</span></button>
+          <button type="button" class="more-menu-item" onclick="setStockFilter('BOOK', this)"><span>🟣 Profit Booking</span></button>
+          <button type="button" class="more-menu-item" onclick="expandOrCollapseAllSectors(false)"><span>➕ Expand All Sectors</span></button>
+          <button type="button" class="more-menu-item" onclick="expandOrCollapseAllSectors(true)"><span>➖ Collapse All Sectors</span></button>
+        </div>
+      </div>
       <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(false)">➕ Expand All Brokers</button>
-        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(true)">➖ Collapse All Brokers</button>
-        <button type="button" class="btn-primary" id="btn-toggle-broker-group" style="padding:5px 10px; font-size:0.72rem;" onclick="toggleBrokerGroupingMode()">🗂️ Grouped by Broker: ON</button>
+        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllSectors(false)">➕ Expand Sectors</button>
+        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllSectors(true)">➖ Collapse Sectors</button>
       </div>
     </div>
     <div id="stocks-list-container"></div>
@@ -945,10 +1062,15 @@
       <button type="button" class="filter-chip active" onclick="setEtfFilter('ALL', this)">All ETFs</button>
       <button type="button" class="filter-chip" onclick="setEtfFilter('WINNERS', this)">🟢 Winners</button>
       <button type="button" class="filter-chip" onclick="setEtfFilter('LOSERS', this)">🔴 Losers</button>
-      <div style="margin-left:auto; display:flex; gap:6px; flex-wrap:wrap;">
-        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(false)">➕ Expand All Brokers</button>
-        <button type="button" class="btn-secondary" style="padding:5px 10px; font-size:0.72rem;" onclick="expandOrCollapseAllBrokers(true)">➖ Collapse All Brokers</button>
-        <button type="button" class="btn-emerald" style="padding:5px 10px; font-size:0.72rem;" onclick="switchTab('admin')">➕ Add / Import ETF</button>
+      <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+        <button type="button" class="btn-emerald" style="padding:5px 10px; font-size:0.72rem;" onclick="navigateToModule('index_admin.html')">➕ Add / Import ETF</button>
+        <div class="more-tabs-wrapper">
+          <button type="button" class="filter-chip" onclick="toggleInlineMoreMenu('etf-filter-more-dd', event)" title="More ETF Actions">⋯</button>
+          <div class="more-tabs-dropdown" id="etf-filter-more-dd">
+            <button type="button" class="more-menu-item" onclick="expandOrCollapseAllBrokers(false)"><span>➕ Expand All Brokers</span></button>
+            <button type="button" class="more-menu-item" onclick="expandOrCollapseAllBrokers(true)"><span>➖ Collapse All Brokers</span></button>
+          </div>
+        </div>
       </div>
     </div>
     <div id="etfs-cards-container"></div>
@@ -1380,8 +1502,35 @@
       <div id="saved-aliases-list-container"></div>
     </div>
 
-    <!-- 5. PORTFOLIO SECURITY & PRIVACY VAULT (Requirement #12) -->
-    <div class="card">
+    <!-- 5A. SECURE EMAIL & WHATSAPP ALERT CONFIGURATION (Requirement #7) -->
+    <div class="card" id="admin-sec-alerts">
+      <div class="card-title">
+        <span>📲 5. Configure Secure Email &amp; WhatsApp Portfolio Alerts</span>
+        <span class="badge badge-emerald">Encrypted Local Storage</span>
+      </div>
+      <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
+        Configure your <strong>Email ID</strong> and <strong>WhatsApp Phone Number</strong> to receive instant one-click summaries of <strong>Flagged Exits</strong>, <strong>Profit-Booking Candidates</strong>, and <strong>Algo Signals</strong>. Your contact details are encoded locally on your device (never uploaded to any server) and wiped immediately on Panic Wipe.
+      </div>
+      <div class="form-grid">
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">Alert Recipient Email ID</label>
+          <input type="text" id="alert-email-input" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. yourname@domain.com">
+        </div>
+        <div>
+          <label style="font-size:0.7rem; color:var(--text-muted);">WhatsApp Mobile Number (with Country Code)</label>
+          <input type="text" id="alert-whatsapp-input" class="watchlist-input" style="margin-bottom:0;" placeholder="e.g. +919876543210">
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+        <button type="button" class="btn-primary" onclick="saveSecureAlertContactsFromUI()">💾 Save Secure Alert Contacts</button>
+        <button type="button" class="btn-emerald" onclick="sendPortfolioAlertViaWhatsApp()">💬 Send Portfolio Alert via WhatsApp</button>
+        <button type="button" class="btn-secondary" onclick="sendPortfolioAlertViaEmail()">✉️ Send Portfolio Alert via Email</button>
+      </div>
+      <div id="alert-contact-save-status" style="font-size:0.74rem; margin-top:8px;"></div>
+    </div>
+
+    <!-- 5B. PORTFOLIO SECURITY, PRIVACY MASK & VAULT -->
+    <div class="card" id="admin-sec-vault">
       <div class="card-title">
         <span>🔒 5. Portfolio Security, Privacy Mask &amp; Local Vault Protection</span>
         <span class="badge badge-emerald">100% On-Device Storage</span>
@@ -1516,10 +1665,14 @@
   /* =========================================================================
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
-     - Universal Collapsible Card Sections & Full-Page Chart Toggle
+     - Dedicated Admin HTML Navigation (index_admin.html)
+     - Mobile-Safe Three-Dots Menu Controller (toggleInlineMoreMenu + closeAllMoreMenus)
      - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
      ========================================================================= */
   const STORAGE_KEY_THEME = "piai_theme_mode_v1";
+  const STORAGE_KEY_SECURE_ALERTS = "piai_secure_alert_contacts_v1";
+  const STORAGE_KEY_COLLAPSED_SECTORS = "piai_collapsed_sectors_v1";
+
   const NSE_BSE_HOLIDAY_CALENDAR_2026_2027 = {
     "2026-01-26": "Republic Day",
     "2026-03-03": "Holi",
@@ -1555,7 +1708,8 @@
     document.body.classList.toggle("theme-light", !isDark);
     const btn = document.getElementById("btn-theme-toggle");
     if (btn) {
-      btn.textContent = isDark ? "🌙 Dark" : "☀️ Light";
+      btn.textContent = isDark ? "☀️ Light" : "🌙 Dark";
+      btn.title = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
     }
     try { localStorage.setItem(STORAGE_KEY_THEME, isDark ? "dark" : "light"); } catch (e) {}
     if (typeof renderVisualCharts === "function") { try { renderVisualCharts(); } catch (e) {} }
@@ -1567,6 +1721,86 @@
   function toggleAppTheme() {
     const next = getActiveThemeMode() === "dark" ? "light" : "dark";
     applyThemeMode(next);
+  }
+
+  function closeAllMoreMenus() {
+    document.querySelectorAll(".more-tabs-dropdown.open").forEach(dd => {
+      dd.classList.remove("open");
+      dd.style.left = "";
+      dd.style.right = "";
+    });
+    const bd = document.getElementById("piai-more-menu-backdrop");
+    if (bd) bd.classList.remove("open");
+  }
+
+  function toggleInlineMoreMenu(menuId, ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    const target = document.getElementById(menuId);
+    if (!target) return;
+    const wasOpen = target.classList.contains("open");
+    closeAllMoreMenus();
+    if (!wasOpen) {
+      // Ensure mobile header exists inside every dropdown for easy closing on mobile
+      if (!target.querySelector(".more-menu-mobile-hdr")) {
+        const hdr = document.createElement("div");
+        hdr.className = "more-menu-mobile-hdr";
+        hdr.innerHTML = `<span>⚡ Select Option</span><button type="button" class="close-x-btn" onclick="closeAllMoreMenus()">✕</button>`;
+        target.insertBefore(hdr, target.firstChild);
+      }
+      target.classList.add("open");
+      const bd = document.getElementById("piai-more-menu-backdrop");
+      if (bd && window.innerWidth <= 768) {
+        bd.classList.add("open");
+      }
+      // On desktop/tablet (> 768px), clamp horizontal position so it never overflows left or right edge of viewport
+      if (window.innerWidth > 768) {
+        const rect = target.getBoundingClientRect();
+        if (rect.left < 8) {
+          target.style.left = "0px";
+          target.style.right = "auto";
+        } else if (rect.right > window.innerWidth - 8) {
+          target.style.right = "0px";
+          target.style.left = "auto";
+        }
+      }
+    }
+  }
+
+  function toggleTopUtilMenu(ev) {
+    toggleInlineMoreMenu("top-util-dropdown", ev);
+  }
+
+  document.addEventListener("click", (ev) => {
+    // If user clicked a menu item inside an open dropdown, close the dropdown right after the item's onclick runs
+    if (ev.target.closest(".more-menu-item")) {
+      setTimeout(closeAllMoreMenus, 20);
+      return;
+    }
+    if (!ev.target.closest(".more-tabs-wrapper")) {
+      closeAllMoreMenus();
+    }
+  });
+
+  // Navigate to the dedicated index_admin.html page (or scroll to section if already on index_admin.html)
+  function openAdminModule() {
+    closeAllMoreMenus();
+    const path = (window.location.pathname || "").toLowerCase();
+    if (path.endsWith("index_admin.html") || window._isDedicatedAdminPage) {
+      const adminView = document.querySelector("[id='view-admin']");
+      if (adminView) {
+        adminView.style.display = "block";
+        adminView.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return;
+    }
+    if (typeof navigateToModule === "function") {
+      navigateToModule("index_admin.html");
+    } else {
+      window.location.href = "index_admin.html";
+    }
   }
 
   function toggleFullPageChart(cardId, btnId) {
@@ -1605,19 +1839,19 @@
     let statusBadgeHtml = "";
     if (holidayName) {
       isMarketOpen = false;
-      statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET HOLIDAY · CLOSED (${holidayName})</span>`;
+      statusBadgeHtml = `<span class="badge badge-amber">🏛️ HOLIDAY · CLOSED</span>`;
     } else if (isWeekend) {
       isMarketOpen = false;
-      statusBadgeHtml = `<span class="badge badge-red">🔴 WEEKEND · MARKET CLOSED</span>`;
+      statusBadgeHtml = `<span class="badge badge-red">🔴 WEEKEND · CLOSED</span>`;
     } else if (!withinHours) {
       isMarketOpen = false;
-      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED (09:15–15:30 IST)</span>`;
+      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED</span>`;
     } else if (feedClosed) {
       isMarketOpen = false;
-      statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET CLOSED / HOLIDAY</span>`;
+      statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET CLOSED</span>`;
     } else {
       isMarketOpen = true;
-      statusBadgeHtml = `<span class="badge badge-emerald">🟢 NSE/BSE MARKET OPEN</span>`;
+      statusBadgeHtml = `<span class="badge badge-emerald">🟢 MARKET OPEN</span>`;
     }
     return { istIso, istDateStr, istTimeStr, isMarketOpen, holidayName, statusBadgeHtml };
   }
@@ -1625,7 +1859,7 @@
   let allSectionsCollapsed = false;
   function initCollapsibleCards() {
     document.querySelectorAll(".card").forEach((card) => {
-      if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
+      if (card.id === "dhan-drawer" || card.id === "feed-drawer" || card.id === "dhan-config-card") return;
       const titleEl = card.querySelector(".card-title");
       if (!titleEl || titleEl.querySelector(".sec-collapse-btn")) return;
       const btn = document.createElement("button");
@@ -1645,7 +1879,7 @@
   function toggleAllPageSections() {
     allSectionsCollapsed = !allSectionsCollapsed;
     document.querySelectorAll(".card").forEach(card => {
-      if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
+      if (card.id === "dhan-drawer" || card.id === "feed-drawer" || card.id === "dhan-config-card") return;
       if (card.querySelector(".card-title")) {
         card.classList.toggle("section-collapsed", allSectionsCollapsed);
         const b = card.querySelector(".sec-collapse-btn");
@@ -1653,12 +1887,181 @@
       }
     });
     const topBtn = document.getElementById("btn-collapse-all-secs");
-    if (topBtn) topBtn.textContent = allSectionsCollapsed ? "➕ Expand All" : "➖ Collapse All";
+    if (topBtn) topBtn.textContent = allSectionsCollapsed ? "➕ Expand All Sections" : "➖ Collapse All Sections";
+  }
+
+  function encodeLocalContact(str) {
+    try { return btoa(encodeURIComponent(String(str || "").trim())); } catch (e) { return ""; }
+  }
+  function decodeLocalContact(enc) {
+    try { return enc ? decodeURIComponent(atob(enc)) : ""; } catch (e) { return ""; }
+  }
+
+  function loadSecureAlertContacts() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_SECURE_ALERTS) || sessionStorage.getItem(STORAGE_KEY_SECURE_ALERTS) || "";
+      if (!raw) return { email: "", whatsapp: "", onlySession: false };
+      const parsed = JSON.parse(raw);
+      return {
+        email: decodeLocalContact(parsed.e || ""),
+        whatsapp: decodeLocalContact(parsed.w || ""),
+        onlySession: !!parsed.s
+      };
+    } catch (e) {
+      return { email: "", whatsapp: "", onlySession: false };
+    }
+  }
+
+  function saveSecureAlertContactsFromUI() {
+    const emEl = document.querySelector("[id='alert-email-input']");
+    const waEl = document.querySelector("[id='alert-whatsapp-input']");
+    const sesEl = document.querySelector("[id='chk-session-only-tokens']");
+    const email = emEl ? emEl.value.trim() : "";
+    let whatsapp = waEl ? waEl.value.trim().replace(/[^0-9+]/g, "") : "";
+    if (/^\d{10}$/.test(whatsapp)) whatsapp = "+91" + whatsapp;
+    const onlySession = sesEl ? sesEl.checked : false;
+
+    const payload = JSON.stringify({
+      e: encodeLocalContact(email),
+      w: encodeLocalContact(whatsapp),
+      s: onlySession
+    });
+    try {
+      if (onlySession) {
+        sessionStorage.setItem(STORAGE_KEY_SECURE_ALERTS, payload);
+        localStorage.removeItem(STORAGE_KEY_SECURE_ALERTS);
+      } else {
+        localStorage.setItem(STORAGE_KEY_SECURE_ALERTS, payload);
+      }
+    } catch (e) {}
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    if (stEl) {
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔒 Saved encrypted alert contacts locally (${email || "No Email"} · ${whatsapp || "No WhatsApp"}).</span>`;
+    }
+    populateSecureAlertInputs();
+  }
+
+  function populateSecureAlertInputs() {
+    const c = loadSecureAlertContacts();
+    const emEl = document.querySelector("[id='alert-email-input']");
+    const waEl = document.querySelector("[id='alert-whatsapp-input']");
+    if (emEl && !emEl.matches(":focus")) emEl.value = c.email || "";
+    if (waEl && !waEl.matches(":focus")) waEl.value = c.whatsapp || "";
+  }
+
+  function buildActionableAlertDigestText() {
+    const st = computeOfficialNSEMarketStatus();
+    const lines = [`📊 *PIAI Portfolio & Algo Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
+
+    if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
+      const exits = holdings.filter(h => (h.act || "").includes("EXIT"));
+      const books = holdings.filter(h => (h.act || "").includes("BOOK"));
+      const eqInv = holdings.reduce((s, h) => s + (h.inv || 0), 0);
+      const eqCur = holdings.reduce((s, h) => s + (h.cur || 0), 0);
+      const eqPnl = eqCur - eqInv;
+      const eqPct = eqInv > 0 ? ((eqPnl / eqInv) * 100).toFixed(2) : "0.00";
+      const hideVals = typeof privacyMaskActive !== "undefined" && privacyMaskActive;
+
+      lines.push(`• *Portfolio Return:* ${eqPct >= 0 ? "+" : ""}${eqPct}% ${hideVals ? "(₹ Masked)" : `(Net P&L: ₹${Math.round(eqPnl).toLocaleString("en-IN")})`}`);
+      if (exits.length > 0) {
+        lines.push(`🚨 *Flagged Exits (${exits.length}):* ` + exits.map(h => `${h.n} (${h.pct.toFixed(1)}%, SL ₹${h.sl})`).join(", "));
+      } else {
+        lines.push(`✅ *Flagged Exits:* None breaching drawdown limit.`);
+      }
+      if (books.length > 0) {
+        lines.push(`🟣 *Profit Booking Candidates (${books.length}):* ` + books.map(h => `${h.n} (+${h.pct.toFixed(1)}%, Tgt ₹${h.tgt})`).join(", "));
+      }
+    } else if (typeof lastGainzState !== "undefined" && lastGainzState) {
+      lines.push(`🎯 *F&O Options Signal:* ${activeUnderlying} · ${lastGainzState.signalState} · Contract: ${lastGainzState.contractSym || "ATM"} @ Spot ₹${lastGainzState.spot || 0}`);
+    } else if (typeof activeInstrument !== "undefined") {
+      const sigEl = document.querySelector(".header-signal-pill, .header-pill");
+      lines.push(`🧪 *Mock Strategy Signal:* ${activeInstrument} · ${sigEl ? sigEl.textContent : "Active"}`);
+    }
+    lines.push(`⚡ _Generated locally on-device by PIAI_`);
+    return lines.join(String.fromCharCode(10));
+  }
+
+  function sendPortfolioAlertViaWhatsApp(customText = "") {
+    const c = loadSecureAlertContacts();
+    let phone = (c.whatsapp || "").replace(/[^0-9]/g, "");
+    if (!phone) {
+      const waInp = document.querySelector("[id='alert-whatsapp-input']");
+      if (waInp && waInp.value.trim()) {
+        phone = waInp.value.trim().replace(/[^0-9]/g, "");
+        if (phone.length === 10) phone = "91" + phone;
+        saveSecureAlertContactsFromUI();
+      }
+    }
+    const msg = customText || buildActionableAlertDigestText();
+    const waUrl = phone
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+  }
+
+  function sendPortfolioAlertViaEmail(customText = "") {
+    const c = loadSecureAlertContacts();
+    let email = (c.email || "").trim();
+    if (!email) {
+      const emInp = document.querySelector("[id='alert-email-input']");
+      if (emInp && emInp.value.trim()) {
+        email = emInp.value.trim();
+        saveSecureAlertContactsFromUI();
+      }
+    }
+    const st = computeOfficialNSEMarketStatus();
+    const subject = `PIAI Portfolio & Algo Action Alert — ${st.istDateStr}`;
+    const body = customText || buildActionableAlertDigestText().replace(/\*/g, "").replace(/_/g, "");
+    const mailUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailUrl;
+  }
+
+  function inferIndianStockSector(name, ticker, rawSec) {
+    const s = String(rawSec || "").trim();
+    if (s && !/^(equity|position|stock|shares|nse|bse|nse_eq|bse_eq|delivery|cnc|normal)$/i.test(s)) {
+      return s;
+    }
+    const hay = `${name || ""} ${ticker || ""}`.toUpperCase();
+    if (/HDFC|ICICI|SBIN|KOTAK|AXIS|INDUSIND|BANK|PNB|BOB|CANBK|IDFC|FEDERAL|AUBANK|BANDHAN|KARUR|RBL|YESBANK|IOB|UCO|BAJFIN|CHOLA|MUTHOOT|MANAPPURAM|SHRIRAM|PFC|RECLTD|IRFC|JIOFIN|LICHSG|SBICARD|HDFCLIFE|SBILIFE|ICICIPRULI|LICI|ANGELONE|BSE|CDSL|MCX|CAMS|KFIN/.test(hay)) {
+      return "🏦 Banking & Financial Services";
+    }
+    if (/TCS|INFY|WIPRO|HCLTECH|TECHM|LTIM|PERSISTENT|COFORGE|MPHASIS|KPIT|TATAELXSI|OFSS|CYIENT|ZENSAR|SONATSOFTW|BSOFT|TANLA|NAUKRI|ZOMATO|PAYTM|POLICYBZR|AFFLE|DIXON|KAYNES|NETWEB/.test(hay)) {
+      return "💻 IT, Tech & Digital";
+    }
+    if (/TATAMOTORS|TMPV|MARUTI|M&M|MAHINDRA|BAJAJ-AUTO|EICHER|HEROMOTOCO|TVSMOTOR|ASHOKLEY|BHARATFORG|MOTHERSON|BOSCH|MRF|APOLLOTYRE|BALKRISIND|CEAT|EXIDE|AMARA|SONACOMS|UNO|TIINDIA|OLECTRA/.test(hay)) {
+      return "🚗 Automobile & EV Components";
+    }
+    if (/RELIANCE|ONGC|IOC|BPCL|HPCL|GAIL|OIL|PETRONET|IGL|MGL|GUJGAS|NTPC|POWERGRID|TATAPOWER|ADANIGREEN|ADANIPOWER|JSWENERGY|NHPC|SJVN|TORNTPOWER|CESC|SUZLON|INOXWIND|IREDA|COALINDIA|BHEL/.test(hay)) {
+      return "⚡ Energy, Oil & Power Utilities";
+    }
+    if (/SUNPHARMA|CIPLA|DRREDDY|DIVIS|APOLLOHOSP|LUPIN|AUROPHARMA|ALKEM|TORNTPHARM|ZYDUS|BIOCON|GLENMARK|LAURUS|GRANULES|SYNGENE|MAXHEALTH|FORTIS|NARAYANA|MANKIND|IPCA|ABBOT/.test(hay)) {
+      return "💊 Pharma & Healthcare";
+    }
+    if (/ITC|HINDUNILVR|NESTLE|BRITANNIA|TATACONSUM|DABUR|MARICO|GODREJCP|COLPAL|VBL|UBL|RADICO|MCDOWELL|TITAN|TRENT|AVENUE|DMART|PAGEIND|MANYAVAR|BATA|METRO|KALYAN|PIDILITE|ASIANPAINT|BERGER/.test(hay)) {
+      return "🛒 FMCG, Retail & Consumer";
+    }
+    if (/LT|L&T|HAL|BEL|BDL|MAZDOCK|COCHINSHIP|GRSE|RVNL|IRCON|RITES|TITAGARH|JWL|SIEMENS|ABB|CUMMINS|THERMAX|CGPOWER|APARINDS|POLYCAB|KEI|HAVELLS|VOLTAS|BLUESTAR|ADANIPORTS|CONCOR|GMR|IRB|NCC|KEC|KALPATARU/.test(hay)) {
+      return "🏗️ Defence, Infra & Capital Goods";
+    }
+    if (/TATASTEEL|JSWSTEEL|HINDALCO|VEDL|JINDALSTEL|SAIL|NMDC|NATIONALUM|HINDCOPPER|APLAPOLLO|WELCORP|RATNAMANI|ULTRACEMCO|AMBUJACEM|SHREECEM|ACC|DALBHARAT|RAMCOCEM|JKCEMENT/.test(hay)) {
+      return "🔩 Metals, Mining & Cement";
+    }
+    if (/BHARTIARTL|IDEA|INDUSTOWER|TATACOMM|HFCL|ITI|TEJAS|STLTECH/.test(hay)) {
+      return "📡 Telecom & Connectivity";
+    }
+    if (/UPL|PIIND|SRF|ARTI|DEEPAKNTR|TATACHEM|NAVINFLUOR|FLUOROCHEM|ATUL|COROMANDEL|CHAMBLFERT|FACT|GNFC/.test(hay)) {
+      return "🧪 Chemicals & Fertilizers";
+    }
+    if (/DLF|GODREJPROP|MACROTECH|LODHA|OBEROIRLTY|PRESTIGE|PHOENIX|BRIGADE|SOBHA|INDHOTEL|EIHOTEL|CHALET|IRCTC|INDIGO/.test(hay)) {
+      return "🏢 Realty, Hospitality & Aviation";
+    }
+    return "📈 Diversified Equities";
   }
 
   window.addEventListener("DOMContentLoaded", () => {
     applyThemeMode(getActiveThemeMode());
     setTimeout(initCollapsibleCards, 80);
+    setTimeout(populateSecureAlertInputs, 120);
   });
 
 
@@ -1823,9 +2226,7 @@
   }
 
   function toggleMoreToolsDropdown(ev) {
-    if (ev) ev.stopPropagation();
-    const dd = document.getElementById("more-tools-dropdown");
-    if (dd) dd.classList.toggle("open");
+    toggleInlineMoreMenu("more-tools-dropdown", ev);
   }
 
   function selectMoreToolTab(tabId, shortLabel) {
@@ -1838,19 +2239,14 @@
     switchTab(tabId);
   }
 
-  document.addEventListener("click", (ev) => {
-    const dd = document.getElementById("more-tools-dropdown");
-    const btn = document.getElementById("btn-more-tabs-menu");
-    if (dd && dd.classList.contains("open") && !dd.contains(ev.target) && ev.target !== btn) {
-      dd.classList.remove("open");
-    }
-  });
-
   function updateHeaderClock() {
-    const { istDateStr, istTimeStr, statusBadgeHtml } = getISTDateInfo();
+    const { istDateStr, istTimeStr, isMarketOpen, statusBadgeHtml } = getISTDateInfo();
     const clk = document.getElementById("hdr-date-clock");
     if (clk) {
-      clk.innerHTML = `📅 ${istDateStr} · 🕒 ${istTimeStr} IST · ${statusBadgeHtml}`;
+      const syncStr = (lastSyncTelemetry && lastSyncTelemetry.lastRun && lastSyncTelemetry.lastRun !== "Never")
+        ? `<span class="badge badge-emerald">⚡ Live Synced: ${lastSyncTelemetry.lastRun}</span>`
+        : `<span class="badge badge-blue">⏳ Auto-Syncing...</span>`;
+      clk.innerHTML = `📅 ${istDateStr} · 🕒 ${istTimeStr} IST · ${statusBadgeHtml} · ${syncStr}`;
     }
     const badge = document.getElementById("badge-autosync");
     if (autoSyncIntervalSec > 0) {
@@ -3781,7 +4177,7 @@
       h.rawName = h.rawName || h.n;
       h.n = aliased.n;
       if (aliased.ticker) h.ticker = aliased.ticker;
-      if (aliased.sec) h.sec = aliased.sec;
+      h.sec = inferIndianStockSector(h.n, h.ticker, aliased.sec || h.sec);
       h.qty = parseFloat(h.qty) || 1;
       h.avg = parseFloat(h.avg) || 0;
       h.ltp = parseFloat(h.ltp) || h.avg;
@@ -3926,15 +4322,7 @@
     renderStocksView();
   }
 
-  function toggleBrokerGroupingMode() {
-    groupStocksByBroker = !groupStocksByBroker;
-    const btn = document.getElementById("btn-toggle-broker-group");
-    if (btn) {
-      btn.textContent = `🗂️ Grouped by Broker: ${groupStocksByBroker ? "ON" : "OFF"}`;
-      btn.classList.toggle("active", groupStocksByBroker);
-    }
-    renderStocksView();
-  }
+
 
   function renderSinglePositionCardHtml(h, isEtf = false) {
     const hKey = getHoldingKey(h);
@@ -4085,53 +4473,71 @@
       return;
     }
 
-    if (!groupStocksByBroker || activeBrokerFilter !== "ALL") {
-      container.innerHTML = list.map(h => renderSingleStockCardHtml(h)).join("");
-      return;
-    }
-
-    // Group stocks by Broker so Kotak, Dhan, and INDmoney are clearly listed broker-wise
-    const brokerOrder = ["Kotak", "Dhan", "INDmoney"];
-    const groups = {};
+    // Group stocks SECTOR-WISE with Expand & Collapse (Requirement #1 & #2)
+    const totalFilteredCur = list.reduce((s, h) => s + (h.cur || 0), 0);
+    const secGroups = {};
     list.forEach(h => {
-      const b = normalizeBrokerTag(h.broker);
-      if (!groups[b]) groups[b] = [];
-      groups[b].push(h);
+      const secName = inferIndianStockSector(h.n, h.ticker, h.sec);
+      h.sec = secName;
+      if (!secGroups[secName]) secGroups[secName] = [];
+      secGroups[secName].push(h);
     });
-    const orderedBrokers = [
-      ...brokerOrder.filter(b => groups[b] && groups[b].length > 0),
-      ...Object.keys(groups).filter(b => !brokerOrder.includes(b))
-    ];
 
-    container.innerHTML = orderedBrokers.map(b => {
-      const bItems = groups[b];
-      const bStyle = getBrokerBadgeStyle(b);
-      const bInv = bItems.reduce((s, h) => s + (h.inv || 0), 0);
-      const bCur = bItems.reduce((s, h) => s + (h.cur || 0), 0);
-      const bPnl = bCur - bInv;
-      const bPct = bInv > 0 ? (bPnl / bInv) * 100 : 0;
-      const bToday = bItems.reduce((s, h) => s + (h.today || 0), 0);
-      const isCollapsed = !!collapsedBrokers[b];
-      const safeB = b.replace(/'/g, "\\'");
+    const orderedSectors = Object.keys(secGroups).sort((a, b) => {
+      const curA = secGroups[a].reduce((s, h) => s + (h.cur || 0), 0);
+      const curB = secGroups[b].reduce((s, h) => s + (h.cur || 0), 0);
+      return curB - curA;
+    });
+
+    container.innerHTML = orderedSectors.map(secName => {
+      const sItems = secGroups[secName];
+      const sInv = sItems.reduce((s, h) => s + (h.inv || 0), 0);
+      const sCur = sItems.reduce((s, h) => s + (h.cur || 0), 0);
+      const sPnl = sCur - sInv;
+      const sPct = sInv > 0 ? (sPnl / sInv) * 100 : 0;
+      const sWt = totalFilteredCur > 0 ? (sCur / totalFilteredCur) * 100 : 0;
+      const sToday = sItems.reduce((s, h) => s + (h.today || 0), 0);
+      const isCollapsed = !!collapsedSectors[secName];
+      const safeSec = secName.replace(/'/g, "\\'");
       return `
         <div style="margin-bottom:14px;">
-          <div onclick="toggleBrokerSectionCollapse('${safeB}')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 14px; margin-bottom:8px; border-radius:10px; background:${bStyle.bg}; border:1px solid ${bStyle.border};">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="event.stopPropagation(); toggleBrokerSectionCollapse('${safeB}')">${isCollapsed ? "▶ Expand" : "▼ Collapse"}</button>
-              <span style="font-size:0.9rem; font-weight:800; color:${bStyle.color};">${bStyle.label}</span>
-              <span style="font-size:0.74rem; color:#334155;">(<strong>${bItems.length}</strong> Stock${bItems.length === 1 ? '' : 's'})</span>
+          <div class="sector-header-banner" onclick="toggleSectorSectionCollapse('${safeSec}')">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.72rem;" onclick="event.stopPropagation(); toggleSectorSectionCollapse('${safeSec}')">${isCollapsed ? "▶ Expand" : "▼ Collapse"}</button>
+              <span style="font-size:0.9rem; font-weight:800; color:var(--accent);">${secName}</span>
+              <span class="badge badge-blue">${sItems.length} Stock${sItems.length === 1 ? '' : 's'} · ${sWt.toFixed(1)}% Wt</span>
             </div>
-            <div style="font-size:0.76rem; color:#0f172a;">
-              Inv: <strong>${fmtVal(bInv)}</strong> &nbsp;·&nbsp;
-              Cur: <strong>${fmtVal(bCur)}</strong> &nbsp;·&nbsp;
-              P&amp;L: <strong class="${bPnl >= 0 ? 'pos' : 'neg'}">${fmt(bPnl)} (${bPct >= 0 ? '+' : ''}${bPct.toFixed(2)}%)</strong>
-              ${bToday ? ` &nbsp;·&nbsp; Today: <strong style="color:${bToday >= 0 ? 'var(--emerald)' : 'var(--red)'};">${fmt(bToday)}</strong>` : ''}
+            <div style="font-size:0.76rem; color:var(--text-main);">
+              Inv: <strong>${fmtVal(sInv)}</strong> &nbsp;·&nbsp;
+              Cur: <strong>${fmtVal(sCur)}</strong> &nbsp;·&nbsp;
+              P&amp;L: <strong class="${sPnl >= 0 ? 'pos' : 'neg'}">${fmt(sPnl)} (${sPct >= 0 ? '+' : ''}${sPct.toFixed(2)}%)</strong>
+              ${sToday ? ` &nbsp;·&nbsp; Today: <strong style="color:${sToday >= 0 ? 'var(--emerald)' : 'var(--red)'};">${fmt(sToday)}</strong>` : ''}
             </div>
           </div>
-          ${isCollapsed ? '' : bItems.map(h => renderSinglePositionCardHtml(h, false)).join("")}
+          ${isCollapsed ? '' : sItems.map(h => renderSinglePositionCardHtml(h, false)).join("")}
         </div>
       `;
     }).join("");
+  }
+
+  let collapsedSectors = {};
+  try {
+    collapsedSectors = JSON.parse(localStorage.getItem(STORAGE_KEY_COLLAPSED_SECTORS) || "{}") || {};
+  } catch (e) { collapsedSectors = {}; }
+
+  function toggleSectorSectionCollapse(secName) {
+    collapsedSectors[secName] = !collapsedSectors[secName];
+    try { localStorage.setItem(STORAGE_KEY_COLLAPSED_SECTORS, JSON.stringify(collapsedSectors)); } catch (e) {}
+    renderStocksView();
+  }
+
+  function expandOrCollapseAllSectors(collapseFlag) {
+    holdings.forEach(h => {
+      const secName = inferIndianStockSector(h.n, h.ticker, h.sec);
+      collapsedSectors[secName] = !!collapseFlag;
+    });
+    try { localStorage.setItem(STORAGE_KEY_COLLAPSED_SECTORS, JSON.stringify(collapsedSectors)); } catch (e) {}
+    renderStocksView();
   }
 
   function setEtfBrokerFilter(bKey) {
@@ -4739,15 +5145,20 @@
     renderStocksView();
   }
   function switchTab(id) {
-    if (["dashboard", "stocks", "etfs", "mf", "admin"].includes(id)) {
+    if (["dashboard", "stocks", "etfs", "mf"].includes(id)) {
       const lbl = document.getElementById("lbl-active-more-tool");
       if (lbl) lbl.textContent = "";
       const mBtn = document.getElementById("btn-more-tabs-menu");
       if (mBtn) mBtn.classList.remove("active");
     }
-    document.querySelectorAll(".tab-view").forEach(v => v.style.display = "none");
+    if (id === "admin" && !window._isDedicatedAdminPage) {
+      navigateToModule("index_admin.html");
+      return;
+    }
     const el = document.getElementById("view-" + id);
-    if (el) el.style.display = "block";
+    if (!el) return;
+    document.querySelectorAll(".tab-view").forEach(v => v.style.display = "none");
+    el.style.display = "block";
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", (b.getAttribute("onclick") || "").includes("'" + id + "'")));
     triggerSmartDebouncedSync();
   }
@@ -5017,17 +5428,25 @@
   });
 
   function initApp() {
-    loadSymbolAliasesAndCollapsed();
-    loadPersistedState();
-    renderSavedAliasesList();
-    updateHeaderClock();
-    setInterval(updateHeaderClock, 1000);
-    runPortfolioIntelligenceEngine();
-    runSimulation();
-    calculateTaxHarvest();
-    calculateWealthProjection();
-    syncLiveNSEPrices(false);
+    if (window._piaiBootCompleted) return;
+    window._piaiBootCompleted = true;
+    try { if (typeof loadSymbolAliasesAndCollapsed === "function") loadSymbolAliasesAndCollapsed(); } catch (e) {}
+    try { loadPersistedState(); } catch (e) {}
+    try { if (typeof renderSavedAliasesList === "function") renderSavedAliasesList(); } catch (e) {}
+    try { runPortfolioIntelligenceEngine(); } catch (e) {}
+    try { if (typeof runSimulation === "function") runSimulation(); } catch (e) {}
+    try { if (typeof calculateTaxHarvest === "function") calculateTaxHarvest(); } catch (e) {}
+    try { if (typeof calculateWealthProjection === "function") calculateWealthProjection(); } catch (e) {}
+    try { updateHeaderClock(); } catch (e) {}
+    setInterval(() => { try { updateHeaderClock(); } catch (e) {} }, 1000);
+    setTimeout(() => {
+      syncLiveNSEPrices(true);
+      if (typeof dhanConfig !== "undefined" && dhanConfig && dhanConfig.accessToken && typeof syncDhanLiveHoldings === "function") {
+        syncDhanLiveHoldings(false);
+      }
+    }, 60);
   }
+  window.addEventListener("DOMContentLoaded", initApp);
 
   window.onload = initApp;
 </script>
