@@ -405,7 +405,7 @@
     .global-app-bar {
       background: var(--bar-bg);
       border-bottom: 1px solid var(--border);
-      padding: 7px 14px;
+      padding: 6px 12px;
       position: sticky;
       top: 0;
       z-index: 90;
@@ -422,7 +422,7 @@
     }
     .app-module-tabs {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       align-items: center;
@@ -430,10 +430,10 @@
     .app-nav-tab {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 6px 12px;
+      gap: 4px;
+      padding: 6px 11px;
       border-radius: 8px;
-      font-size: 0.77rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: var(--text-main);
       background: var(--bg-card-alt);
@@ -450,12 +450,46 @@
     }
     .global-util-btns {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
       flex-wrap: wrap;
     }
 
-    /* Unified Single-Place Auto-Sync + Refresh Icon + Last Synced Below (Requirement #3 & #4) */
+    /* Minimal Single-Line PIAI Heading (Never wraps onto 2 lines on mobile) */
+    .header-title, .brand-title {
+      color: var(--text-main) !important;
+      font-size: 1.02rem !important;
+      font-weight: 800 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      max-width: 100%;
+      display: block !important;
+    }
+
+    /* Full-Page Chart Overlay Mode */
+    .card.fullscreen-chart-card {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999 !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      overflow-y: auto !important;
+      padding: 14px !important;
+      background: var(--bg-card) !important;
+    }
+    .card.fullscreen-chart-card canvas {
+      height: calc(100vh - 140px) !important;
+    }
+    .card.fullscreen-chart-card #opt-tv-widget-wrap,
+    .card.fullscreen-chart-card #mock-tv-iframe-wrap,
+    .card.fullscreen-chart-card #mock-sig-canvas-wrap {
+      height: calc(100vh - 140px) !important;
+    }
+
+    /* Unified Single-Place Auto-Sync + Refresh Icon + Last Synced Below */
     .unified-sync-box {
       display: inline-flex;
       flex-direction: column;
@@ -500,13 +534,13 @@
       white-space: nowrap;
     }
     .unified-sync-sub {
-      font-size: 0.65rem;
+      font-size: 0.64rem;
       color: var(--text-muted);
       margin-top: 2px;
       white-space: nowrap;
     }
 
-    /* Compact Refresh Icon Button (Requirement #4: Never wrap to a new line just for refresh) */
+    /* Compact Refresh Icon Button */
     .icon-refresh-btn {
       background: var(--bg-card-alt) !important;
       color: var(--text-main) !important;
@@ -528,7 +562,7 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Three-Dots More Tools Dropdown Menu (Requirement #6) */
+    /* Three-Dots More Tools Dropdown Menu */
     .more-tabs-wrapper {
       position: relative;
       display: inline-block;
@@ -570,7 +604,7 @@
       color: #2563eb !important;
     }
 
-    /* Collapsible Card Sections (Requirement #8) */
+    /* Collapsible Card Sections */
     .card.section-collapsed > *:not(.card-title) {
       display: none !important;
     }
@@ -595,10 +629,10 @@
       background: var(--header-grad) !important;
       border-bottom: 1px solid var(--border) !important;
       position: relative !important;
+      padding: 8px 14px !important;
     }
-    .header-title, .brand-title, .card-title {
+    .card-title {
       color: var(--text-main) !important;
-      flex-wrap: nowrap;
     }
     .card, .kpi-card, .stock-card, .upload-card, .control-bar, .toolbar-card, .simple-bar, .strategy-spotlight, details.advanced-drawer {
       background: var(--bg-card) !important;
@@ -614,7 +648,7 @@
     .stock-name, .rec-name { color: var(--text-main) !important; }
     .data-row { border-bottom: 1px solid var(--border) !important; }
 
-    /* Buttons vs Badges (Requirement #9) */
+    /* Buttons vs Badges */
     button, .btn-primary, .btn-secondary, .btn-emerald, .btn-danger, .btn-algo, .btn-purple, .btn-amber {
       border-radius: 8px !important;
       font-weight: 700 !important;
@@ -739,8 +773,9 @@
     }
 
     @media (max-width: 768px) {
-      .global-app-bar { padding: 6px 10px; }
-      .app-nav-tab { padding: 5px 9px; font-size: 0.73rem; }
+      .global-app-bar { padding: 5px 8px; }
+      .app-nav-tab { padding: 5px 8px; font-size: 0.71rem; }
+      .header-title, .brand-title { font-size: 0.94rem !important; }
       .container { padding: 0 10px !important; margin: 10px auto !important; }
       .grid-2, .grid-equal { grid-template-columns: 1fr !important; }
       .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
@@ -766,13 +801,13 @@
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
     <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
-      <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Equity Algo Studio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock Trading Lab</button>
+      <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button>
     </div>
     <div class="global-util-btns">
-        <button type="button" class="btn-secondary" id="btn-privacy-mask" style="padding:5px 9px; font-size:0.72rem;" onclick="togglePrivacyMaskMode()" title="Mask ₹ values">👁️ Privacy</button>
-        <button type="button" class="btn-secondary" id="btn-vault-lock-top" style="padding:5px 9px; font-size:0.72rem;" onclick="openOrTriggerVaultLock()" title="Lock Portfolio Security Vault">🔒 Vault Lock</button>
-      <button type="button" class="btn-secondary" id="nav-tab-admin" style="padding:5px 9px; font-size:0.72rem;" onclick="switchTab('admin')" title="Open Brokers &amp; Admin Settings">⚙️ Admin</button>
-      <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:5px 9px; font-size:0.72rem;" onclick="toggleAppTheme()" title="Switch between Light and Dark theme">☀️ Light</button>
+        <button type="button" class="btn-secondary" id="btn-privacy-mask" style="padding:5px 8px; font-size:0.71rem;" onclick="togglePrivacyMaskMode()" title="Mask ₹ values">👁️ Privacy</button>
+        <button type="button" class="btn-secondary" id="btn-vault-lock-top" style="padding:5px 8px; font-size:0.71rem;" onclick="openOrTriggerVaultLock()" title="Lock Portfolio Security Vault">🔒 Vault</button>
+      <button type="button" class="btn-secondary" id="nav-tab-admin" style="padding:5px 8px; font-size:0.71rem;" onclick="switchTab('admin')" title="Open Brokers &amp; Admin Settings">⚙️ Admin</button>
+      <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAppTheme()" title="Switch between Light and Dark theme">☀️ Light</button>
       <button type="button" class="btn-secondary" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAllPageSections()" id="btn-collapse-all-secs" title="Expand or Collapse all page cards">➖ Collapse All</button>
       <div class="unified-sync-box">
         <div class="unified-sync-top">
@@ -789,7 +824,7 @@
   <div class="header-top">
     <div>
       <div class="header-tag" id="hdr-date-clock">📅 Loading Today's Date &amp; IST Market Clock...</div>
-      <div class="header-title">Portfolio Intelligence AI <span id="hdr-feed-source" class="badge badge-blue" onclick="openReliabilityModal()" style="font-size:0.68rem; vertical-align:middle; margin-left:6px; cursor:pointer;" title="Click to open Feed Diagnostics &amp; Worker">⏳ Connecting Feed...</span></div>
+      <div class="header-title">📊 PIAI Portfolio<span id="hdr-feed-source" style="display:none;"></span></div>
       
     </div>
     <div class="header-total">
@@ -803,7 +838,7 @@
     <span class="badge badge-blue" id="badge-banknifty" onclick="promptManualIndex('^NSEBANK', 'BANK NIFTY')" style="cursor:pointer;" title="Click to refresh or override">BANK NIFTY: Syncing...</span>
     <span class="badge badge-amber" id="badge-vix" onclick="promptManualIndex('^INDIAVIX', 'INDIA VIX')" style="cursor:pointer;" title="Click to refresh or override">INDIA VIX: Syncing...</span>
 
-    <span id="hdr-market-holiday-pill" style="margin-left:auto;"></span>
+    
   </div>
 </div>
 
@@ -814,7 +849,7 @@
     <div class="sync-progress-bar"><div class="sync-progress-fill" id="sync-progress-fill"></div></div>
   </div>
 
-  <!-- COMPACT NAVIGATION TABS + THREE-DOTS MORE TOOLS MENU (Requirement #2 & #6) -->
+  <!-- COMPACT NAVIGATION TABS + THREE-DOTS MORE TOOLS MENU -->
   <div class="nav-tabs" style="align-items:center;">
     <button type="button" class="tab-btn active" id="nav-tab-dashboard" onclick="switchTab('dashboard')">📊 Overview</button>
     <button type="button" class="tab-btn" id="nav-tab-stocks" onclick="switchTab('stocks')">📈 Stocks <span id="tab-stocks-count">(0)</span></button>
@@ -1481,7 +1516,7 @@
   /* =========================================================================
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
-     - Universal Collapsible Card Sections
+     - Universal Collapsible Card Sections & Full-Page Chart Toggle
      - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
      ========================================================================= */
   const STORAGE_KEY_THEME = "piai_theme_mode_v1";
@@ -1534,6 +1569,22 @@
     applyThemeMode(next);
   }
 
+  function toggleFullPageChart(cardId, btnId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const isFull = card.classList.toggle("fullscreen-chart-card");
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.textContent = isFull ? "✕ Exit Full Page" : "⛶ Full Page";
+      btn.className = isFull ? "btn-danger" : "btn-secondary";
+    }
+    setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+      if (typeof recomputeAllOptionModels === "function") { try { recomputeAllOptionModels(); } catch (e) {} }
+      if (typeof drawMockCandleChart === "function") { try { drawMockCandleChart(); } catch (e) {} }
+    }, 60);
+  }
+
   function computeOfficialNSEMarketStatus() {
     const now = new Date();
     const istIso = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -1560,7 +1611,7 @@
       statusBadgeHtml = `<span class="badge badge-red">🔴 WEEKEND · MARKET CLOSED</span>`;
     } else if (!withinHours) {
       isMarketOpen = false;
-      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED (Hours: 09:15–15:30 IST)</span>`;
+      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED (09:15–15:30 IST)</span>`;
     } else if (feedClosed) {
       isMarketOpen = false;
       statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET CLOSED / HOLIDAY</span>`;
@@ -1573,14 +1624,14 @@
 
   let allSectionsCollapsed = false;
   function initCollapsibleCards() {
-    document.querySelectorAll(".card").forEach((card, idx) => {
+    document.querySelectorAll(".card").forEach((card) => {
       if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
       const titleEl = card.querySelector(".card-title");
       if (!titleEl || titleEl.querySelector(".sec-collapse-btn")) return;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "sec-collapse-btn";
-      btn.textContent = "▼";
+      btn.textContent = card.classList.contains("section-collapsed") ? "▶" : "▼";
       btn.title = "Collapse / Expand Section";
       btn.onclick = function(ev) {
         ev.stopPropagation();
@@ -1595,7 +1646,7 @@
     allSectionsCollapsed = !allSectionsCollapsed;
     document.querySelectorAll(".card").forEach(card => {
       if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
-      if ( card.querySelector(".card-title") ) {
+      if (card.querySelector(".card-title")) {
         card.classList.toggle("section-collapsed", allSectionsCollapsed);
         const b = card.querySelector(".sec-collapse-btn");
         if (b) b.textContent = allSectionsCollapsed ? "▶" : "▼";
@@ -1796,14 +1847,10 @@
   });
 
   function updateHeaderClock() {
-    const { istDateStr, istTimeStr, isMarketOpen, statusBadgeHtml } = getISTDateInfo();
+    const { istDateStr, istTimeStr, statusBadgeHtml } = getISTDateInfo();
     const clk = document.getElementById("hdr-date-clock");
     if (clk) {
       clk.innerHTML = `📅 ${istDateStr} · 🕒 ${istTimeStr} IST · ${statusBadgeHtml}`;
-    }
-    const hPill = document.getElementById("hdr-market-holiday-pill");
-    if (hPill) {
-      hPill.innerHTML = statusBadgeHtml;
     }
     const badge = document.getElementById("badge-autosync");
     if (autoSyncIntervalSec > 0) {
@@ -4426,7 +4473,7 @@
       ctx.clearRect(0, 0, 220, 220);
       if (total <= 0) {
         ctx.beginPath(); ctx.arc(110, 110, 80, 0, 2 * Math.PI); ctx.arc(110, 110, 48, 2 * Math.PI, 0, true);
-        ctx.fillStyle = "#1f2937"; ctx.fill();
+        ctx.fillStyle = getActiveThemeMode() === "dark" ? "#1f2937" : "#e2e8f0"; ctx.fill();
         document.getElementById("legend-asset-donut").innerHTML = `<span style="color:var(--text-muted);">No holdings loaded</span>`;
       } else {
         let ang = -0.5 * Math.PI;
@@ -4457,7 +4504,7 @@
           const y = 20 + i * 32, w = Math.min(175, (s.pct / maxS) * 175);
           ctx.fillStyle = "#9ca3af"; ctx.font = "11px sans-serif"; ctx.textAlign = "right"; ctx.fillText(s.label.substring(0, 12), 88, y + 12);
           ctx.fillStyle = s.pct > 25 ? "#f87171" : "#38bdf8"; ctx.fillRect(96, y, w, 16);
-          ctx.fillStyle = "#fff"; ctx.textAlign = "left"; ctx.fillText(s.pct.toFixed(1) + "%", 102 + w, y + 12);
+          ctx.fillStyle = getActiveThemeMode() === "dark" ? "#f8fafc" : "#0f172a"; ctx.textAlign = "left"; ctx.fillText(s.pct.toFixed(1) + "%", 102 + w, y + 12);
         });
       }
     }
@@ -4476,7 +4523,7 @@
       bks.forEach((b, i) => {
         const x = 45 + i * 105, bh = (b.n / maxN) * 85, y = 105 - bh;
         ctx.fillStyle = b.c; ctx.fillRect(x, y, 65, bh);
-        ctx.fillStyle = "#fff"; ctx.font = "12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(b.n, x + 32, y - 6);
+        ctx.fillStyle = getActiveThemeMode() === "dark" ? "#f8fafc" : "#0f172a"; ctx.font = "12px sans-serif"; ctx.textAlign = "center"; ctx.fillText(b.n, x + 32, y - 6);
         ctx.fillStyle = "#9ca3af"; ctx.fillText(b.l, x + 32, 125);
       });
     }

@@ -308,7 +308,7 @@
     .global-app-bar {
       background: var(--bar-bg);
       border-bottom: 1px solid var(--border);
-      padding: 7px 14px;
+      padding: 6px 12px;
       position: sticky;
       top: 0;
       z-index: 90;
@@ -325,7 +325,7 @@
     }
     .app-module-tabs {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       align-items: center;
@@ -333,10 +333,10 @@
     .app-nav-tab {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 6px 12px;
+      gap: 4px;
+      padding: 6px 11px;
       border-radius: 8px;
-      font-size: 0.77rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: var(--text-main);
       background: var(--bg-card-alt);
@@ -353,12 +353,46 @@
     }
     .global-util-btns {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       align-items: center;
       flex-wrap: wrap;
     }
 
-    /* Unified Single-Place Auto-Sync + Refresh Icon + Last Synced Below (Requirement #3 & #4) */
+    /* Minimal Single-Line PIAI Heading (Never wraps onto 2 lines on mobile) */
+    .header-title, .brand-title {
+      color: var(--text-main) !important;
+      font-size: 1.02rem !important;
+      font-weight: 800 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      max-width: 100%;
+      display: block !important;
+    }
+
+    /* Full-Page Chart Overlay Mode */
+    .card.fullscreen-chart-card {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999 !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      overflow-y: auto !important;
+      padding: 14px !important;
+      background: var(--bg-card) !important;
+    }
+    .card.fullscreen-chart-card canvas {
+      height: calc(100vh - 140px) !important;
+    }
+    .card.fullscreen-chart-card #opt-tv-widget-wrap,
+    .card.fullscreen-chart-card #mock-tv-iframe-wrap,
+    .card.fullscreen-chart-card #mock-sig-canvas-wrap {
+      height: calc(100vh - 140px) !important;
+    }
+
+    /* Unified Single-Place Auto-Sync + Refresh Icon + Last Synced Below */
     .unified-sync-box {
       display: inline-flex;
       flex-direction: column;
@@ -403,13 +437,13 @@
       white-space: nowrap;
     }
     .unified-sync-sub {
-      font-size: 0.65rem;
+      font-size: 0.64rem;
       color: var(--text-muted);
       margin-top: 2px;
       white-space: nowrap;
     }
 
-    /* Compact Refresh Icon Button (Requirement #4: Never wrap to a new line just for refresh) */
+    /* Compact Refresh Icon Button */
     .icon-refresh-btn {
       background: var(--bg-card-alt) !important;
       color: var(--text-main) !important;
@@ -431,7 +465,7 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Three-Dots More Tools Dropdown Menu (Requirement #6) */
+    /* Three-Dots More Tools Dropdown Menu */
     .more-tabs-wrapper {
       position: relative;
       display: inline-block;
@@ -473,7 +507,7 @@
       color: #2563eb !important;
     }
 
-    /* Collapsible Card Sections (Requirement #8) */
+    /* Collapsible Card Sections */
     .card.section-collapsed > *:not(.card-title) {
       display: none !important;
     }
@@ -498,10 +532,10 @@
       background: var(--header-grad) !important;
       border-bottom: 1px solid var(--border) !important;
       position: relative !important;
+      padding: 8px 14px !important;
     }
-    .header-title, .brand-title, .card-title {
+    .card-title {
       color: var(--text-main) !important;
-      flex-wrap: nowrap;
     }
     .card, .kpi-card, .stock-card, .upload-card, .control-bar, .toolbar-card, .simple-bar, .strategy-spotlight, details.advanced-drawer {
       background: var(--bg-card) !important;
@@ -517,7 +551,7 @@
     .stock-name, .rec-name { color: var(--text-main) !important; }
     .data-row { border-bottom: 1px solid var(--border) !important; }
 
-    /* Buttons vs Badges (Requirement #9) */
+    /* Buttons vs Badges */
     button, .btn-primary, .btn-secondary, .btn-emerald, .btn-danger, .btn-algo, .btn-purple, .btn-amber {
       border-radius: 8px !important;
       font-weight: 700 !important;
@@ -642,8 +676,9 @@
     }
 
     @media (max-width: 768px) {
-      .global-app-bar { padding: 6px 10px; }
-      .app-nav-tab { padding: 5px 9px; font-size: 0.73rem; }
+      .global-app-bar { padding: 5px 8px; }
+      .app-nav-tab { padding: 5px 8px; font-size: 0.71rem; }
+      .header-title, .brand-title { font-size: 0.94rem !important; }
       .container { padding: 0 10px !important; margin: 10px auto !important; }
       .grid-2, .grid-equal { grid-template-columns: 1fr !important; }
       .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
@@ -669,11 +704,11 @@
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
     <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
-      <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Equity Algo Studio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Hub</button><button type="button" class="app-nav-tab active" onclick="navigateToModule('index_mock.html')">🧪 Mock Trading Lab</button>
+      <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab active" onclick="navigateToModule('index_mock.html')">🧪 Mock</button>
     </div>
     <div class="global-util-btns">
-      <button type="button" class="btn-secondary" id="nav-tab-admin" style="padding:5px 9px; font-size:0.72rem;" onclick="toggleFeedDrawer()" title="Open Brokers &amp; Admin Settings">⚙️ Admin</button>
-      <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:5px 9px; font-size:0.72rem;" onclick="toggleAppTheme()" title="Switch between Light and Dark theme">☀️ Light</button>
+      <button type="button" class="btn-secondary" id="nav-tab-admin" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleFeedDrawer()" title="Open Brokers &amp; Admin Settings">⚙️ Admin</button>
+      <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAppTheme()" title="Switch between Light and Dark theme">☀️ Light</button>
       <button type="button" class="btn-secondary" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAllPageSections()" id="btn-collapse-all-secs" title="Expand or Collapse all page cards">➖ Collapse All</button>
       <div class="unified-sync-box">
         <div class="unified-sync-top">
@@ -689,17 +724,36 @@
 <div class="top-header">
   <div class="header-inner">
     <div>
-      <div class="brand-title">🧪 PIAI — Simple Mock Trading &amp; Strategy Tester</div>
+      <div class="brand-title">🧪 PIAI Mock Lab</div>
       <div class="brand-sub" id="hdr-equity-summary">Paper Balance: ₹10,00,000 · Auto-Refreshes Every 10 Seconds · Zero Real Money Risk</div>
     </div>
     <div class="nav-bar">
 
-      <span class="badge badge-emerald" id="hdr-feed-badge" onclick="toggleFeedDrawer()" style="cursor:pointer;">🟢 Live Feed Ready</span>
+      <span id="hdr-feed-badge" style="display:none;"></span>
     </div>
   </div>
 </div>
 
 <div class="container">
+
+  <!-- TOP FULL-WIDTH INTERACTIVE CHART (MOVED TO VERY TOP + FULL PAGE BUTTON + TRADINGVIEW LIVE) -->
+  <div class="card" id="mock-top-chart-card">
+    <div class="card-title">
+      <span id="chart-title-label">📊 Live Price &amp; Strategy Signals</span>
+      <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+        <button type="button" class="filter-chip active" id="mock-btn-sig-chart" style="padding:4px 9px; font-size:0.72rem;" onclick="switchMockChartMode('SIGNAL')">⚡ Signal Chart</button>
+        <button type="button" class="filter-chip" id="mock-btn-tv-chart" style="padding:4px 9px; font-size:0.72rem;" onclick="switchMockChartMode('TV')">📈 TradingView Live</button>
+        <button type="button" class="btn-secondary" id="btn-mock-fullscreen" style="padding:4px 9px; font-size:0.72rem;" onclick="toggleFullPageChart('mock-top-chart-card', 'btn-mock-fullscreen')">⛶ Full Page</button>
+      </div>
+    </div>
+    <div class="chart-hud-bar" id="mock-chart-hud">
+      <span id="chart-sub-stats">Hover/Touch any candle to inspect OHLC, VWAP, SuperTrend &amp; RSI(14) · Green ▲ = Buy Call · Red ▼ = Buy Put</span>
+    </div>
+    <div id="mock-sig-canvas-wrap" style="position:relative; height:320px; width:100%; background:var(--bg-card-alt); border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+      <canvas id="mock-candle-canvas" style="width:100%; height:100%; display:block; cursor:crosshair;"></canvas>
+    </div>
+    <div id="mock-tv-iframe-wrap" style="display:none; height:360px; width:100%; border:1px solid var(--border); border-radius:10px; overflow:hidden;"></div>
+  </div>
 
   <!-- 1. SIMPLE TOP BAR: INSTRUMENT + 10s AUTO-REFRESH + MANUAL REFRESH BUTTON -->
   <div class="simple-bar">
@@ -746,54 +800,6 @@
       <button type="button" id="btn-sync-candles" style="display:none;" onclick="manualRefreshNow()">⚡ Refresh Now</button>
     </div>
   </div>
-
-  <!-- 4. CLEAN 2-COLUMN WORKSPACE: LIVE CHART (LEFT) + SIMPLE MOCK ORDER & OPEN TRADES (RIGHT) -->
-  <div id="view-terminal" class="grid-2">
-    <!-- Left: Interactive Chart at Top (Signal Chart + Free TradingView Widget) -->
-    <div class="card" style="margin-bottom:0;">
-      <div class="card-title">
-        <span id="chart-title-label">📊 Live Price &amp; Strategy Signals</span>
-        <div style="display:flex; gap:5px; align-items:center;">
-          <button type="button" class="filter-chip active" id="mock-btn-sig-chart" style="padding:3px 8px; font-size:0.7rem;" onclick="switchMockChartMode('SIGNAL')">⚡ Signal Chart</button>
-          <button type="button" class="filter-chip" id="mock-btn-tv-chart" style="padding:3px 8px; font-size:0.7rem;" onclick="switchMockChartMode('TV')">📈 TradingView</button>
-        </div>
-      </div>
-      <div class="chart-hud-bar" id="mock-chart-hud">
-        <span id="chart-sub-stats">Hover any candle to inspect OHLC, VWAP, SuperTrend &amp; RSI(14) · Green ▲ = Buy Call · Red ▼ = Buy Put</span>
-      </div>
-      <div id="mock-sig-canvas-wrap" style="position:relative; height:320px; width:100%; background:var(--bg-card-alt); border:1px solid var(--border); border-radius:10px; overflow:hidden;">
-        <canvas id="mock-candle-canvas" style="width:100%; height:100%; display:block; cursor:crosshair;"></canvas>
-      </div>
-      <div id="mock-tv-iframe-wrap" style="display:none; height:320px; width:100%; border:1px solid var(--border); border-radius:10px; overflow:hidden;"></div>
-    </div>
-
-    <!-- Right: Simple 2-Click Mock Trade Ticket & Active Trades -->
-    <div class="card" style="margin-bottom:0;">
-      <div class="card-title">
-        <span>🎮 Manual Mock Trade Controls</span>
-        <span class="badge badge-emerald" id="ticket-ltp-badge">Spot: ₹0.00</span>
-      </div>
-      <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;" id="ticket-contract-desc">
-        Contract: NIFTY ATM Option · Lot Size: 65
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
-        <button type="button" class="btn-emerald" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('LONG')">
-          🟢 BUY CALL / LONG<br><span style="font-size:0.68rem; font-weight:500;" id="btn-long-sub">Bullish Entry</span>
-        </button>
-        <button type="button" class="btn-danger" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('SHORT')">
-          🔴 BUY PUT / SHORT<br><span style="font-size:0.68rem; font-weight:500;" id="btn-short-sub">Bearish Entry</span>
-        </button>
-      </div>
-
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-top:6px; border-top:1px solid #e2e8f0;">
-        <span style="font-size:0.78rem; font-weight:800; color:#0f172a;">🔥 Active Open Mock Trades (<span id="mini-open-summary">0 Open</span>)</span>
-        <button type="button" class="btn-amber" style="padding:4px 9px; font-size:0.7rem;" onclick="squareOffAllPaperPositions('Manual Square-Off')">⏹️ Square Off All Open</button>
-      </div>
-      <div id="mini-open-positions-box" style="max-height:195px; overflow-y:auto;"></div>
-    </div>
-  </div>
-
 
   <!-- 2. FOUR CLEAN SUMMARY KPIs -->
   <div class="kpi-grid">
@@ -861,6 +867,34 @@
           Auto-sets Stop-Loss &amp; Target and updates every 10s
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 4. MANUAL MOCK TRADE CONTROLS & ACTIVE OPEN TRADES -->
+  <div id="view-terminal">
+    <div class="card">
+      <div class="card-title">
+        <span>🎮 Manual Mock Trade Controls</span>
+        <span class="badge badge-emerald" id="ticket-ltp-badge">Spot: ₹0.00</span>
+      </div>
+      <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;" id="ticket-contract-desc">
+        Contract: NIFTY ATM Option · Lot Size: 65
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+        <button type="button" class="btn-emerald" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('LONG')">
+          🟢 BUY CALL / LONG<br><span style="font-size:0.68rem; font-weight:500;" id="btn-long-sub">Bullish Entry</span>
+        </button>
+        <button type="button" class="btn-danger" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('SHORT')">
+          🔴 BUY PUT / SHORT<br><span style="font-size:0.68rem; font-weight:500;" id="btn-short-sub">Bearish Entry</span>
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-top:6px; border-top:1px solid #e2e8f0;">
+        <span style="font-size:0.78rem; font-weight:800; color:#0f172a;">🔥 Active Open Mock Trades (<span id="mini-open-summary">0 Open</span>)</span>
+        <button type="button" class="btn-amber" style="padding:4px 9px; font-size:0.7rem;" onclick="squareOffAllPaperPositions('Manual Square-Off')">⏹️ Square Off All Open</button>
+      </div>
+      <div id="mini-open-positions-box" style="max-height:195px; overflow-y:auto;"></div>
     </div>
   </div>
 
@@ -1056,7 +1090,7 @@
   /* =========================================================================
      SHARED PIAI UX ENGINE:
      - Light / Dark Theme Persistence (piai_theme_mode_v1)
-     - Universal Collapsible Card Sections
+     - Universal Collapsible Card Sections & Full-Page Chart Toggle
      - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
      ========================================================================= */
   const STORAGE_KEY_THEME = "piai_theme_mode_v1";
@@ -1109,6 +1143,22 @@
     applyThemeMode(next);
   }
 
+  function toggleFullPageChart(cardId, btnId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const isFull = card.classList.toggle("fullscreen-chart-card");
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.textContent = isFull ? "✕ Exit Full Page" : "⛶ Full Page";
+      btn.className = isFull ? "btn-danger" : "btn-secondary";
+    }
+    setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+      if (typeof recomputeAllOptionModels === "function") { try { recomputeAllOptionModels(); } catch (e) {} }
+      if (typeof drawMockCandleChart === "function") { try { drawMockCandleChart(); } catch (e) {} }
+    }, 60);
+  }
+
   function computeOfficialNSEMarketStatus() {
     const now = new Date();
     const istIso = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -1135,7 +1185,7 @@
       statusBadgeHtml = `<span class="badge badge-red">🔴 WEEKEND · MARKET CLOSED</span>`;
     } else if (!withinHours) {
       isMarketOpen = false;
-      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED (Hours: 09:15–15:30 IST)</span>`;
+      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED (09:15–15:30 IST)</span>`;
     } else if (feedClosed) {
       isMarketOpen = false;
       statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET CLOSED / HOLIDAY</span>`;
@@ -1148,14 +1198,14 @@
 
   let allSectionsCollapsed = false;
   function initCollapsibleCards() {
-    document.querySelectorAll(".card").forEach((card, idx) => {
+    document.querySelectorAll(".card").forEach((card) => {
       if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
       const titleEl = card.querySelector(".card-title");
       if (!titleEl || titleEl.querySelector(".sec-collapse-btn")) return;
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "sec-collapse-btn";
-      btn.textContent = "▼";
+      btn.textContent = card.classList.contains("section-collapsed") ? "▶" : "▼";
       btn.title = "Collapse / Expand Section";
       btn.onclick = function(ev) {
         ev.stopPropagation();
@@ -1170,7 +1220,7 @@
     allSectionsCollapsed = !allSectionsCollapsed;
     document.querySelectorAll(".card").forEach(card => {
       if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
-      if ( card.querySelector(".card-title") ) {
+      if (card.querySelector(".card-title")) {
         card.classList.toggle("section-collapsed", allSectionsCollapsed);
         const b = card.querySelector(".sec-collapse-btn");
         if (b) b.textContent = allSectionsCollapsed ? "▶" : "▼";
