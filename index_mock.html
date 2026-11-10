@@ -241,10 +241,9 @@
     #toast-bar.show { opacity: 1; }
   
     /* =====================================================================
-       PIAI CRISP INSTITUTIONAL LIGHT THEME & MOBILE/LAPTOP RESPONSIVE SYSTEM
-       Compatible with Desktop/Laptop & Mobile (Android Chrome & iOS Safari)
+       PIAI DUAL THEME (LIGHT & DARK) + MOBILE/LAPTOP RESPONSIVE DESIGN SYSTEM
        ===================================================================== */
-    :root {
+    :root, body.theme-light {
       --bg-dark: #f1f5f9 !important;
       --bg-card: #ffffff !important;
       --bg-card-alt: #f8fafc !important;
@@ -257,34 +256,63 @@
       --red: #dc2626 !important;
       --amber: #d97706 !important;
       --purple: #7c3aed !important;
+      --surface-subtle: #f8fafc;
+      --header-grad: linear-gradient(90deg, #ffffff 0%, #f0f9ff 50%, #ffffff 100%);
+      --bar-bg: #ffffff;
+      --input-bg: #ffffff;
+      --table-th-bg: #f1f5f9;
+      --code-bg: #f8fafc;
+    }
+    body.theme-dark {
+      --bg-dark: #060b14 !important;
+      --bg-card: #0f172a !important;
+      --bg-card-alt: #1e293b !important;
+      --border: #1e293b !important;
+      --border-light: #334155 !important;
+      --text-main: #f8fafc !important;
+      --text-muted: #94a3b8 !important;
+      --accent: #38bdf8 !important;
+      --emerald: #10b981 !important;
+      --red: #f87171 !important;
+      --amber: #fbbf24 !important;
+      --purple: #c084fc !important;
+      --surface-subtle: #090d16;
+      --header-grad: linear-gradient(90deg, #090d16 0%, #1e1b4b 50%, #090d16 100%);
+      --bar-bg: #09101f;
+      --input-bg: #060b14;
+      --table-th-bg: #090d16;
+      --code-bg: #050811;
     }
     html {
       -webkit-text-size-adjust: 100%;
       scroll-behavior: smooth;
     }
     body {
-      background: #f1f5f9 !important;
-      color: #0f172a !important;
+      background: var(--bg-dark) !important;
+      color: var(--text-main) !important;
       font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
       overflow-x: hidden;
+      transition: background-color 0.18s ease, color 0.18s ease;
     }
     code {
-      background: #e2e8f0 !important;
-      color: #0369a1 !important;
+      background: var(--bg-card-alt) !important;
+      color: var(--accent) !important;
       padding: 2px 6px;
       border-radius: 5px;
       font-weight: 600;
+      border: 1px solid var(--border);
     }
-    /* Unified Global Top App Navigation Bar (All 4 HTML Modules in One Place) */
+
+    /* Unified Global Top App Navigation Bar */
     .global-app-bar {
-      background: #ffffff;
-      border-bottom: 1px solid #cbd5e1;
-      padding: 8px 14px;
+      background: var(--bar-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 7px 14px;
       position: sticky;
       top: 0;
-      z-index: 80;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+      z-index: 90;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
     }
     .global-app-bar-inner {
       max-width: 1240px;
@@ -292,7 +320,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .app-module-tabs {
@@ -300,29 +328,22 @@
       gap: 6px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      padding-bottom: 2px;
       align-items: center;
     }
     .app-nav-tab {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
+      gap: 5px;
+      padding: 6px 12px;
       border-radius: 8px;
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       font-weight: 700;
-      color: #334155;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
+      color: var(--text-main);
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s ease;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-    }
-    .app-nav-tab:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-      transform: translateY(-1px);
     }
     .app-nav-tab.active {
       background: #2563eb !important;
@@ -337,45 +358,170 @@
       flex-wrap: wrap;
     }
 
-    /* Light Theme Header & Cards */
+    /* Unified Single-Place Auto-Sync + Refresh Icon + Last Synced Below (Requirement #3 & #4) */
+    .unified-sync-box {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      line-height: 1.15;
+    }
+    .unified-sync-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px 4px;
+    }
+    .sync-icon-btn {
+      background: #059669 !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 6px !important;
+      width: 26px;
+      height: 26px;
+      padding: 0 !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: none !important;
+    }
+    .sync-interval-btn {
+      background: transparent !important;
+      color: var(--text-main) !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 3px 6px !important;
+      font-size: 0.72rem !important;
+      font-weight: 700 !important;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .unified-sync-sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    /* Compact Refresh Icon Button (Requirement #4: Never wrap to a new line just for refresh) */
+    .icon-refresh-btn {
+      background: var(--bg-card-alt) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border) !important;
+      width: 28px;
+      height: 28px;
+      padding: 0 !important;
+      border-radius: 7px !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .icon-refresh-btn:hover {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+    }
+
+    /* Three-Dots More Tools Dropdown Menu (Requirement #6) */
+    .more-tabs-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .more-tabs-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      min-width: 225px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+      z-index: 120;
+      padding: 6px;
+    }
+    .more-tabs-dropdown.open {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .more-menu-item {
+      background: transparent !important;
+      color: var(--text-main) !important;
+      border: none !important;
+      box-shadow: none !important;
+      text-align: left;
+      padding: 8px 10px !important;
+      font-size: 0.78rem !important;
+      border-radius: 7px !important;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .more-menu-item:hover, .more-menu-item.active {
+      background: rgba(37, 99, 235, 0.12) !important;
+      color: #2563eb !important;
+    }
+
+    /* Collapsible Card Sections (Requirement #8) */
+    .card.section-collapsed > *:not(.card-title) {
+      display: none !important;
+    }
+    .card.section-collapsed .card-title {
+      margin-bottom: 0 !important;
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+    }
+    .sec-collapse-btn {
+      background: var(--bg-card-alt) !important;
+      color: var(--text-muted) !important;
+      border: 1px solid var(--border) !important;
+      padding: 2px 7px !important;
+      font-size: 0.68rem !important;
+      border-radius: 6px !important;
+      box-shadow: none !important;
+      margin-left: 6px;
+    }
+
+    /* Theme Surfaces */
     .top-header {
-      background: linear-gradient(90deg, #ffffff 0%, #f0f9ff 50%, #ffffff 100%) !important;
-      border-bottom: 1px solid #cbd5e1 !important;
+      background: var(--header-grad) !important;
+      border-bottom: 1px solid var(--border) !important;
       position: relative !important;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
     .header-title, .brand-title, .card-title {
-      color: #0f172a !important;
+      color: var(--text-main) !important;
+      flex-wrap: nowrap;
     }
     .card, .kpi-card, .stock-card, .upload-card, .control-bar, .toolbar-card, .simple-bar, .strategy-spotlight, details.advanced-drawer {
-      background: #ffffff !important;
-      border: 1px solid #cbd5e1 !important;
-      color: #0f172a !important;
+      background: var(--bg-card) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-main) !important;
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
     }
-    .strategy-spotlight {
-      background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%) !important;
-      border: 1px solid #38bdf8 !important;
-    }
     .setup-steps, .replay-bar, .algo-card, .rec-card, .sim-toggle-row, .action-item, .stock-expanded {
-      background: #f8fafc !important;
-      border-color: #334155 !important;
-      color: #0f172a !important;
+      background: var(--bg-card-alt) !important;
+      border-color: var(--border) !important;
+      color: var(--text-main) !important;
     }
-    .algo-card.active {
-      background: #e0f2fe !important;
-      border-color: #0284c7 !important;
-    }
-    .stock-name, .rec-name { color: #0f172a !important; }
-    .data-row { border-bottom: 1px solid #e2e8f0 !important; }
+    .stock-name, .rec-name { color: var(--text-main) !important; }
+    .data-row { border-bottom: 1px solid var(--border) !important; }
 
-    /* Strict Separation Between Clickable Buttons vs. Read-Only Badges/Pills (Requirement #9) */
+    /* Buttons vs Badges (Requirement #9) */
     button, .btn-primary, .btn-secondary, .btn-emerald, .btn-danger, .btn-algo, .btn-purple, .btn-amber {
       border-radius: 8px !important;
       font-weight: 700 !important;
       cursor: pointer !important;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
     }
     .btn-primary { background: #2563eb !important; color: #ffffff !important; border: 1px solid #1d4ed8 !important; }
     .btn-emerald { background: #059669 !important; color: #ffffff !important; border: 1px solid #047857 !important; }
@@ -383,45 +529,48 @@
     .btn-amber { background: #d97706 !important; color: #ffffff !important; border: 1px solid #b45309 !important; }
     .btn-danger { background: #dc2626 !important; color: #ffffff !important; border: 1px solid #b91c1c !important; }
     .btn-secondary {
-      background: #f8fafc !important;
-      color: #0f172a !important;
-      border: 1px solid #94a3b8 !important;
+      background: var(--bg-card-alt) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-light) !important;
     }
-    .btn-secondary:hover { background: #e2e8f0 !important; }
 
-    /* Non-Button Informational Badges & Status Pills */
     span.badge, div.badge, .header-signal-pill, .header-pill {
       border-radius: 6px !important;
       box-shadow: none !important;
       font-weight: 700 !important;
     }
-    .badge-blue { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #7dd3fc !important; }
-    .badge-emerald { background: #dcfce7 !important; color: #047857 !important; border: 1px solid #6ee7b7 !important; }
-    .badge-red { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important; }
-    .badge-amber { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; }
-    .badge-purple { background: #f3e8ff !important; color: #6d28d9 !important; border: 1px solid #d8b4fe !important; }
+    body.theme-light .badge-blue { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #7dd3fc !important; }
+    body.theme-light .badge-emerald { background: #dcfce7 !important; color: #047857 !important; border: 1px solid #6ee7b7 !important; }
+    body.theme-light .badge-red { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fca5a5 !important; }
+    body.theme-light .badge-amber { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fcd34d !important; }
+    body.theme-light .badge-purple { background: #f3e8ff !important; color: #6d28d9 !important; border: 1px solid #d8b4fe !important; }
 
-    /* Sub-Navigation Tabs & Filter Chips */
+    body.theme-dark .badge-blue { background: rgba(56,189,248,0.15) !important; color: #7dd3fc !important; border: 1px solid rgba(56,189,248,0.35) !important; }
+    body.theme-dark .badge-emerald { background: rgba(16,185,129,0.15) !important; color: #6ee7b7 !important; border: 1px solid rgba(16,185,129,0.35) !important; }
+    body.theme-dark .badge-red { background: rgba(239,68,68,0.18) !important; color: #fca5a5 !important; border: 1px solid rgba(239,68,68,0.4) !important; }
+    body.theme-dark .badge-amber { background: rgba(245,158,11,0.16) !important; color: #fde68a !important; border: 1px solid rgba(245,158,11,0.35) !important; }
+    body.theme-dark .badge-purple { background: rgba(168,85,247,0.16) !important; color: #e9d5ff !important; border: 1px solid rgba(168,85,247,0.35) !important; }
+
     .nav-tabs {
-      border-bottom: 2px solid #e2e8f0 !important;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
+      border-bottom: 2px solid var(--border) !important;
+      overflow: visible !important;
+      flex-wrap: wrap;
     }
     .tab-btn {
-      background: #f8fafc !important;
-      color: #475569 !important;
-      border: 1px solid #cbd5e1 !important;
+      background: var(--bg-card-alt) !important;
+      color: var(--text-muted) !important;
+      border: 1px solid var(--border) !important;
       font-weight: 700 !important;
     }
     .tab-btn.active {
-      background: #0f172a !important;
+      background: #2563eb !important;
       color: #ffffff !important;
-      border-color: #0f172a !important;
+      border-color: #1d4ed8 !important;
     }
     .filter-chip {
-      background: #f1f5f9 !important;
-      color: #334155 !important;
-      border: 1px solid #cbd5e1 !important;
+      background: var(--bg-card-alt) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border) !important;
       font-weight: 600 !important;
       border-radius: 8px !important;
     }
@@ -431,50 +580,34 @@
       border-color: #1d4ed8 !important;
     }
 
-    /* Inputs, Selects & Tables in Light Theme */
     .search-input, .watchlist-input, .inp-field, select, input[type="text"], input[type="number"], input[type="password"] {
-      background: #ffffff !important;
-      color: #0f172a !important;
-      border: 1px solid #94a3b8 !important;
-    }
-    .search-input:focus, .watchlist-input:focus, .inp-field:focus {
-      outline: 2px solid #38bdf8 !important;
-      border-color: #0284c7 !important;
+      background: var(--input-bg) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-light) !important;
     }
     th {
-      background: #f1f5f9 !important;
-      color: #334155 !important;
-      border-bottom: 2px solid #cbd5e1 !important;
+      background: var(--table-th-bg) !important;
+      color: var(--text-muted) !important;
+      border-bottom: 2px solid var(--border) !important;
     }
     td {
-      border-bottom: 1px solid #e2e8f0 !important;
-      color: #0f172a !important;
-    }
-    .chain-strike-col {
-      background: #e2e8f0 !important;
-      color: #0f172a !important;
+      border-bottom: 1px solid var(--border) !important;
+      color: var(--text-main) !important;
     }
     .code-box, pre {
-      background: #f8fafc !important;
-      color: #0f172a !important;
-      border: 1px solid #cbd5e1 !important;
+      background: var(--code-bg) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border) !important;
     }
-
-    /* Modals, Top-Right Close Button & Chat Window */
-    .modal-backdrop {
-      background: rgba(15, 23, 42, 0.55) !important;
-      backdrop-filter: blur(3px);
-    }
-    .modal-box {
-      background: #ffffff !important;
-      color: #0f172a !important;
-      border: 1px solid #94a3b8 !important;
-      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22) !important;
+    .modal-box, .chat-window {
+      background: var(--bg-card) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-light) !important;
     }
     .close-x-btn {
-      background: #f1f5f9 !important;
-      color: #0f172a !important;
-      border: 1px solid #cbd5e1 !important;
+      background: var(--bg-card-alt) !important;
+      color: var(--text-main) !important;
+      border: 1px solid var(--border) !important;
       width: 28px;
       height: 28px;
       border-radius: 6px !important;
@@ -485,47 +618,35 @@
       font-size: 0.85rem;
       padding: 0 !important;
       cursor: pointer;
+      flex-shrink: 0;
     }
     .close-x-btn:hover {
       background: #fee2e2 !important;
       color: #b91c1c !important;
       border-color: #fca5a5 !important;
     }
-    .chat-window {
-      background: #ffffff !important;
-      border: 1px solid #94a3b8 !important;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18) !important;
-    }
-    .chat-header {
-      background: #0f172a !important;
-      color: #ffffff !important;
-    }
-    .chat-bubble-ai {
-      background: #f1f5f9 !important;
-      color: #0f172a !important;
-      border: 1px solid #cbd5e1;
-    }
-    .chat-prompts { background: #f8fafc !important; border-top: 1px solid #e2e8f0; }
-    .prompt-chip { background: #e0f2fe !important; color: #0369a1 !important; border-color: #0369a1 !important; }
-    .chat-input-bar { background: #f1f5f9 !important; border-top: 1px solid #cbd5e1; }
-    .chat-input { background: #ffffff !important; color: #0f172a !important; border-color: #94a3b8 !important; }
 
-    /* Privacy Blur Mode when active on body */
-    body.privacy-masked .mask-sensitive {
-      filter: blur(6px);
-      user-select: none;
+    /* Interactive Chart Crosshair HUD Overlay */
+    .chart-hud-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      font-size: 0.74rem;
+      margin-bottom: 8px;
+      min-height: 32px;
     }
 
-    /* Responsive Laptop & Mobile Rules (Android Chrome & iOS Safari) */
     @media (max-width: 768px) {
       .global-app-bar { padding: 6px 10px; }
-      .app-nav-tab { padding: 6px 10px; font-size: 0.74rem; }
+      .app-nav-tab { padding: 5px 9px; font-size: 0.73rem; }
       .container { padding: 0 10px !important; margin: 10px auto !important; }
       .grid-2, .grid-equal { grid-template-columns: 1fr !important; }
       .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-      .header-top, .header-inner { flex-direction: column; align-items: flex-start !important; }
-      .header-total, .header-right { text-align: left !important; width: 100%; }
-      /* Prevent iOS Safari auto-zoom on input focus */
       input[type="text"], input[type="number"], input[type="password"], select, textarea, .search-input, .watchlist-input, .inp-field, .chat-input {
         font-size: 16px !important;
       }
@@ -543,19 +664,27 @@
 
   </style>
 </head>
-<body>
-<!-- UNIFIED GLOBAL APP NAVIGATION BAR (ALL 4 MODULES IN ONE PLACE) -->
+<body class="theme-light">
+<!-- UNIFIED GLOBAL APP NAVIGATION BAR -->
 <div class="global-app-bar">
   <div class="global-app-bar-inner">
     <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
       <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio Hub</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Equity Algo Studio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 F&amp;O Options Hub</button><button type="button" class="app-nav-tab active" onclick="navigateToModule('index_mock.html')">🧪 Mock Trading Lab</button>
     </div>
-      <div class="global-util-btns">
-        <span style="font-size:0.73rem; color:#475569; font-weight:600;">10s Auto-Refresh Active</span>
+    <div class="global-util-btns">
+      <button type="button" class="btn-secondary" id="nav-tab-admin" style="padding:5px 9px; font-size:0.72rem;" onclick="toggleFeedDrawer()" title="Open Brokers &amp; Admin Settings">⚙️ Admin</button>
+      <button type="button" class="btn-secondary" id="btn-theme-toggle" style="padding:5px 9px; font-size:0.72rem;" onclick="toggleAppTheme()" title="Switch between Light and Dark theme">☀️ Light</button>
+      <button type="button" class="btn-secondary" style="padding:5px 8px; font-size:0.71rem;" onclick="toggleAllPageSections()" id="btn-collapse-all-secs" title="Expand or Collapse all page cards">➖ Collapse All</button>
+      <div class="unified-sync-box">
+        <div class="unified-sync-top">
+          <button type="button" class="sync-icon-btn" id="btn-live-sync" onclick="manualRefreshNow()" title="Manual Refresh Now">↻</button>
+          <button type="button" class="sync-interval-btn" id="btn-autorefresh-toggle" onclick="toggleTenSecAutoRefresh()" title="Click to cycle Auto-Sync interval">🔄 Auto: <span id="lbl-refresh-countdown">10s</span></button>
+        </div>
+        <div class="unified-sync-sub" id="hdr-last-sync-mock">Last synced: Just now</div>
       </div>
+    </div>
   </div>
 </div>
-
 
 <div class="top-header">
   <div class="header-inner">
@@ -607,20 +736,64 @@
     </div>
 
     <div class="control-group">
-      <button type="button" class="badge badge-blue" id="btn-autorefresh-toggle" onclick="toggleTenSecAutoRefresh()" style="padding:8px 12px; font-size:0.78rem; cursor:pointer;" title="Click to pause or resume 10-second auto-refresh">
-        🔄 Auto-Refresh: <span id="lbl-refresh-countdown">10s</span>
-      </button>
-      <button type="button" class="btn-emerald" id="btn-sync-candles" onclick="manualRefreshNow()">
-        ⚡ Refresh Now
-      </button>
-      <button type="button" class="badge badge-purple" id="hdr-autopilot-badge" onclick="toggleAutoPilot()" style="padding:8px 12px; font-size:0.76rem; cursor:pointer;">
+      <span id="mock-market-status-pill"></span>
+      <button type="button" class="badge badge-purple" id="hdr-autopilot-badge" onclick="toggleAutoPilot()" style="padding:7px 11px; font-size:0.75rem; cursor:pointer;">
         🤖 Auto-Trade Signals: ON
       </button>
       <button type="button" class="btn-danger" style="padding:7px 11px; font-size:0.74rem;" onclick="resetPaperAccount()">
         🔄 Reset ₹10L Paper Account
       </button>
+      <button type="button" id="btn-sync-candles" style="display:none;" onclick="manualRefreshNow()">⚡ Refresh Now</button>
     </div>
   </div>
+
+  <!-- 4. CLEAN 2-COLUMN WORKSPACE: LIVE CHART (LEFT) + SIMPLE MOCK ORDER & OPEN TRADES (RIGHT) -->
+  <div id="view-terminal" class="grid-2">
+    <!-- Left: Interactive Chart at Top (Signal Chart + Free TradingView Widget) -->
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">
+        <span id="chart-title-label">📊 Live Price &amp; Strategy Signals</span>
+        <div style="display:flex; gap:5px; align-items:center;">
+          <button type="button" class="filter-chip active" id="mock-btn-sig-chart" style="padding:3px 8px; font-size:0.7rem;" onclick="switchMockChartMode('SIGNAL')">⚡ Signal Chart</button>
+          <button type="button" class="filter-chip" id="mock-btn-tv-chart" style="padding:3px 8px; font-size:0.7rem;" onclick="switchMockChartMode('TV')">📈 TradingView</button>
+        </div>
+      </div>
+      <div class="chart-hud-bar" id="mock-chart-hud">
+        <span id="chart-sub-stats">Hover any candle to inspect OHLC, VWAP, SuperTrend &amp; RSI(14) · Green ▲ = Buy Call · Red ▼ = Buy Put</span>
+      </div>
+      <div id="mock-sig-canvas-wrap" style="position:relative; height:320px; width:100%; background:var(--bg-card-alt); border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+        <canvas id="mock-candle-canvas" style="width:100%; height:100%; display:block; cursor:crosshair;"></canvas>
+      </div>
+      <div id="mock-tv-iframe-wrap" style="display:none; height:320px; width:100%; border:1px solid var(--border); border-radius:10px; overflow:hidden;"></div>
+    </div>
+
+    <!-- Right: Simple 2-Click Mock Trade Ticket & Active Trades -->
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">
+        <span>🎮 Manual Mock Trade Controls</span>
+        <span class="badge badge-emerald" id="ticket-ltp-badge">Spot: ₹0.00</span>
+      </div>
+      <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;" id="ticket-contract-desc">
+        Contract: NIFTY ATM Option · Lot Size: 65
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+        <button type="button" class="btn-emerald" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('LONG')">
+          🟢 BUY CALL / LONG<br><span style="font-size:0.68rem; font-weight:500;" id="btn-long-sub">Bullish Entry</span>
+        </button>
+        <button type="button" class="btn-danger" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('SHORT')">
+          🔴 BUY PUT / SHORT<br><span style="font-size:0.68rem; font-weight:500;" id="btn-short-sub">Bearish Entry</span>
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-top:6px; border-top:1px solid #e2e8f0;">
+        <span style="font-size:0.78rem; font-weight:800; color:#0f172a;">🔥 Active Open Mock Trades (<span id="mini-open-summary">0 Open</span>)</span>
+        <button type="button" class="btn-amber" style="padding:4px 9px; font-size:0.7rem;" onclick="squareOffAllPaperPositions('Manual Square-Off')">⏹️ Square Off All Open</button>
+      </div>
+      <div id="mini-open-positions-box" style="max-height:195px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
 
   <!-- 2. FOUR CLEAN SUMMARY KPIs -->
   <div class="kpi-grid">
@@ -691,52 +864,12 @@
     </div>
   </div>
 
-  <!-- 4. CLEAN 2-COLUMN WORKSPACE: LIVE CHART (LEFT) + SIMPLE MOCK ORDER & OPEN TRADES (RIGHT) -->
-  <div id="view-terminal" class="grid-2">
-    <!-- Left: Clean Chart -->
-    <div class="card" style="margin-bottom:0;">
-      <div class="card-title">
-        <span id="chart-title-label">📊 Live Price &amp; Strategy Signals</span>
-        <span style="font-size:0.72rem; color:var(--text-muted);" id="chart-sub-stats">Green ▲ = Buy Call · Red ▼ = Buy Put</span>
-      </div>
-      <div style="position:relative; height:320px; width:100%; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden;">
-        <canvas id="mock-candle-canvas" style="width:100%; height:100%; display:block;"></canvas>
-      </div>
-    </div>
-
-    <!-- Right: Simple 2-Click Mock Trade Ticket & Active Trades -->
-    <div class="card" style="margin-bottom:0;">
-      <div class="card-title">
-        <span>🎮 Manual Mock Trade Controls</span>
-        <span class="badge badge-emerald" id="ticket-ltp-badge">Spot: ₹0.00</span>
-      </div>
-      <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;" id="ticket-contract-desc">
-        Contract: NIFTY ATM Option · Lot Size: 65
-      </div>
-
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
-        <button type="button" class="btn-emerald" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('LONG')">
-          🟢 BUY CALL / LONG<br><span style="font-size:0.68rem; font-weight:500;" id="btn-long-sub">Bullish Entry</span>
-        </button>
-        <button type="button" class="btn-danger" style="padding:11px; font-size:0.82rem;" onclick="placePaperOrder('SHORT')">
-          🔴 BUY PUT / SHORT<br><span style="font-size:0.68rem; font-weight:500;" id="btn-short-sub">Bearish Entry</span>
-        </button>
-      </div>
-
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding-top:6px; border-top:1px solid #e2e8f0;">
-        <span style="font-size:0.78rem; font-weight:800; color:#0f172a;">🔥 Active Open Mock Trades (<span id="mini-open-summary">0 Open</span>)</span>
-        <button type="button" class="btn-amber" style="padding:4px 9px; font-size:0.7rem;" onclick="squareOffAllPaperPositions('Manual Square-Off')">⏹️ Square Off All Open</button>
-      </div>
-      <div id="mini-open-positions-box" style="max-height:195px; overflow-y:auto;"></div>
-    </div>
-  </div>
-
   <!-- 5. SIMPLE STRATEGY COMPARISON TABLE (WHICH STRATEGY WORKS BEST RIGHT NOW?) -->
   <div class="card" id="view-arena">
     <div class="card-title">
       <span>⚔️ Strategy Performance Comparison (Click "Use This Algo" to Switch Strategy)</span>
       <div style="display:flex; gap:6px;">
-        <button type="button" class="btn-secondary" style="padding:4px 9px; font-size:0.72rem;" onclick="recomputeMockEngine()">🔄 Re-Run All 6 Algorithms</button>
+        <button type="button" class="icon-refresh-btn" onclick="recomputeMockEngine()" title="Re-Run All 6 Algorithms">↻</button><button type="button" style="display:none;" onclick="recomputeMockEngine()">🔄 Re-Run All 6 Algorithms</button>
         <button type="button" class="btn-purple" style="padding:4px 9px; font-size:0.72rem;" onclick="backtestActiveAlgoToTrades()">🚀 Simulate Full Session Trades into Paper Ledger</button>
       </div>
     </div>
@@ -919,6 +1052,140 @@
 <div id="toast-bar">Action completed</div>
 
 <script>
+
+  /* =========================================================================
+     SHARED PIAI UX ENGINE:
+     - Light / Dark Theme Persistence (piai_theme_mode_v1)
+     - Universal Collapsible Card Sections
+     - Official 2026-2027 NSE/BSE Market Holiday & Closed Status Detector
+     ========================================================================= */
+  const STORAGE_KEY_THEME = "piai_theme_mode_v1";
+  const NSE_BSE_HOLIDAY_CALENDAR_2026_2027 = {
+    "2026-01-26": "Republic Day",
+    "2026-03-03": "Holi",
+    "2026-03-26": "Shri Ram Navami",
+    "2026-03-31": "Shri Mahavir Jayanti",
+    "2026-04-03": "Good Friday",
+    "2026-04-14": "Dr. Baba Saheb Ambedkar Jayanti",
+    "2026-05-01": "Maharashtra Day",
+    "2026-05-28": "Bakri Id",
+    "2026-06-26": "Muharram",
+    "2026-09-14": "Ganesh Chaturthi",
+    "2026-10-02": "Mahatma Gandhi Jayanti",
+    "2026-10-20": "Dussehra",
+    "2026-11-09": "Diwali Laxmi Pujan (Muhurat Session Only)",
+    "2026-11-10": "Diwali Balipratipada (NSE/BSE Holiday)",
+    "2026-11-24": "Prakash Gurpurb Sri Guru Nanak Dev",
+    "2026-12-25": "Christmas",
+    "2027-01-26": "Republic Day",
+    "2027-03-22": "Holi",
+    "2027-03-26": "Good Friday",
+    "2027-04-14": "Dr. Ambedkar Jayanti",
+    "2027-08-15": "Independence Day",
+    "2027-10-02": "Gandhi Jayanti"
+  };
+
+  function getActiveThemeMode() {
+    try { return localStorage.getItem(STORAGE_KEY_THEME) || "light"; } catch (e) { return "light"; }
+  }
+
+  function applyThemeMode(mode) {
+    const isDark = mode === "dark";
+    document.body.classList.toggle("theme-dark", isDark);
+    document.body.classList.toggle("theme-light", !isDark);
+    const btn = document.getElementById("btn-theme-toggle");
+    if (btn) {
+      btn.textContent = isDark ? "🌙 Dark" : "☀️ Light";
+    }
+    try { localStorage.setItem(STORAGE_KEY_THEME, isDark ? "dark" : "light"); } catch (e) {}
+    if (typeof renderVisualCharts === "function") { try { renderVisualCharts(); } catch (e) {} }
+    if (typeof calculateWealthProjection === "function") { try { calculateWealthProjection(); } catch (e) {} }
+    if (typeof recomputeAllOptionModels === "function") { try { recomputeAllOptionModels(); } catch (e) {} }
+    if (typeof drawMockCandleChart === "function") { try { drawMockCandleChart(); drawArenaEquityChart(); } catch (e) {} }
+  }
+
+  function toggleAppTheme() {
+    const next = getActiveThemeMode() === "dark" ? "light" : "dark";
+    applyThemeMode(next);
+  }
+
+  function computeOfficialNSEMarketStatus() {
+    const now = new Date();
+    const istIso = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    const istDateStr = now.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+    const istTimeStr = now.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Kolkata", weekday: "short", hour: "numeric", minute: "numeric", hour12: false }).formatToParts(now);
+    const wk = (parts.find(p => p.type === "weekday") || {}).value || "";
+    const hr = parseInt((parts.find(p => p.type === "hour") || {}).value || "0", 10);
+    const mn = parseInt((parts.find(p => p.type === "minute") || {}).value || "0", 10);
+    const totalMins = hr * 60 + mn;
+
+    const holidayName = NSE_BSE_HOLIDAY_CALENDAR_2026_2027[istIso] || null;
+    const isWeekend = ["Sat", "Sun"].includes(wk);
+    const withinHours = totalMins >= (9 * 60 + 15) && totalMins <= (15 * 60 + 30);
+    const feedClosed = window._exchangeFeedReportedClosed === true;
+
+    let isMarketOpen = false;
+    let statusBadgeHtml = "";
+    if (holidayName) {
+      isMarketOpen = false;
+      statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET HOLIDAY · CLOSED (${holidayName})</span>`;
+    } else if (isWeekend) {
+      isMarketOpen = false;
+      statusBadgeHtml = `<span class="badge badge-red">🔴 WEEKEND · MARKET CLOSED</span>`;
+    } else if (!withinHours) {
+      isMarketOpen = false;
+      statusBadgeHtml = `<span class="badge badge-red">🔴 MARKET CLOSED (Hours: 09:15–15:30 IST)</span>`;
+    } else if (feedClosed) {
+      isMarketOpen = false;
+      statusBadgeHtml = `<span class="badge badge-amber">🏛️ MARKET CLOSED / HOLIDAY</span>`;
+    } else {
+      isMarketOpen = true;
+      statusBadgeHtml = `<span class="badge badge-emerald">🟢 NSE/BSE MARKET OPEN</span>`;
+    }
+    return { istIso, istDateStr, istTimeStr, isMarketOpen, holidayName, statusBadgeHtml };
+  }
+
+  let allSectionsCollapsed = false;
+  function initCollapsibleCards() {
+    document.querySelectorAll(".card").forEach((card, idx) => {
+      if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
+      const titleEl = card.querySelector(".card-title");
+      if (!titleEl || titleEl.querySelector(".sec-collapse-btn")) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sec-collapse-btn";
+      btn.textContent = "▼";
+      btn.title = "Collapse / Expand Section";
+      btn.onclick = function(ev) {
+        ev.stopPropagation();
+        const collapsed = card.classList.toggle("section-collapsed");
+        btn.textContent = collapsed ? "▶" : "▼";
+      };
+      titleEl.appendChild(btn);
+    });
+  }
+
+  function toggleAllPageSections() {
+    allSectionsCollapsed = !allSectionsCollapsed;
+    document.querySelectorAll(".card").forEach(card => {
+      if (card.id === "dhan-drawer" || card.id === "feed-drawer") return;
+      if ( card.querySelector(".card-title") ) {
+        card.classList.toggle("section-collapsed", allSectionsCollapsed);
+        const b = card.querySelector(".sec-collapse-btn");
+        if (b) b.textContent = allSectionsCollapsed ? "▶" : "▼";
+      }
+    });
+    const topBtn = document.getElementById("btn-collapse-all-secs");
+    if (topBtn) topBtn.textContent = allSectionsCollapsed ? "➕ Expand All" : "➖ Collapse All";
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    applyThemeMode(getActiveThemeMode());
+    setTimeout(initCollapsibleCards, 80);
+  });
+
+
   /* =========================================================================
      SIMPLIFIED PIAI MOCK TRADING & STRATEGY TESTER
      - Auto-Refreshes every 10 seconds + Manual "⚡ Refresh Now" button
@@ -2173,6 +2440,11 @@
   }
 
   function recomputeMockEngine() {
+    const mktSt = computeOfficialNSEMarketStatus();
+    const mp = document.getElementById("mock-market-status-pill");
+    if (mp) mp.innerHTML = mktSt.statusBadgeHtml;
+    const ls = document.getElementById("hdr-last-sync-mock");
+    if (ls) ls.textContent = "Last synced: " + mktSt.istTimeStr;
     const vis = getVisibleCandles();
     const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
     const params = getSliderParams();
@@ -2380,7 +2652,39 @@
     `).join("");
   }
 
+  
+  let activeMockChartMode = "SIGNAL";
+  function switchMockChartMode(mode) {
+    activeMockChartMode = mode;
+    const sw = document.getElementById("mock-sig-canvas-wrap");
+    const tw = document.getElementById("mock-tv-iframe-wrap");
+    const b1 = document.getElementById("mock-btn-sig-chart");
+    const b2 = document.getElementById("mock-btn-tv-chart");
+    if (sw) sw.style.display = mode === "SIGNAL" ? "block" : "none";
+    if (tw) tw.style.display = mode === "TV" ? "block" : "none";
+    if (b1) b1.classList.toggle("active", mode === "SIGNAL");
+    if (b2) b2.classList.toggle("active", mode === "TV");
+    if (mode === "TV") renderMockTvWidget();
+    else drawMockCandleChart();
+  }
+
+  function renderMockTvWidget() {
+    const box = document.getElementById("mock-tv-iframe-wrap");
+    if (!box) return;
+    const tvMap = {
+      NIFTY: "NSE:NIFTY", BANKNIFTY: "NSE:BANKNIFTY", SENSEX: "BSE:SENSEX", FINNIFTY: "NSE:FINNIFTY",
+      MIDCPNIFTY: "NSE:MIDCPNIFTY", RELIANCE: "NSE:RELIANCE", HDFCBANK: "NSE:HDFCBANK", ICICIBANK: "NSE:ICICIBANK",
+      INFY: "NSE:INFY", TCS: "NSE:TCS", SBIN: "NSE:SBIN", TMPV: "NSE:TATAMOTORS"
+    };
+    const tvSym = tvMap[activeInstrument] || ("NSE:" + activeInstrument);
+    const theme = getActiveThemeMode() === "dark" ? "dark" : "light";
+    const tvInt = activeTimeframe === "1m" ? "1" : activeTimeframe === "15m" ? "15" : "5";
+    const src = `https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(tvSym)}&interval=${tvInt}&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=f1f3f6&studies=%5B%22RSI%40tv-basicstudies%22%5D&theme=${theme}&style=1&timezone=Asia%2FKolkata&locale=en`;
+    box.innerHTML = `<iframe src="${src}" style="width:100%; height:100%; border:0;" allowfullscreen loading="lazy" title="TradingView Chart"></iframe>`;
+  }
+
   function drawMockCandleChart() {
+    if (activeMockChartMode === 'TV') { renderMockTvWidget(); return; }
     const canvas = document.getElementById("mock-candle-canvas");
     if (!canvas) return;
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -2392,7 +2696,7 @@
     ctx.scale(dpr, dpr);
     const W = rect.width, H = rect.height;
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = getActiveThemeMode() === "dark" ? "#050811" : "#ffffff";
     ctx.fillRect(0, 0, W, H);
 
     const vis = getVisibleCandles();
@@ -2514,7 +2818,7 @@
     ctx.scale(dpr, dpr);
     const W = rect.width, H = rect.height;
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = getActiveThemeMode() === "dark" ? "#050811" : "#ffffff";
     ctx.fillRect(0, 0, W, H);
 
     let minEq = paperState.startingCapital * 0.995;
@@ -2561,6 +2865,30 @@
     syncMockMarketCandles(false);
     startTenSecTimer();
   });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const mc = document.getElementById("mock-candle-canvas");
+    if (mc) {
+      mc.addEventListener("mousemove", (ev) => {
+        const vis = getVisibleCandles();
+        if (vis.length < 5) return;
+        const showCount = Math.min(55, vis.length);
+        const startIdx = vis.length - showCount;
+        const rect = mc.getBoundingClientRect();
+        const plotW = rect.width - 72;
+        const k = Math.max(0, Math.min(showCount - 1, Math.floor(((ev.clientX - rect.left - 10) / Math.max(1, plotW)) * showCount)));
+        const bar = vis[startIdx + k];
+        const bt = lastBacktestByAlgo[activeAlgoId];
+        const rsi = (bt && bt.indicators && bt.indicators.rsi14) ? bt.indicators.rsi14[startIdx + k] : 50;
+        const vwap = (bt && bt.indicators && bt.indicators.vwap) ? bt.indicators.vwap[startIdx + k] : bar.close;
+        const sub = document.getElementById("chart-sub-stats");
+        if (sub && bar) {
+          sub.innerHTML = `<strong>🕒 ${formatBarTimeIST(bar.time)}</strong> &nbsp;·&nbsp; O: <strong>₹${bar.open}</strong> &nbsp; H: <strong class="pos">₹${bar.high}</strong> &nbsp; L: <strong class="neg">₹${bar.low}</strong> &nbsp; C: <strong>₹${bar.close}</strong> &nbsp;·&nbsp; VWAP: <strong>₹${vwap.toFixed(1)}</strong> &nbsp;·&nbsp; RSI(14): <strong>${rsi.toFixed(1)}</strong>`;
+        }
+      });
+    }
+  });
+
 </script>
 </body>
 </html>
