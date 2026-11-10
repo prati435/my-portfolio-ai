@@ -894,7 +894,7 @@
   <div class="header-top">
     <div>
       
-      <div class="header-title">📊 PIAI Portfolio<span id="hdr-feed-source" style="display:none;"></span></div>
+      <div class="header-title">⚙️ PIAI Admin Hub<span id="hdr-feed-source" style="display:none;"></span></div>
       
     </div>
     <div class="header-total">
@@ -920,21 +920,22 @@
   </div>
 
     <!-- TRUE TABBED ADMIN NAVIGATION BAR (Clicking a tab renders ONLY that chosen section) -->
-  <div class="nav-tabs" style="align-items:center;">
+  <div class="nav-tabs" style="align-items:center; flex-wrap:wrap; gap:6px;">
     <button type="button" class="tab-btn active" id="btn-admin-tab-csv" onclick="switchAdminSubSection('csv')">📂 1. CSV Import &amp; Diff</button>
     <button type="button" class="tab-btn" id="btn-admin-tab-brokers" onclick="switchAdminSubSection('brokers')">🔗 2. Broker APIs (Dhan · Kotak · IND)</button>
     <button type="button" class="tab-btn" id="btn-admin-tab-aliases" onclick="switchAdminSubSection('aliases')">➕ 3. Manual Add &amp; Aliases</button>
     <button type="button" class="tab-btn" id="btn-admin-tab-alerts" onclick="switchAdminSubSection('alerts')">📲 4. Dynamic Alerts</button>
     <button type="button" class="tab-btn" id="btn-admin-tab-vault" onclick="switchAdminSubSection('vault')">🔒 5. Security Vault</button>
     <div style="margin-left:auto;">
-      <button type="button" class="btn-secondary" style="padding:5px 11px; font-size:0.74rem;" onclick="navigateToModule('index.html')">📊 Back to Portfolio ➔</button>
+      <button type="button" class="btn-secondary" style="padding:5px 12px; font-size:0.75rem;" onclick="navigateToModule('index.html')">📊 Back to Portfolio ➔</button>
     </div>
   </div>
 
-    <!-- ════ TAB 11: BROKERS, CSV IMPORT, ALIAS MEMORY & SECURITY ADMIN ════ -->
-  <div id="view-admin" class="tab-view" style="display: none;">
+  <div id="view-admin" class="tab-view" style="display: block;">
 
-    <!-- 1. CSV UPLOAD & "WHAT CHANGED" DIFF SUMMARY -->
+    <!-- PANEL 1: CSV UPLOAD & DIFF -->
+    <div id="admin-panel-csv" class="admin-sub-panel" style="display:block;">
+      <!-- 1. CSV UPLOAD & "WHAT CHANGED" DIFF SUMMARY -->
     <div class="card">
       <div class="card-title">
         <span>📁 1. Upload Broker CSV &amp; Automatic "What Changed" Diff Analyzer</span>
@@ -965,13 +966,12 @@
       <!-- Inline CSV Diff Summary Box right next to Upload Button (Requirement #6) -->
       <div id="csv-diff-inline-box" style="display:none; margin-top:12px; padding:12px; border-radius:10px; background:#f0fdf4; border:1px solid #86efac; font-size:0.78rem; position:relative;"></div>
     </div>
-
-    </div>
     </div>
 
     <!-- PANEL 2: MULTI-BROKER LIVE APIS -->
     <div id="admin-panel-brokers" class="admin-sub-panel" style="display:none;">
-      <div class="card" id="dhan-config-card" style="display:block;">
+      <!-- 2. MULTI-BROKER LIVE API INTEGRATION HUB (DHANHQ + KOTAK NEO + INDMONEY) -->
+    <div class="card" id="dhan-config-card">
       <div class="card-title">
         <span>🔗 2. Multi-Broker Free API Integration Hub (DhanHQ v2 · Kotak Neo v2 · INDmoney)</span>
         <button type="button" class="btn-secondary" style="padding:4px 10px; font-size:0.73rem;" onclick="openReliabilityModal()">🛡️ Feed &amp; Worker Diagnostics</button>
@@ -1098,13 +1098,12 @@
         Ready — select a broker tab above (DhanHQ, Kotak Neo, or INDmoney) to sync your Stocks &amp; ETFs without overriding other brokers.
       </div>
     </div>
-
-    </div>
     </div>
 
     <!-- PANEL 3: MANUAL ADD & ALIASES -->
     <div id="admin-panel-aliases" class="admin-sub-panel" style="display:none;">
-      <div class="card" id="add-holding-card" style="display:block;">
+      <!-- 3. MANUAL ADD POSITION FORM -->
+    <div class="card" id="add-holding-card">
       <div class="card-title">
         <span>➕ 3. Manually Add Equity / ETF Position (Broker-Tagged)</span>
       </div>
@@ -1144,7 +1143,7 @@
       </form>
     </div>
 
-    <!-- 4. PERSISTENT STOCK / ETF NAME & TICKER ALIAS MEMORY MANAGER (Requirement #10) -->
+      <!-- 4. PERSISTENT STOCK / ETF NAME & TICKER ALIAS MEMORY MANAGER (Requirement #10) -->
     <div class="card">
       <div class="card-title">
         <span>🗂️ 4. Saved Stock &amp; ETF Name / Ticker Aliases (Auto-Applied to All Future CSV Uploads)</span>
@@ -1161,8 +1160,59 @@
       </form>
       <div id="saved-aliases-list-container"></div>
     </div>
+    </div>
 
-    <!-- 5. PORTFOLIO SECURITY & PRIVACY VAULT (Requirement #12) -->
+    <!-- PANEL 4: DYNAMIC ALERTS (WHATSAPP & EMAIL) -->
+    <div id="admin-panel-alerts" class="admin-sub-panel" style="display:none;">
+      <div class="card" id="admin-sec-alerts">
+        <div class="card-title">
+          <span>📲 4. Dynamic Real-Time Market Alerts (WhatsApp &amp; Email)</span>
+          <span class="badge badge-emerald">Real-Time Triggered</span>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px; line-height:1.5;">
+          Configure secure destination contacts for automated trading and risk alerts. PIAI executes dynamic alert generation exclusively based on <strong>today's live market progress</strong> (urgent stop-loss exits, target profit booking, intraday dip buys, and momentum scaling). Stale history is never included.
+        </p>
+
+        <div class="form-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:12px;">
+          <div>
+            <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">✉️ Notification Email</label>
+            <input type="email" id="alert-email-input" class="form-input" style="width:100%;" placeholder="trader@domain.com" />
+          </div>
+          <div>
+            <label style="font-size:0.75rem; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">💬 WhatsApp Phone (with Country Code)</label>
+            <input type="tel" id="alert-whatsapp-input" class="form-input" style="width:100%;" placeholder="+919876543210" />
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+          <input type="checkbox" id="chk-session-only-tokens" style="cursor:pointer;" />
+          <label for="chk-session-only-tokens" style="font-size:0.76rem; color:var(--text-muted); cursor:pointer;">
+            🔒 High Privacy Mode: Keep alert credentials only in memory (SessionStorage), wipe on browser tab close
+          </label>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <button type="button" class="btn-emerald" style="padding:6px 14px; font-size:0.78rem;" onclick="saveSecureAlertContactsFromUI()">
+            💾 Save Alert Configuration
+          </button>
+          <button type="button" class="btn-secondary" style="padding:6px 14px; font-size:0.78rem;" onclick="sendPortfolioAlertViaWhatsApp()">
+            💬 Send Today's Dynamic Alert on WhatsApp
+          </button>
+          <button type="button" class="btn-secondary" style="padding:6px 14px; font-size:0.78rem;" onclick="sendPortfolioAlertViaEmail()">
+            ✉️ Send Today's Dynamic Alert via Email
+          </button>
+          <span id="alert-contact-save-status" style="font-size:0.76rem; margin-left:6px;"></span>
+        </div>
+
+        <div style="margin-top:14px; padding:10px 12px; border-radius:8px; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.2); font-size:0.74rem; color:var(--text-muted); line-height:1.5;">
+          ⚡ <strong>Dynamic Noise-Free Filter Active:</strong> Alerts analyze today's price movements against your stop losses, upside targets, and sector allocation gaps. Zero repetitive historical logs are transmitted.
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 5: SECURITY VAULT -->
+    <div id="admin-panel-vault" class="admin-sub-panel" style="display:none;">
+      <!-- 5. PORTFOLIO SECURITY & PRIVACY VAULT (Requirement #12) -->
     <div class="card">
       <div class="card-title">
         <span>🔒 5. Portfolio Security, Privacy Mask &amp; Local Vault Protection</span>
@@ -1192,8 +1242,11 @@
         <button type="button" class="btn-danger" onclick="panicWipeAllDataAndTokens()">🚨 Panic Wipe All Tokens &amp; Data</button>
       </div>
     </div>
+    </div>
 
   </div>
+
+
   
 </div>
 
@@ -1301,11 +1354,22 @@
     panels.forEach(k => {
       const p = document.getElementById("admin-panel-" + k);
       const b = document.getElementById("btn-admin-tab-" + k);
-      if (p) p.style.display = (k === secKey) ? "block" : "none";
-      if (b) b.classList.toggle("active", k === secKey);
+      if (p) {
+        p.style.display = (k === secKey) ? "block" : "none";
+      }
+      if (b) {
+        b.classList.toggle("active", k === secKey);
+      }
     });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (typeof window.scrollTo === "function") {
+      try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch(e) {}
+    }
   }
+  window.switchAdminSubSection = switchAdminSubSection;
+  window.saveSecureAlertContactsFromUI = saveSecureAlertContactsFromUI;
+  window.sendPortfolioAlertViaWhatsApp = sendPortfolioAlertViaWhatsApp;
+  window.sendPortfolioAlertViaEmail = sendPortfolioAlertViaEmail;
+  window.buildActionableAlertDigestText = buildActionableAlertDigestText;
 
 
   /* =========================================================================
@@ -5180,6 +5244,10 @@
   });
 
   function initApp() {
+    const vAdmin = document.getElementById("view-admin");
+    if (vAdmin) vAdmin.style.display = "block";
+    switchAdminSubSection("csv");
+    populateSecureAlertInputs();
     loadSymbolAliasesAndCollapsed();
     loadPersistedState();
     renderSavedAliasesList();
