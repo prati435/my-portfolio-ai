@@ -1893,7 +1893,7 @@
 
   // Tracks whether the current holdings are unimported Demo Sample stocks vs real User-Imported Portfolio data.
   // The moment the user imports a CSV, connects a Broker API, or adds a position, all demo sample stocks (Kotak, Dhan, INDmoney) are purged!
-  let isUsingDemoSamplePortfolio = true;
+  let isUsingDemoSamplePortfolio = false;
 
   function purgeDemoSamplePortfolioIfActive() {
     if (isUsingDemoSamplePortfolio) {
@@ -1905,34 +1905,9 @@
     }
   }
 
-  let holdings = [
-  {"n":"TCS","broker":"Kotak","ticker":"TCS.NS","sec":"💻 IT, Tech & Digital","qty":15,"avg":3850,"ltp":3940,"inv":57750,"cur":59100,"today":850},
-  {"n":"INFY","broker":"Kotak","ticker":"INFY.NS","sec":"💻 IT, Tech & Digital","qty":30,"avg":1680,"ltp":1725,"inv":50400,"cur":51750,"today":620},
-  {"n":"HDFCBANK","broker":"Kotak","ticker":"HDFCBANK.NS","sec":"🏦 Banking & Financial Services","qty":40,"avg":1580,"ltp":1640,"inv":63200,"cur":65600,"today":960},
-  {"n":"ICICIBANK","broker":"Dhan","ticker":"ICICIBANK.NS","sec":"🏦 Banking & Financial Services","qty":35,"avg":1120,"ltp":1210,"inv":39200,"cur":42350,"today":480},
-  {"n":"SBIN","broker":"Kotak","ticker":"SBIN.NS","sec":"🏦 Banking & Financial Services","qty":50,"avg":740,"ltp":795,"inv":37000,"cur":39750,"today":350},
-  {"n":"BAJFINANCE","broker":"INDmoney","ticker":"BAJFINANCE.NS","sec":"🏦 Banking & Financial Services","qty":6,"avg":6850,"ltp":7150,"inv":41100,"cur":42900,"today":520},
-  {"n":"TMPV","broker":"Kotak","ticker":"TMPV.NS","sec":"🚗 Automobile & EV Components","qty":45,"avg":860,"ltp":920,"inv":38700,"cur":41400,"today":640},
-  {"n":"MARUTI","broker":"Kotak","ticker":"MARUTI.NS","sec":"🚗 Automobile & EV Components","qty":4,"avg":11800,"ltp":12350,"inv":47200,"cur":49400,"today":780},
-  {"n":"RELIANCE","broker":"Dhan","ticker":"RELIANCE.NS","sec":"⚡ Energy, Oil & Power Utilities","qty":25,"avg":1260,"ltp":1320,"inv":31500,"cur":33000,"today":420},
-  {"n":"NTPC","broker":"Kotak","ticker":"NTPC.NS","sec":"⚡ Energy, Oil & Power Utilities","qty":80,"avg":355,"ltp":382,"inv":28400,"cur":30560,"today":280},
-  {"n":"SUNPHARMA","broker":"INDmoney","ticker":"SUNPHARMA.NS","sec":"💊 Pharma & Healthcare","qty":22,"avg":1640,"ltp":1760,"inv":36080,"cur":38720,"today":340},
-  {"n":"CIPLA","broker":"Kotak","ticker":"CIPLA.NS","sec":"💊 Pharma & Healthcare","qty":20,"avg":1430,"ltp":1510,"inv":28600,"cur":30200,"today":220},
-  {"n":"ITC","broker":"Kotak","ticker":"ITC.NS","sec":"🛒 FMCG, Retail & Consumer","qty":80,"avg":450,"ltp":485,"inv":36000,"cur":38800,"today":310},
-  {"n":"HINDUNILVR","broker":"Kotak","ticker":"HINDUNILVR.NS","sec":"🛒 FMCG, Retail & Consumer","qty":15,"avg":2380,"ltp":2460,"inv":35700,"cur":36900,"today":260},
-  {"n":"TITAN","broker":"Dhan","ticker":"TITAN.NS","sec":"🛒 FMCG, Retail & Consumer","qty":10,"avg":3400,"ltp":3580,"inv":34000,"cur":35800,"today":450},
-  {"n":"LT","broker":"Kotak","ticker":"LT.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":12,"avg":3380,"ltp":3520,"inv":40560,"cur":42240,"today":510},
-  {"n":"HAL","broker":"INDmoney","ticker":"HAL.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":8,"avg":4120,"ltp":4460,"inv":32960,"cur":35680,"today":490},
-  {"n":"BEL","broker":"Kotak","ticker":"BEL.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":90,"avg":275,"ltp":298,"inv":24750,"cur":26820,"today":270},
-  {"n":"TATASTEEL","broker":"Kotak","ticker":"TATASTEEL.NS","sec":"🔩 Metals, Mining & Cement","qty":150,"avg":135,"ltp":144,"inv":20250,"cur":21600,"today":190},
-  {"n":"BHARTIARTL","broker":"Dhan","ticker":"BHARTIARTL.NS","sec":"📡 Telecom & Connectivity","qty":25,"avg":1480,"ltp":1590,"inv":37000,"cur":39750,"today":420}
-];
+  let holdings = [];
   let mfs = [];
-  let etfs = [
-  {"n":"NIFTYBEES","broker":"Kotak","ticker":"NIFTYBEES.NS","sec":"ETF","qty":120,"avg":255,"ltp":268,"inv":30600,"cur":32160,"today":240},
-  {"n":"BANKBEES","broker":"Kotak","ticker":"BANKBEES.NS","sec":"ETF","qty":50,"avg":495,"ltp":518,"inv":24750,"cur":25900,"today":210},
-  {"n":"GOLDBEES","broker":"Dhan","ticker":"GOLDBEES.NS","sec":"ETF","qty":150,"avg":62,"ltp":68,"inv":9300,"cur":10200,"today":90}
-];
+  let etfs = [];
   let bonds = [];
   let watchlist = [];
   let simulatedHoldings = [];
@@ -2591,8 +2566,8 @@
       const raw = safeGetStorage(STORAGE_KEY_STATE, "");
       if (raw) {
         const p = JSON.parse(raw);
-        const loadedHoldings = (Array.isArray(p.holdings) ? p.holdings : []).map(h => ({ ...h, broker: normalizeBrokerTag(h.broker) }));
-        const loadedEtfs = (Array.isArray(p.etfs) ? p.etfs : []).map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) }));
+        let loadedHoldings = (Array.isArray(p.holdings) ? p.holdings : []).map(h => ({ ...h, broker: normalizeBrokerTag(h.broker) }));
+        let loadedEtfs = (Array.isArray(p.etfs) ? p.etfs : []).map(e => ({ ...e, broker: normalizeBrokerTag(e.broker) }));
         mfs = (Array.isArray(p.mfs) ? p.mfs : []).map(m => ({ ...m, broker: normalizeBrokerTag(m.broker) }));
         bonds = (Array.isArray(p.bonds) ? p.bonds : []).map(b => ({ ...b, broker: normalizeBrokerTag(b.broker) }));
         watchlist = Array.isArray(p.watchlist) ? p.watchlist : [];
@@ -2601,31 +2576,46 @@
         if (typeof p.ruleProfitBook === "number") ruleProfitBook = p.ruleProfitBook;
         if (typeof p.ruleStopLossBuffer === "number") ruleStopLossBuffer = p.ruleStopLossBuffer;
 
-        // Detect if persisted state has our 7 hardcoded Dhan/INDmoney demo stocks alongside user's uploaded stocks!
-        const demoDhanIndSet = new Set(["ICICIBANK:35:1120", "RELIANCE:25:1260", "TITAN:10:3400", "BHARTIARTL:25:1480", "BAJFINANCE:6:6850", "SUNPHARMA:22:1640", "HAL:8:4120"]);
-        const hasDemoDhanInd = loadedHoldings.filter(h => (h.broker === "Dhan" || h.broker === "INDmoney") && demoDhanIndSet.has(`${h.n}:${h.qty}:${h.avg}`)).length;
-        const hasRealUserKotak = loadedHoldings.filter(h => h.broker === "Kotak").length > 13 || loadedHoldings.length > 20;
+        // Strip any auto-seeded demo sample holdings (either full 20-stock demo or leftover 7 Dhan/INDmoney demo stocks)
+        const demoAll20Set = new Set([
+          "TCS:15:3850", "INFY:30:1680", "HDFCBANK:40:1580", "ICICIBANK:35:1120",
+          "SBIN:50:740", "BAJFINANCE:6:6850", "TMPV:45:860", "MARUTI:4:11800",
+          "RELIANCE:25:1260", "NTPC:80:355", "SUNPHARMA:22:1640", "CIPLA:20:1430",
+          "ITC:80:450", "HINDUNILVR:15:2380", "TITAN:10:3400", "LT:12:3380",
+          "HAL:8:4120", "BEL:90:275", "TATASTEEL:150:135", "BHARTIARTL:25:1480"
+        ]);
+        const demoDhanIndSet = new Set([
+          "ICICIBANK:35:1120", "RELIANCE:25:1260", "TITAN:10:3400", "BHARTIARTL:25:1480",
+          "BAJFINANCE:6:6850", "SUNPHARMA:22:1640", "HAL:8:4120"
+        ]);
+        const demoEtfSet = new Set(["NIFTYBEES:120:255", "BANKBEES:50:495", "GOLDBEES:150:62"]);
 
-        if (typeof p.isUsingDemoSamplePortfolio === "boolean") {
-          isUsingDemoSamplePortfolio = p.isUsingDemoSamplePortfolio;
-        } else if (hasRealUserKotak && hasDemoDhanInd > 0) {
-          // User already uploaded their real CSV earlier, and the 7 demo Dhan/INDmoney stocks were left behind!
-          // Automatically strip those 7 leftover demo Dhan/INDmoney stocks and demo GOLDBEES ETF right now!
+        const allAreDemo20 = loadedHoldings.length > 0 && loadedHoldings.every(h => demoAll20Set.has(`${h.n}:${h.qty}:${h.avg}`));
+        if (p.isUsingDemoSamplePortfolio === true || allAreDemo20) {
+          // If localStorage only had the auto-seeded demo portfolio, reset to 0!
+          loadedHoldings = [];
+          loadedEtfs = [];
           isUsingDemoSamplePortfolio = false;
-        } else if (loadedHoldings.length === 20 && hasDemoDhanInd === 7) {
-          isUsingDemoSamplePortfolio = true;
-        } else if (loadedHoldings.length > 0 || loadedEtfs.length > 0 || p._userClearedAll) {
-          isUsingDemoSamplePortfolio = false;
-        }
-
-        if (!isUsingDemoSamplePortfolio && hasRealUserKotak && hasDemoDhanInd > 0) {
-          holdings = loadedHoldings.filter(h => !((h.broker === "Dhan" || h.broker === "INDmoney") && demoDhanIndSet.has(`${h.n}:${h.qty}:${h.avg}`)));
-          etfs = loadedEtfs.filter(e => !(e.broker === "Dhan" && e.n === "GOLDBEES" && e.qty === 150 && e.avg === 62));
+          holdings = [];
+          etfs = [];
           persistState();
-        } else if (loadedHoldings.length > 0 || p._userClearedAll) {
-          holdings = loadedHoldings;
-          etfs = loadedEtfs;
+        } else {
+          isUsingDemoSamplePortfolio = false;
+          // Also strip any leftover 7 Dhan/INDmoney demo items if they got mixed into real user uploads
+          const cleanedHoldings = loadedHoldings.filter(h => !((h.broker === "Dhan" || h.broker === "INDmoney") && demoDhanIndSet.has(`${h.n}:${h.qty}:${h.avg}`)));
+          const cleanedEtfs = loadedEtfs.filter(e => !demoEtfSet.has(`${e.n}:${e.qty}:${e.avg}`));
+          holdings = cleanedHoldings;
+          etfs = cleanedEtfs;
+          if (cleanedHoldings.length !== loadedHoldings.length || cleanedEtfs.length !== loadedEtfs.length) {
+            persistState();
+          }
         }
+      } else {
+        holdings = [];
+        etfs = [];
+        mfs = [];
+        bonds = [];
+        isUsingDemoSamplePortfolio = false;
       }
       const dRaw = safeGetStorage(STORAGE_KEY_DHAN, "");
       if (dRaw) {

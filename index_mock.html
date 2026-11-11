@@ -1090,11 +1090,11 @@
           <input type="number" id="inp-limit-price" class="inp-field" style="width:100%;" disabled>
         </div>
         <div>
-          <label class="inp-label" for="inp-custom-sl">Custom SL Spot</label>
+          <label class="inp-label" for="inp-custom-sl">Custom CE/PE Option SL (₹)</label>
           <input type="number" id="inp-custom-sl" class="inp-field" style="width:100%;" placeholder="Auto">
         </div>
         <div>
-          <label class="inp-label" for="inp-custom-tgt">Custom Target Spot</label>
+          <label class="inp-label" for="inp-custom-tgt">Custom CE/PE Option Target (₹)</label>
           <input type="number" id="inp-custom-tgt" class="inp-field" style="width:100%;" placeholder="Auto">
         </div>
         <div>
@@ -2340,9 +2340,20 @@
       if (dir) {
         const slDist = Math.max(atr[i] * 1.15, c.close * (params.slPct / 100));
         const tgtDist = slDist * params.rrRatio;
-        const sl = dir === "LONG" ? Math.round((c.close - slDist) * 100) / 100 : Math.round((c.close + slDist) * 100) / 100;
-        const tgt = dir === "LONG" ? Math.round((c.close + tgtDist) * 100) / 100 : Math.round((c.close - tgtDist) * 100) / 100;
-        signals.push({ idx: i, time: c.time, dir, price: c.close, sl, tgt, reason });
+        const slSpot = dir === "LONG" ? Math.round((c.close - slDist) * 100) / 100 : Math.round((c.close + slDist) * 100) / 100;
+        const tgtSpot = dir === "LONG" ? Math.round((c.close + tgtDist) * 100) / 100 : Math.round((c.close - tgtDist) * 100) / 100;
+        const strike = Math.round(c.close / spec.step) * spec.step;
+        const optType = dir === "LONG" ? "CE" : "PE";
+        const entryPrem = estimateAtmOptionPremium(c.close, spec);
+        const premSlDist = Math.max(2, Math.round(slDist * 0.52 * 100) / 100);
+        const premTgtDist = Math.max(4, Math.round(tgtDist * 0.52 * 100) / 100);
+        const slPrem = Math.max(1, Math.round((entryPrem - premSlDist) * 100) / 100);
+        const tgtPrem = Math.round((entryPrem + premTgtDist) * 100) / 100;
+        signals.push({
+          idx: i, time: c.time, dir, price: c.close,
+          sl: slSpot, tgt: tgtSpot, slSpot, tgtSpot,
+          strike, optType, entryPrem, slPrem, tgtPrem, reason
+        });
       }
     }
 
@@ -2446,8 +2457,10 @@
     let latestSignal = recommendedDir === "LONG" ? "🟢 BUY CALL / LONG" : "🔴 BUY PUT / SHORT";
     let latestReason = `Spot ₹${lastBar.close.toLocaleString("en-IN")} · RSI(14)=${lastRsi.toFixed(1)} · VWAP=₹${lastVwap.toFixed(1)} · Trend=${lastStDir === 1 ? "BULLISH" : "BEARISH"}`;
     if (lastSig) {
-      latestSignal = lastSig.dir === "LONG" ? "🟢 BUY CALL / LONG" : "🔴 BUY PUT / SHORT";
-      latestReason = `${lastSig.reason} · Entry Spot: ₹${lastSig.price} · Stop-Loss: ₹${lastSig.sl} · Target: ₹${lastSig.tgt}`;
+      latestSignal = lastSig.dir === "LONG" ? `🟢 BUY ${lastSig.strike} CE (CALL)` : `🔴 BUY ${lastSig.strike} PE (PUT)`;
+      latestReason = params.tradeMode === "OPTION"
+        ? `${lastSig.reason} · ${spec.sym} ${lastSig.strike} ${lastSig.optType} Entry Prem: ₹${lastSig.entryPrem} · Option SL: ₹${lastSig.slPrem} · Option Target: ₹${lastSig.tgtPrem} (Spot: ₹${lastSig.price})`
+        : `${lastSig.reason} · Entry Spot: ₹${lastSig.price} · Stop-Loss: ₹${lastSig.sl} · Target: ₹${lastSig.tgt}`;
     }
 
     return {
@@ -2520,23 +2533,36 @@
       }
       const pDelta = pos.tradeMode === "OPTION" ? 0.52 : 1.0;
       const spotMove = pos.dir === "LONG" ? (c.close - pos.entrySpot) : (pos.entrySpot - c.close);
+      const worstSpotMove = pos.dir === "LONG" ? (c.low - pos.entrySpot) : (pos.entrySpot - c.high);
+      const bestSpotMove = pos.dir === "LONG" ? (c.high - pos.entrySpot) : (pos.entrySpot - c.low);
+
       pos.curSpot = c.close;
       pos.curPrem = Math.max(1, Math.round((pos.entryPrem + spotMove * pDelta) * 100) / 100);
+      const lowPrem = Math.max(1, Math.round((pos.entryPrem + worstSpotMove * pDelta) * 100) / 100);
+      const highPrem = Math.max(1, Math.round((pos.entryPrem + bestSpotMove * pDelta) * 100) / 100);
       pos.mtm = Math.round((pos.curPrem - pos.entryPrem) * pos.qty);
 
       let exitSpot = null;
       let exitReason = "";
-      if (pos.dir === "LONG") {
-        if (pos.sl > 0 && c.low <= pos.sl) { exitSpot = pos.sl; exitReason = "Stop-Loss Hit 🔴"; }
-        else if (pos.tgt > 0 && c.high >= pos.tgt) { exitSpot = pos.tgt; exitReason = "Target Reached 🎯"; }
+      if (pos.tradeMode === "OPTION" && pos.slPrem > 0 && pos.tgtPrem > 0) {
+        if (lowPrem <= pos.slPrem) {
+          exitSpot = pos.slSpot || c.close;
+          exitReason = `${pos.optType || 'Option'} SL Hit (₹${pos.slPrem}) 🔴`;
+        } else if (highPrem >= pos.tgtPrem) {
+          exitSpot = pos.tgtSpot || c.close;
+          exitReason = `${pos.optType || 'Option'} Target Hit (₹${pos.tgtPrem}) 🎯`;
+        }
+      } else if (pos.dir === "LONG") {
+        if (pos.slSpot > 0 && c.low <= pos.slSpot) { exitSpot = pos.slSpot; exitReason = "Stop-Loss Hit 🔴"; }
+        else if (pos.tgtSpot > 0 && c.high >= pos.tgtSpot) { exitSpot = pos.tgtSpot; exitReason = "Target Reached 🎯"; }
       } else {
-        if (pos.sl > 0 && c.high >= pos.sl) { exitSpot = pos.sl; exitReason = "Stop-Loss Hit 🔴"; }
-        else if (pos.tgt > 0 && c.low <= pos.tgt) { exitSpot = pos.tgt; exitReason = "Target Reached 🎯"; }
+        if (pos.slSpot > 0 && c.high >= pos.slSpot) { exitSpot = pos.slSpot; exitReason = "Stop-Loss Hit 🔴"; }
+        else if (pos.tgtSpot > 0 && c.low <= pos.tgtSpot) { exitSpot = pos.tgtSpot; exitReason = "Target Reached 🎯"; }
       }
 
       if (exitSpot !== null) {
         closePaperPositionInternal(pos, exitSpot, exitReason, c.time);
-        showToast(`${exitReason}: Closed ${pos.contract} @ ₹${exitSpot}`);
+        showToast(`${exitReason}: Closed ${pos.contract}`);
       } else {
         stillOpen.push(pos);
       }
@@ -2562,7 +2588,7 @@
     savePaperState();
   }
 
-  function openPaperPositionInternal(dir, entrySpot, sl, tgt, lots, algoSource, barTimeSec) {
+  function openPaperPositionInternal(dir, entrySpot, slSpotArg, tgtSpotArg, lots, algoSource, barTimeSec, customSlPrem = null, customTgtPrem = null) {
     const spec = INSTRUMENT_SPECS[activeInstrument] || INSTRUMENT_SPECS.NIFTY;
     const params = getSliderParams();
     const qty = spec.lot * lots;
@@ -2571,11 +2597,30 @@
     const contract = params.tradeMode === "OPTION" ? `${spec.sym} ${strike} ${optType}` : `${spec.sym} FUT`;
     const entryPrem = params.tradeMode === "OPTION" ? estimateAtmOptionPremium(entrySpot, spec) : entrySpot;
 
+    const defaultSlSpotDist = entrySpot * (params.slPct / 100);
+    const defaultTgtSpotDist = defaultSlSpotDist * params.rrRatio;
+    const slSpot = Number(slSpotArg) || Math.round((dir === "LONG" ? entrySpot - defaultSlSpotDist : entrySpot + defaultSlSpotDist) * 100) / 100;
+    const tgtSpot = Number(tgtSpotArg) || Math.round((dir === "LONG" ? entrySpot + defaultTgtSpotDist : entrySpot - defaultTgtSpotDist) * 100) / 100;
+
+    const spotSlDist = Math.abs(entrySpot - slSpot) || defaultSlSpotDist;
+    const spotTgtDist = Math.abs(tgtSpot - entrySpot) || defaultTgtSpotDist;
+
+    let slPrem = slSpot;
+    let tgtPrem = tgtSpot;
+    if (params.tradeMode === "OPTION") {
+      const premSlDist = Math.max(2, Math.round(spotSlDist * 0.52 * 100) / 100);
+      const premTgtDist = Math.max(4, Math.round(spotTgtDist * 0.52 * 100) / 100);
+      slPrem = (customSlPrem && customSlPrem > 0) ? customSlPrem : Math.max(1, Math.round((entryPrem - premSlDist) * 100) / 100);
+      tgtPrem = (customTgtPrem && customTgtPrem > 0) ? customTgtPrem : Math.round((entryPrem + premTgtDist) * 100) / 100;
+    }
+
     const pos = {
       id: "POS_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
       time: barTimeSec || Math.floor(Date.now() / 1000),
       instrument: activeInstrument,
       contract,
+      optType,
+      strike,
       tradeMode: params.tradeMode,
       algoName: algoSource,
       dir,
@@ -2585,8 +2630,12 @@
       curSpot: entrySpot,
       entryPrem,
       curPrem: entryPrem,
-      sl: Number(sl) || 0,
-      tgt: Number(tgt) || 0,
+      slSpot,
+      tgtSpot,
+      slPrem,
+      tgtPrem,
+      sl: params.tradeMode === "OPTION" ? slPrem : slSpot,
+      tgt: params.tradeMode === "OPTION" ? tgtPrem : tgtSpot,
       mtm: 0
     };
     paperState.openPositions.unshift(pos);
@@ -2631,18 +2680,17 @@
     const params = getSliderParams();
     const ordType = document.getElementById("inp-order-type").value;
     const limPrice = parseFloat(document.getElementById("inp-limit-price").value);
-    const customSl = parseFloat(document.getElementById("inp-custom-sl").value);
-    const customTgt = parseFloat(document.getElementById("inp-custom-tgt").value);
+    const customSlInp = parseFloat(document.getElementById("inp-custom-sl").value);
+    const customTgtInp = parseFloat(document.getElementById("inp-custom-tgt").value);
 
     const refSpot = (ordType === "LIMIT" && !isNaN(limPrice) && limPrice > 0) ? limPrice : lastBar.close;
     const defaultSlDist = refSpot * (params.slPct / 100);
     const defaultTgtDist = defaultSlDist * params.rrRatio;
-    const sl = (!isNaN(customSl) && customSl > 0)
-      ? customSl
-      : Math.round((dir === "LONG" ? refSpot - defaultSlDist : refSpot + defaultSlDist) * 100) / 100;
-    const tgt = (!isNaN(customTgt) && customTgt > 0)
-      ? customTgt
-      : Math.round((dir === "LONG" ? refSpot + defaultTgtDist : refSpot - defaultTgtDist) * 100) / 100;
+    const slSpot = Math.round((dir === "LONG" ? refSpot - defaultSlDist : refSpot + defaultSlDist) * 100) / 100;
+    const tgtSpot = Math.round((dir === "LONG" ? refSpot + defaultTgtDist : refSpot - defaultTgtDist) * 100) / 100;
+
+    const customSlPrem = (!isNaN(customSlInp) && customSlInp > 0) ? customSlInp : null;
+    const customTgtPrem = (!isNaN(customTgtInp) && customTgtInp > 0) ? customTgtInp : null;
 
     const algoMeta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
 
@@ -2657,20 +2705,25 @@
         contract,
         dir,
         limitSpot: limPrice,
-        sl,
-        tgt,
+        sl: slSpot,
+        tgt: tgtSpot,
         lots: params.lots,
         algoName: algoMeta.short
       });
       savePaperState();
       recomputeMockEngine();
-      showToast(`📌 Placed Pending Limit Order: ${contract} @ ₹${limPrice}`);
+      showToast(`📌 Placed Pending Limit Order: ${contract}`);
       return;
     }
 
-    openPaperPositionInternal(dir, lastBar.close, sl, tgt, params.lots, `${algoMeta.short}`, lastBar.time);
+    openPaperPositionInternal(dir, lastBar.close, slSpot, tgtSpot, params.lots, `${algoMeta.short}`, lastBar.time, customSlPrem, customTgtPrem);
     recomputeMockEngine();
-    showToast(`✅ Opened Mock ${dir === "LONG" ? "CALL / LONG" : "PUT / SHORT"} on ${spec.sym} @ ₹${lastBar.close}!`);
+    const newest = paperState.openPositions[0];
+    if (newest && newest.tradeMode === "OPTION") {
+      showToast(`✅ Bought ${newest.contract} @ ₹${newest.entryPrem} (SL: ₹${newest.slPrem} · Target: ₹${newest.tgtPrem})!`);
+    } else {
+      showToast(`✅ Opened Mock ${dir === "LONG" ? "LONG" : "SHORT"} on ${spec.sym} @ ₹${lastBar.close}!`);
+    }
   }
 
   function executeActiveAlgoSignalNow() {
@@ -2683,12 +2736,17 @@
     const dir = (bt && bt.recommendedDir) ? bt.recommendedDir : "LONG";
     const slDist = lastBar.close * (params.slPct / 100);
     const tgtDist = slDist * params.rrRatio;
-    const sl = Math.round((dir === "LONG" ? lastBar.close - slDist : lastBar.close + slDist) * 100) / 100;
-    const tgt = Math.round((dir === "LONG" ? lastBar.close + tgtDist : lastBar.close - tgtDist) * 100) / 100;
+    const slSpot = Math.round((dir === "LONG" ? lastBar.close - slDist : lastBar.close + slDist) * 100) / 100;
+    const tgtSpot = Math.round((dir === "LONG" ? lastBar.close + tgtDist : lastBar.close - tgtDist) * 100) / 100;
 
-    openPaperPositionInternal(dir, lastBar.close, sl, tgt, params.lots, `${algoMeta.short} (Strategy Try)`, lastBar.time);
+    openPaperPositionInternal(dir, lastBar.close, slSpot, tgtSpot, params.lots, `${algoMeta.short} (Strategy Try)`, lastBar.time);
     recomputeMockEngine();
-    showToast(`🧪 Started ${algoMeta.short} Mock Trade (${dir === "LONG" ? "BUY CALL" : "BUY PUT"}) @ ₹${lastBar.close}!`);
+    const newest = paperState.openPositions[0];
+    if (newest && newest.tradeMode === "OPTION") {
+      showToast(`🧪 Started ${algoMeta.short}: ${newest.contract} @ ₹${newest.entryPrem} (SL: ₹${newest.slPrem} · Target: ₹${newest.tgtPrem})!`);
+    } else {
+      showToast(`🧪 Started ${algoMeta.short} Mock Trade @ ₹${lastBar.close}!`);
+    }
   }
 
   function closeSinglePaperPosition(posId) {
@@ -3015,21 +3073,38 @@
 
     const meta = ALGO_CATALOG.find(a => a.id === activeAlgoId) || ALGO_CATALOG[0];
     const strike = Math.round(lastBar.close / spec.step) * spec.step;
-    const optType = activeBt.recommendedDir === "LONG" ? "CE (Call)" : "PE (Put)";
-    const slDist = Math.round(lastBar.close * (params.slPct / 100));
-    const tgtDist = Math.round(slDist * params.rrRatio);
-    const slPrice = activeBt.recommendedDir === "LONG" ? lastBar.close - slDist : lastBar.close + slDist;
-    const tgtPrice = activeBt.recommendedDir === "LONG" ? lastBar.close + tgtDist : lastBar.close - tgtDist;
+    const isBull = activeBt.recommendedDir === "LONG";
+    const optType = isBull ? "CE (Call)" : "PE (Put)";
+    const optShort = isBull ? "CE" : "PE";
+    const slDistSpot = Math.round(lastBar.close * (params.slPct / 100));
+    const tgtDistSpot = Math.round(slDistSpot * params.rrRatio);
+    const slSpot = isBull ? lastBar.close - slDistSpot : lastBar.close + slDistSpot;
+    const tgtSpot = isBull ? lastBar.close + tgtDistSpot : lastBar.close - tgtDistSpot;
+
+    const estPrem = estimateAtmOptionPremium(lastBar.close, spec);
+    const premSlDist = Math.max(2, Math.round(slDistSpot * 0.52 * 100) / 100);
+    const premTgtDist = Math.max(4, Math.round(tgtDistSpot * 0.52 * 100) / 100);
+    const optSlPrem = Math.max(1, Math.round((estPrem - premSlDist) * 100) / 100);
+    const optTgtPrem = Math.round((estPrem + premTgtDist) * 100) / 100;
 
     document.getElementById("spotlight-rule-text").textContent = meta.mathRule;
-    document.getElementById("spotlight-trade-setup").innerHTML =
-      `${activeBt.latestSignal}: <strong>${spec.sym} ${strike} ${optType}</strong> (${params.lots} Lot = ${spec.lot * params.lots} Qty) · Entry Spot: <strong>₹${lastBar.close}</strong> · SL: <strong>₹${slPrice.toFixed(1)}</strong> · Target: <strong>₹${tgtPrice.toFixed(1)}</strong>`;
+    if (params.tradeMode === "OPTION") {
+      document.getElementById("spotlight-trade-setup").innerHTML =
+        `${activeBt.latestSignal}: <strong>${spec.sym} ${strike} ${optType}</strong> (${params.lots} Lot = ${spec.lot * params.lots} Qty) &nbsp;·&nbsp; ` +
+        `<strong>${optShort} Entry Prem: ₹${estPrem.toFixed(1)}</strong> &nbsp;·&nbsp; ` +
+        `<span style="color:var(--red);"><strong>${optShort} SL: ₹${optSlPrem.toFixed(1)}</strong> (−₹${premSlDist.toFixed(1)})</span> &nbsp;·&nbsp; ` +
+        `<span style="color:var(--emerald);"><strong>${optShort} Target: ₹${optTgtPrem.toFixed(1)}</strong> (+₹${premTgtDist.toFixed(1)})</span> ` +
+        `<span style="font-size:0.7rem; color:var(--text-muted); font-weight:500;">[Underlying Spot: ₹${lastBar.close}]</span>`;
+    } else {
+      document.getElementById("spotlight-trade-setup").innerHTML =
+        `${activeBt.latestSignal}: <strong>${spec.sym} FUT</strong> (${params.lots} Lot = ${spec.lot * params.lots} Qty) · Entry Spot: <strong>₹${lastBar.close}</strong> · SL: <strong>₹${slSpot.toFixed(1)}</strong> · Target: <strong>₹${tgtSpot.toFixed(1)}</strong>`;
+    }
     document.getElementById("algo-live-reasoning-box").textContent = activeBt.latestReason;
 
     const hdrSig = document.getElementById("hdr-active-signal");
     if (hdrSig) {
       hdrSig.textContent = `${meta.short}: ${activeBt.latestSignal}`;
-      hdrSig.className = "badge " + (activeBt.recommendedDir === "LONG" ? "badge-emerald" : "badge-red");
+      hdrSig.className = "badge " + (isBull ? "badge-emerald" : "badge-red");
     }
     document.getElementById("hdr-equity-summary").textContent =
       `Paper Balance: ${fmtINR(netEquity)} · Realized P&L: ${fmtSignedINR(realizedPnl)} · Open MTM: ${fmtSignedINR(openMtm)}`;
@@ -3039,23 +3114,47 @@
     const strike = Math.round(lastBar.close / spec.step) * spec.step;
     const estPrem = estimateAtmOptionPremium(lastBar.close, spec);
     const qtyUnits = spec.lot * params.lots;
+    const slDistSpot = Math.round(lastBar.close * (params.slPct / 100));
+    const tgtDistSpot = Math.round(slDistSpot * params.rrRatio);
+    const premSlDist = Math.max(2, Math.round(slDistSpot * 0.52 * 100) / 100);
+    const premTgtDist = Math.max(4, Math.round(tgtDistSpot * 0.52 * 100) / 100);
+    const optSlPrem = Math.max(1, Math.round((estPrem - premSlDist) * 100) / 100);
+    const optTgtPrem = Math.round((estPrem + premTgtDist) * 100) / 100;
 
-    document.getElementById("ticket-ltp-badge").textContent = `Spot: ₹${lastBar.close.toLocaleString("en-IN")}`;
+    document.getElementById("ticket-ltp-badge").textContent = `Spot: ₹${lastBar.close.toLocaleString("en-IN")} · ATM ${strike} Prem: ₹${estPrem.toFixed(1)}`;
     document.getElementById("ticket-contract-desc").innerHTML =
-      `Contract: <strong>${spec.sym} ${strike} CE / PE</strong> · Qty: <strong>${qtyUnits}</strong> (${params.lots} Lot × ${spec.lot}) · Est. Option Premium: <strong>₹${estPrem.toFixed(1)}</strong>`;
+      `Contract: <strong>${spec.sym} ${strike} CE / PE</strong> · Qty: <strong>${qtyUnits}</strong> (${params.lots} Lot × ${spec.lot})<br>` +
+      `<span style="color:#059669; font-weight:700;">🟢 ${strike} CE (Call):</span> Entry <strong>₹${estPrem.toFixed(1)}</strong> · <span style="color:var(--red);">CE SL: <strong>₹${optSlPrem.toFixed(1)}</strong></span> · <span style="color:var(--emerald);">CE Target: <strong>₹${optTgtPrem.toFixed(1)}</strong></span> &nbsp;|&nbsp; ` +
+      `<span style="color:#dc2626; font-weight:700;">🔴 ${strike} PE (Put):</span> Entry <strong>₹${estPrem.toFixed(1)}</strong> · <span style="color:var(--red);">PE SL: <strong>₹${optSlPrem.toFixed(1)}</strong></span> · <span style="color:var(--emerald);">PE Target: <strong>₹${optTgtPrem.toFixed(1)}</strong></span>`;
 
-    document.getElementById("btn-long-sub").textContent = `${spec.sym} ${strike} CE @ ~₹${estPrem.toFixed(1)}`;
-    document.getElementById("btn-short-sub").textContent = `${spec.sym} ${strike} PE @ ~₹${estPrem.toFixed(1)}`;
+    document.getElementById("btn-long-sub").textContent = `${spec.sym} ${strike} CE @ ₹${estPrem.toFixed(1)} (SL: ₹${optSlPrem.toFixed(1)} · Tgt: ₹${optTgtPrem.toFixed(1)})`;
+    document.getElementById("btn-short-sub").textContent = `${spec.sym} ${strike} PE @ ₹${estPrem.toFixed(1)} (SL: ₹${optSlPrem.toFixed(1)} · Tgt: ₹${optTgtPrem.toFixed(1)})`;
 
     const miniBox = document.getElementById("mini-open-positions-box");
     document.getElementById("mini-open-summary").textContent = `${paperState.openPositions.length} Open`;
     const rows = [];
     paperState.openPositions.forEach(p => {
+      // Backfill slPrem / tgtPrem for any older saved positions that stored underlying spot in p.sl
+      const isOpt = p.tradeMode === "OPTION" || String(p.contract).includes("CE") || String(p.contract).includes("PE");
+      let dispSlPrem = p.slPrem;
+      let dispTgtPrem = p.tgtPrem;
+      if (isOpt && (!dispSlPrem || dispSlPrem > p.entryPrem * 3)) {
+        const sDist = Math.abs((p.entrySpot || lastBar.close) - (p.sl || lastBar.close)) || (lastBar.close * (params.slPct / 100));
+        const tDist = Math.abs((p.tgt || lastBar.close) - (p.entrySpot || lastBar.close)) || (sDist * params.rrRatio);
+        dispSlPrem = Math.max(1, Math.round((p.entryPrem - sDist * 0.52) * 100) / 100);
+        dispTgtPrem = Math.round((p.entryPrem + tDist * 0.52) * 100) / 100;
+        p.slPrem = dispSlPrem;
+        p.tgtPrem = dispTgtPrem;
+      }
+      const optLabel = String(p.contract).includes("PE") ? "PE" : String(p.contract).includes("CE") ? "CE" : "FUT";
+      const levelLine = isOpt
+        ? `${p.algoName} · <strong>${optLabel} Entry: ₹${p.entryPrem}</strong> · <strong>LTP: ₹${p.curPrem}</strong> · <span style="color:var(--red); font-weight:700;">${optLabel} SL: ₹${dispSlPrem}</span> · <span style="color:var(--emerald); font-weight:700;">${optLabel} Tgt: ₹${dispTgtPrem}</span> <span style="opacity:0.75;">(Spot: ₹${p.curSpot || p.entrySpot})</span>`
+        : `${p.algoName} · Entry Spot: ₹${p.entrySpot} · SL: ₹${p.sl} · Tgt: ₹${p.tgt}`;
       rows.push(`
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #e2e8f0; font-size:0.76rem; background:#f8fafc; border-radius:8px; margin-bottom:6px;">
           <div>
-            <strong>${p.contract}</strong> <span class="badge ${p.dir === "LONG" ? "badge-emerald" : "badge-red"}">${p.dir}</span>
-            <div style="font-size:0.7rem; color:var(--text-muted);">${p.algoName} · Entry: ₹${p.entrySpot} · SL: ₹${p.sl} · Tgt: ₹${p.tgt}</div>
+            <strong>${p.contract}</strong> <span class="badge ${p.dir === "LONG" ? "badge-emerald" : "badge-red"}">${isOpt ? ("BUY " + optLabel) : p.dir}</span>
+            <div style="font-size:0.71rem; color:var(--text-muted); margin-top:2px;">${levelLine}</div>
           </div>
           <div style="text-align:right;">
             <div class="${p.mtm >= 0 ? "pos" : "neg"}" style="font-weight:800; font-size:0.85rem;">${fmtSignedINR(p.mtm)}</div>
