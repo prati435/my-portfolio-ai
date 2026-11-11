@@ -1820,9 +1820,19 @@
   /* =========================================================================
      10-SECOND AUTO-REFRESH TIMER + MANUAL REFRESH BUTTON
      ========================================================================= */
+  
+  function updateMockHeaderClock() {
+    const clk = document.getElementById("mock-hdr-clock");
+    if (!clk || clk._isStub) return;
+    const st = computeOfficialNSEMarketStatus();
+    clk.innerHTML = `📅 ${st.istDateStr} · ${st.istTimeStr} IST &nbsp;${st.statusBadgeHtml || ""}`;
+  }
+
   function startTenSecTimer() {
+    updateMockHeaderClock();
     if (tenSecIntervalId) clearInterval(tenSecIntervalId);
     tenSecIntervalId = setInterval(() => {
+      updateMockHeaderClock();
       if (!tenSecAutoRefreshEnabled) return;
       tenSecCountdown--;
       if (tenSecCountdown <= 0) {
@@ -2454,14 +2464,22 @@
     const lastVwap = vwap[lastBarIdx] || lastBar.close;
 
     const recommendedDir = lastSig ? lastSig.dir : (lastStDir === 1 ? "LONG" : "SHORT");
-    let latestSignal = recommendedDir === "LONG" ? "🟢 BUY CALL / LONG" : "🔴 BUY PUT / SHORT";
-    let latestReason = `Spot ₹${lastBar.close.toLocaleString("en-IN")} · RSI(14)=${lastRsi.toFixed(1)} · VWAP=₹${lastVwap.toFixed(1)} · Trend=${lastStDir === 1 ? "BULLISH" : "BEARISH"}`;
-    if (lastSig) {
-      latestSignal = lastSig.dir === "LONG" ? `🟢 BUY ${lastSig.strike} CE (CALL)` : `🔴 BUY ${lastSig.strike} PE (PUT)`;
-      latestReason = params.tradeMode === "OPTION"
-        ? `${lastSig.reason} · ${spec.sym} ${lastSig.strike} ${lastSig.optType} Entry Prem: ₹${lastSig.entryPrem} · Option SL: ₹${lastSig.slPrem} · Option Target: ₹${lastSig.tgtPrem} (Spot: ₹${lastSig.price})`
-        : `${lastSig.reason} · Entry Spot: ₹${lastSig.price} · Stop-Loss: ₹${lastSig.sl} · Target: ₹${lastSig.tgt}`;
-    }
+    const liveAtmStrike = Math.round(lastBar.close / spec.step) * spec.step;
+    const liveOptType = recommendedDir === "LONG" ? "CE" : "PE";
+    const liveEntryPrem = estimateAtmOptionPremium(lastBar.close, spec);
+    const liveSlDistSpot = Math.round(lastBar.close * (params.slPct / 100));
+    const liveTgtDistSpot = Math.round(liveSlDistSpot * params.rrRatio);
+    const livePremSlDist = Math.max(2, Math.round(liveSlDistSpot * 0.52 * 100) / 100);
+    const livePremTgtDist = Math.max(4, Math.round(liveTgtDistSpot * 0.52 * 100) / 100);
+    const liveSlPrem = Math.max(1, Math.round((liveEntryPrem - livePremSlDist) * 100) / 100);
+    const liveTgtPrem = Math.round((liveEntryPrem + livePremTgtDist) * 100) / 100;
+
+    let latestSignal = recommendedDir === "LONG"
+      ? `🟢 BUY ${liveAtmStrike} CE (CALL)`
+      : `🔴 BUY ${liveAtmStrike} PE (PUT)`;
+    let latestReason = params.tradeMode === "OPTION"
+      ? `${lastSig ? lastSig.reason : `Trend=${lastStDir === 1 ? "BULLISH" : "BEARISH"} · RSI(14)=${lastRsi.toFixed(1)}`} · ${spec.sym} ${liveAtmStrike} ${liveOptType} Entry Prem: ₹${liveEntryPrem} · ${liveOptType} SL: ₹${liveSlPrem} · ${liveOptType} Target: ₹${liveTgtPrem} (Live Spot: ₹${lastBar.close})`
+      : `${lastSig ? lastSig.reason : `Trend=${lastStDir === 1 ? "BULLISH" : "BEARISH"}`} · Live Spot: ₹${lastBar.close}`;
 
     return {
       algoId,
@@ -3090,7 +3108,7 @@
     document.getElementById("spotlight-rule-text").textContent = meta.mathRule;
     if (params.tradeMode === "OPTION") {
       document.getElementById("spotlight-trade-setup").innerHTML =
-        `${activeBt.latestSignal}: <strong>${spec.sym} ${strike} ${optType}</strong> (${params.lots} Lot = ${spec.lot * params.lots} Qty) &nbsp;·&nbsp; ` +
+        `<strong>${activeBt.latestSignal}</strong> — <strong>${spec.sym} ${strike} ${optShort}</strong> (${params.lots} Lot = ${spec.lot * params.lots} Qty) &nbsp;·&nbsp; ` +
         `<strong>${optShort} Entry Prem: ₹${estPrem.toFixed(1)}</strong> &nbsp;·&nbsp; ` +
         `<span style="color:var(--red);"><strong>${optShort} SL: ₹${optSlPrem.toFixed(1)}</strong> (−₹${premSlDist.toFixed(1)})</span> &nbsp;·&nbsp; ` +
         `<span style="color:var(--emerald);"><strong>${optShort} Target: ₹${optTgtPrem.toFixed(1)}</strong> (+₹${premTgtDist.toFixed(1)})</span> ` +
