@@ -5035,8 +5035,34 @@
           <div style="font-size:0.78rem; font-weight:700; color:${c.border}; margin-bottom:6px;">
             ${c.uKey} (${c.lots} Lot${c.lots > 1 ? 's' : ''} = ${c.totalQty} Qty) · ${c.expInfo.label} (${c.expInfo.dte} DTE)
           </div>
-          <div style="font-size:0.72rem; background:var(--bg-card-alt, #f8fafc); border-radius:8px; padding:7px 9px; margin-bottom:7px; line-height:1.5;">
-            ${c.legs.map(l => `<div><span class="badge ${l.side === 'SELL' ? 'badge-red' : 'badge-emerald'}" style="padding:1px 5px; font-size:0.65rem;">${l.side}</span> <strong>${l.strike} ${l.optType}</strong> @ ₹${l.prem.toFixed(1)}</div>`).join("")}
+          <div style="overflow-x:auto; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:8px;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.71rem; text-align:left;">
+              <thead>
+                <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1; color:#334155;">
+                  <th style="padding:5px 6px;">Step</th>
+                  <th style="padding:5px 6px;">Leg &amp; Entry</th>
+                  <th style="padding:5px 6px;">SL Trigger / Limit</th>
+                  <th style="padding:5px 6px;">60% TP Target</th>
+                  <th style="padding:5px 6px;">Stage</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${[...c.legs].sort((a, b) => (a.side === "BUY" ? -1 : 1)).map((l, stepIdx) => {
+                  const isSell = l.side === "SELL";
+                  const slTrig = isSell ? +(l.prem * 2.0).toFixed(1) : 0;
+                  const slLim = isSell ? +(slTrig + Math.max(2, Math.round(l.prem * 0.06))).toFixed(1) : 0;
+                  const tpPrice = isSell ? +(Math.max(1, l.prem * 0.40)).toFixed(1) : 0;
+                  const origIdx = c.legs.indexOf(l);
+                  return `<tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:5px 6px; font-weight:700; color:${isSell ? "#b91c1c" : "#047857"};">${stepIdx + 1}. ${isSell ? "SELL" : "BUY FIRST"}</td>
+                    <td style="padding:5px 6px;"><strong>${l.strike} ${l.optType}</strong> @ ₹${l.prem.toFixed(1)}</td>
+                    <td style="padding:5px 6px; color:${isSell ? "#b91c1c" : "#64748b"}; font-weight:${isSell ? "700" : "400"};">${isSell ? `₹${slTrig} / ₹${slLim}` : "Hedge Wing (No SL)"}</td>
+                    <td style="padding:5px 6px; color:${isSell ? "#047857" : "#64748b"}; font-weight:${isSell ? "700" : "400"};">${isSell ? `₹${tpPrice}` : "Close Last"}</td>
+                    <td style="padding:5px 6px;"><button type="button" class="${isSell ? "btn-primary" : "btn-emerald"}" style="padding:2px 6px; font-size:0.66rem;" onclick="loadSellerLegIntoDhan(${idx}, ${origIdx})">Stage</button></td>
+                  </tr>`;
+                }).join("")}
+              </tbody>
+            </table>
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:0.72rem;">
             <div>Margin Used: <strong>₹${c.marginReq.toLocaleString("en-IN")}</strong></div>
@@ -5049,7 +5075,7 @@
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; padding-top:4px; border-top:1px dashed var(--border, #e2e8f0);">
           <button type="button" class="btn-primary" style="flex:1; padding:4px 8px; font-size:0.71rem;" onclick="loadSellerPlanIntoSimulator(${idx})">📐 Simulate Payoff</button>
-          <button type="button" class="btn-emerald" style="flex:1; padding:4px 8px; font-size:0.71rem;" onclick="loadSellerPlanIntoDhan(${idx})">🚀 Stage Sell Leg</button>
+          <button type="button" class="btn-emerald" style="flex:1; padding:4px 8px; font-size:0.71rem;" onclick="loadSellerPlanIntoDhan(${idx})">🚀 Stage Step 1 (Buy Wing)</button>
         </div>
       </div>
     `).join("");
@@ -5070,27 +5096,52 @@
     }
   }
 
-  function loadSellerPlanIntoDhan(idx) {
+  function loadSellerLegIntoDhan(planIdx, legIdx, switchToExec = true) {
     const plans = window._computedSellerPlans || [];
-    const p = plans[idx];
-    if (!p) return;
-    const shortLeg = p.legs.find(l => l.side === "SELL") || p.legs[0];
+    const p = plans[planIdx];
+    if (!p || !p.legs[legIdx]) return;
+    const leg = p.legs[legIdx];
+    const isSell = leg.side === "SELL";
+    const slPrice = isSell ? +(leg.prem * 2.0).toFixed(1) : 0;
+    const tpPrice = isSell ? +(Math.max(1, leg.prem * 0.40)).toFixed(1) : 0;
+
+    const modeEl = document.getElementById("exec-order-mode");
     const symEl = document.getElementById("exec-contract-sym");
     const sideEl = document.getElementById("exec-side");
     const prodEl = document.getElementById("exec-product");
     const qtyEl = document.getElementById("exec-qty");
     const priceEl = document.getElementById("exec-price");
-    if (symEl) symEl.value = `${p.uKey} ${p.expInfo.compact} ${shortLeg.strike} ${shortLeg.optType}`;
-    if (sideEl) sideEl.value = "SELL";
+    const slEl = document.getElementById("exec-sl");
+    const tgtEl = document.getElementById("exec-tgt");
+
+    if (modeEl) modeEl.value = isSell ? "SUPER" : "DIRECT";
+    if (symEl) symEl.value = `${p.uKey} ${p.expInfo.compact} ${leg.strike} ${leg.optType}`;
+    if (sideEl) sideEl.value = leg.side;
     if (prodEl) prodEl.value = "MARGIN";
     if (qtyEl) qtyEl.value = p.totalQty;
-    if (priceEl) priceEl.value = shortLeg.prem.toFixed(1);
+    if (priceEl) priceEl.value = leg.prem.toFixed(1);
+    if (slEl) slEl.value = slPrice;
+    if (tgtEl) tgtEl.value = tpPrice;
     if (typeof refreshDhanExecPayloads === "function") refreshDhanExecPayloads();
 
     const toast = document.getElementById("seller-action-toast");
     if (toast) {
-      toast.innerHTML = `<span style="color:var(--amber); font-weight:700;">🚀 Staged Short Leg (${shortLeg.strike} ${shortLeg.optType}). Important: Always execute your protective BUY wing(s) FIRST in DhanHQ to get the 65% margin benefit!</span>`;
+      toast.innerHTML = isSell
+        ? `<span style="color:#0369a1; font-weight:700;">🚀 Staged SELL Leg (${leg.strike} ${leg.optType} @ ₹${leg.prem.toFixed(1)}) in Tab 4 with 3-Leg Super Order SL = ₹${slPrice} (2x) &amp; 60% Profit Target = ₹${tpPrice}. Ensure BUY wing(s) are executed first!</span>`
+        : `<span style="color:#047857; font-weight:700;">🛡️ Staged Protective BUY Wing (${leg.strike} ${leg.optType} @ ₹${leg.prem.toFixed(1)}) in Tab 4. Execute BUY wings FIRST to unlock the 65% NSE spread margin benefit!</span>`;
     }
+    if (switchToExec && typeof switchOptionsTab === "function") {
+      switchOptionsTab("exec");
+    }
+  }
+
+  function loadSellerPlanIntoDhan(idx) {
+    const plans = window._computedSellerPlans || [];
+    const p = plans[idx];
+    if (!p) return;
+    // Always stage the first BUY protective wing first so margin benefit is unlocked!
+    const buyIdx = p.legs.findIndex(l => l.side === "BUY");
+    loadSellerLegIntoDhan(idx, buyIdx !== -1 ? buyIdx : 0, true);
   }
 
   async function pushTopSellerSetupToPhone() {
