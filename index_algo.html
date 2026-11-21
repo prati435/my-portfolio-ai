@@ -1674,34 +1674,51 @@
   }
 
   function loadSecureAlertContacts() {
+    let raw = "";
     try {
-      const raw = localStorage.getItem(STORAGE_KEY_SECURE_ALERTS) || sessionStorage.getItem(STORAGE_KEY_SECURE_ALERTS) || "";
-      if (!raw) return { email: "", whatsapp: "", onlySession: false };
+      raw = localStorage.getItem(STORAGE_KEY_SECURE_ALERTS) || sessionStorage.getItem(STORAGE_KEY_SECURE_ALERTS) || "";
+    } catch (e) {}
+    if (!raw && window._memSecureAlertContactsRaw) raw = window._memSecureAlertContactsRaw;
+    if (!raw) return { email: "", whatsapp: "", ntfyTopic: "", waApiKey: "", emailApiKey: "", onlySession: false };
+    try {
       const parsed = JSON.parse(raw);
       return {
         email: decodeLocalContact(parsed.e || ""),
         whatsapp: decodeLocalContact(parsed.w || ""),
+        waApiKey: decodeLocalContact(parsed.wak || ""),
+        ntfyTopic: decodeLocalContact(parsed.ntfy || ""),
+        emailApiKey: decodeLocalContact(parsed.emk || ""),
         onlySession: !!parsed.s
       };
     } catch (e) {
-      return { email: "", whatsapp: "", onlySession: false };
+      return { email: "", whatsapp: "", ntfyTopic: "", waApiKey: "", emailApiKey: "", onlySession: false };
     }
   }
 
   function saveSecureAlertContactsFromUI() {
     const emEl = document.querySelector("[id='alert-email-input']");
     const waEl = document.querySelector("[id='alert-whatsapp-input']");
+    const wakEl = document.querySelector("[id='alert-wa-apikey-input']");
+    const ntfyEl = document.querySelector("[id='alert-ntfy-topic-input']");
+    const emkEl = document.querySelector("[id='alert-email-apikey-input']");
     const sesEl = document.querySelector("[id='chk-session-only-tokens']");
     const email = emEl ? emEl.value.trim() : "";
     let whatsapp = waEl ? waEl.value.trim().replace(/[^0-9+]/g, "") : "";
     if (/^\d{10}$/.test(whatsapp)) whatsapp = "+91" + whatsapp;
+    const waApiKey = wakEl ? wakEl.value.trim() : "";
+    const ntfyTopic = ntfyEl ? ntfyEl.value.trim() : "";
+    const emailApiKey = emkEl ? emkEl.value.trim() : "";
     const onlySession = sesEl ? sesEl.checked : false;
 
     const payload = JSON.stringify({
       e: encodeLocalContact(email),
       w: encodeLocalContact(whatsapp),
+      wak: encodeLocalContact(waApiKey),
+      ntfy: encodeLocalContact(ntfyTopic),
+      emk: encodeLocalContact(emailApiKey),
       s: onlySession
     });
+    window._memSecureAlertContactsRaw = payload;
     try {
       if (onlySession) {
         sessionStorage.setItem(STORAGE_KEY_SECURE_ALERTS, payload);
@@ -1710,9 +1727,10 @@
         localStorage.setItem(STORAGE_KEY_SECURE_ALERTS, payload);
       }
     } catch (e) {}
+    saveAlertFeatureTogglesFromUI(false);
     const stEl = document.querySelector("[id='alert-contact-save-status']");
     if (stEl) {
-      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔒 Saved encrypted alert contacts locally (${email || "No Email"} · ${whatsapp || "No WhatsApp"}).</span>`;
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔒 Saved encrypted alert settings &amp; feature toggles (${email || "No Email"} · ${whatsapp || "No WhatsApp"}).</span>`;
     }
     populateSecureAlertInputs();
   }
@@ -1721,80 +1739,1734 @@
     const c = loadSecureAlertContacts();
     const emEl = document.querySelector("[id='alert-email-input']");
     const waEl = document.querySelector("[id='alert-whatsapp-input']");
+    const wakEl = document.querySelector("[id='alert-wa-apikey-input']");
+    const ntfyEl = document.querySelector("[id='alert-ntfy-topic-input']");
+    const emkEl = document.querySelector("[id='alert-email-apikey-input']");
     if (emEl && !emEl.matches(":focus")) emEl.value = c.email || "";
     if (waEl && !waEl.matches(":focus")) waEl.value = c.whatsapp || "";
+    if (wakEl && !wakEl.matches(":focus")) wakEl.value = c.waApiKey || "";
+    if (ntfyEl && !ntfyEl.matches(":focus")) ntfyEl.value = c.ntfyTopic || "";
+    if (emkEl && !emkEl.matches(":focus")) emkEl.value = c.emailApiKey || "";
+    updateAlertToggleUIState(loadAlertFeatureToggles());
   }
 
   // Dynamic Alert Builder: ONLY includes actionable BUY/SELL signals triggered by today's market moves (Zero old history)
-  function buildActionableAlertDigestText() {
-    const st = computeOfficialNSEMarketStatus();
-    const lines = [`📊 *PIAI Real-Time Market Action Alert* (${st.istDateStr} ${st.istTimeStr} IST)`];
+  const STORAGE_KEY_ALERT_TOGGLES = "piai_alert_feature_toggles_v1";
 
-    if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
-      // 1. Dynamic Intraday/Today's Buy Opportunities
-      const dipBuys = holdings.filter(h => {
-        const todayChg = h.today || 0;
-        return (todayChg < 0 && (h.pct || 0) > 0 && Math.abs(todayChg) > (h.cur || 1) * 0.015);
-      });
-      // 2. Dynamic Scaling Buy Opportunities
-      const scaleBuys = holdings.filter(h => (h.pct || 0) > 10 && (h.pct || 0) < 50 && (h.cur || 0) > 0);
-      // 3. Urgent Sell / Flagged Exits
-      const urgentExits = holdings.filter(h => (h.act || "").includes("EXIT"));
-      // 4. Profit Booking Sells
-      const bookProfits = holdings.filter(h => (h.act || "").includes("BOOK"));
 
-      lines.push("");
-      lines.push("🎯 *TODAY'S DYNAMIC ACTION RECOMMENDATIONS:*");
+  function generateRandomNtfyTopic() {
+    const rnd = "piai_alerts_" + Math.random().toString(36).substring(2, 8);
+    const inp = document.querySelector("[id='alert-ntfy-topic-input']");
+    if (inp) inp.value = rnd;
+    saveSecureAlertContactsFromUI();
+  }
 
-      if (urgentExits.length > 0) {
-        lines.push(`🚨 *SELL / EXIT TRIGGERED (${urgentExits.length}):*`);
-        urgentExits.slice(0, 5).forEach(h => {
-          lines.push(`  • *${h.n}*: Down ${h.pct.toFixed(1)}% (Stop-Loss: ₹${h.sl}, LTP: ₹${h.ltp})`);
-        });
-      } else {
-        lines.push(`✅ *SELL / EXITS:* No positions breaching drawdown limit today.`);
-      }
-
-      if (bookProfits.length > 0) {
-        lines.push(`🟣 *PROFIT BOOKING SELL (${bookProfits.length}):*`);
-        bookProfits.slice(0, 5).forEach(h => {
-          lines.push(`  • *${h.n}*: Up +${h.pct.toFixed(1)}% (Target ₹${h.tgt} reached, LTP: ₹${h.ltp})`);
-        });
-      }
-
-      if (dipBuys.length > 0) {
-        lines.push(`🟢 *INTRADAY DIP-BUY CANDIDATES (${dipBuys.length}):*`);
-        dipBuys.slice(0, 4).forEach(h => {
-          lines.push(`  • *${h.n}*: Quality holding pulling back today (${h.today ? '₹' + Math.round(h.today) : ''}), LTP ₹${h.ltp}`);
-        });
-      } else if (scaleBuys.length > 0) {
-        lines.push(`🟢 *WINNER SCALING BUY ZONE:*`);
-        scaleBuys.slice(0, 3).forEach(h => {
-          lines.push(`  • *${h.n}*: Momentum leader (+${h.pct.toFixed(1)}%), eligible for scaling.`);
-        });
-      }
-    } else if (typeof lastGainzState !== "undefined" && lastGainzState) {
-      const sig = lastGainzState.signal;
-      const isCE = sig === "BUY_CE";
-      const isPE = sig === "BUY_PE";
-      if (isCE || isPE) {
-        lines.push(`⚡ *F&O SIGNAL TRIGGERED:* ${isCE ? '🟢 BUY CALL' : '🔴 BUY PUT'}`);
-        lines.push(`• Underlying: *${activeUnderlying}* (Spot: ₹${lastGainzState.spot || 0})`);
-        lines.push(`• Contract: *${lastGainzState.recStrike} ${lastGainzState.recOptType}* @ Entry ₹${lastGainzState.entryPrem}`);
-        lines.push(`• SL: ₹${lastGainzState.slPrem} · Target: ₹${lastGainzState.tp1Prem} (RSI: ${lastGainzState.rsiVal})`);
-      } else {
-        lines.push(`⏸️ *F&O SIGNAL:* ${lastGainzState.rsiFilterReason || 'Waiting for high-probability momentum confirmation'}`);
-      }
-    } else if (typeof activeInstrument !== "undefined") {
-      const sigEl = document.querySelector(".header-signal-pill, .header-pill");
-      lines.push(`🧪 *Mock Strategy Signal:* ${activeInstrument} · ${sigEl ? sigEl.textContent : "Active"}`);
+  async function requestBrowserPushPermissionAndTest() {
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    if (!("Notification" in window)) {
+      if (stEl) stEl.innerHTML = `<span style="color:var(--amber); font-weight:700;">⚠️ Native Browser Notifications are not supported in this browser view. Use the ntfy.sh Phone Push topic below!</span>`;
+      return false;
     }
+    try {
+      let perm = Notification.permission;
+      if (perm !== "granted") {
+        perm = await Notification.requestPermission();
+      }
+      if (perm === "granted") {
+        triggerNativeBrowserPushNotification("🔔 PIAI Browser Push Enabled!", "You will now receive automatic First-Launch & Intraday Delta push notifications right on your device.");
+        if (stEl) stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔔 Browser Push Permission Granted! Test notification sent to your OS notification tray.</span>`;
+        return true;
+      } else {
+        if (stEl) stEl.innerHTML = `<span style="color:var(--amber); font-weight:700;">⚠️ Browser Push permission is '${perm}'. Allow notifications in your browser address bar, or use ntfy.sh Phone Push below.</span>`;
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function triggerNativeBrowserPushNotification(title, bodyText) {
+    try {
+      const toggles = loadAlertFeatureToggles();
+      if (!toggles.browserPushEnabled) return false;
+      if (!("Notification" in window) || Notification.permission !== "granted") return false;
+      const cleanBody = String(bodyText || "").replace(/\*/g, "").replace(/_/g, "").slice(0, 260);
+      const n = new Notification(title || "📊 PIAI Dynamic Market Alert", {
+        body: cleanBody,
+        tag: "piai-dynamic-alert-" + Date.now()
+      });
+      n.onclick = function() {
+        try { window.focus(); } catch (e) {}
+      };
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function sendInstantNtfyPushNotification(bodyText = "", customTitle = "", isManualTest = false) {
+    const toggles = loadAlertFeatureToggles();
+    if (!isManualTest && !toggles.ntfyPushEnabled) return false;
+    const c = loadSecureAlertContacts();
+    let topic = (c.ntfyTopic || "").trim();
+    const inp = document.querySelector("[id='alert-ntfy-topic-input']");
+    if (!topic && inp && inp.value.trim()) {
+      topic = inp.value.trim();
+      saveSecureAlertContactsFromUI();
+    }
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    if (!topic) {
+      if (isManualTest && stEl) {
+        stEl.innerHTML = `<span style="color:var(--amber); font-weight:700;">⚠️ Enter a secret ntfy Topic Name (or click '🎲 Generate Secret Topic') first!</span>`;
+      }
+      return false;
+    }
+    const cleanTopic = topic.replace(/[^a-zA-Z0-9_-]/g, "");
+    const textPayload = (bodyText || buildActionableAlertDigestText(false)).replace(/\*/g, "");
+    const titleHdr = (customTitle || "PIAI Dynamic Market Alert").replace(/[^\x20-\x7E]/g, "").trim() || "PIAI Market Alert";
+
+    try {
+      const res = await fetch(`https://ntfy.sh/${encodeURIComponent(cleanTopic)}`, {
+        method: "POST",
+        headers: {
+          "Title": titleHdr,
+          "Priority": "high",
+          "Tags": "chart_with_upwards_trend,bell"
+        },
+        body: textPayload
+      });
+      if (res.ok) {
+        if (isManualTest) {
+          markCurrentSignalsAsNotified();
+          if (stEl) {
+            stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🚀 Sent instant push notification to <code>https://ntfy.sh/${cleanTopic}</code>! Open the ntfy app or web link to view.</span>`;
+          }
+        }
+        return true;
+      }
+    } catch (e) {}
+    if (isManualTest && stEl) {
+      stEl.innerHTML = `<span style="color:var(--red); font-weight:700;">🔴 Push request blocked or offline — check internet connection.</span>`;
+    }
+    return false;
+  }
+
+  function loadAlertFeatureToggles() {
+    const defaults = {
+      firstLaunchEnabled: true,
+      intradayDeltaEnabled: true,
+      discountBuysEnabled: true,
+      browserPushEnabled: true,
+      ntfyPushEnabled: true,
+      bgCronEnabled: false,
+      tmpvTranchesEnabled: true
+    };
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_ALERT_TOGGLES);
+      if (raw) {
+        const p = JSON.parse(raw);
+        return {
+          firstLaunchEnabled: p.firstLaunchEnabled !== false,
+          intradayDeltaEnabled: p.intradayDeltaEnabled !== false,
+          discountBuysEnabled: p.discountBuysEnabled !== false,
+          browserPushEnabled: p.browserPushEnabled !== false,
+          ntfyPushEnabled: p.ntfyPushEnabled !== false,
+          bgCronEnabled: p.bgCronEnabled === true,
+          tmpvTranchesEnabled: p.tmpvTranchesEnabled !== false
+        };
+      }
+    } catch (e) {}
+    if (window._memAlertFeatureToggles) return window._memAlertFeatureToggles;
+    return defaults;
+  }
+
+  function saveAlertFeatureToggles(toggles) {
+    window._memAlertFeatureToggles = toggles;
+    try {
+      localStorage.setItem(STORAGE_KEY_ALERT_TOGGLES, JSON.stringify(toggles));
+    } catch (e) {}
+    updateAlertToggleUIState(toggles);
+  }
+
+  function updateAlertToggleUIState(toggles) {
+    const t = toggles || loadAlertFeatureToggles();
+    const c1 = document.getElementById("chk-alert-first-launch");
+    const c2 = document.getElementById("chk-alert-intraday-delta");
+    const c3 = document.getElementById("chk-alert-discount-buys");
+    const c4 = document.getElementById("chk-alert-bg-cron");
+    const c5 = document.getElementById("chk-alert-browser-push");
+    const c6 = document.getElementById("chk-alert-ntfy-push");
+    const c7 = document.getElementById("chk-alert-tmpv-tranches");
+    if (c1 && !c1._isStub) c1.checked = !!t.firstLaunchEnabled;
+    if (c2 && !c2._isStub) c2.checked = !!t.intradayDeltaEnabled;
+    if (c3 && !c3._isStub) c3.checked = !!t.discountBuysEnabled;
+    if (c4 && !c4._isStub) c4.checked = !!t.bgCronEnabled;
+    if (c5 && !c5._isStub) c5.checked = t.browserPushEnabled !== false;
+    if (c6 && !c6._isStub) c6.checked = t.ntfyPushEnabled !== false;
+    if (c7 && !c7._isStub) c7.checked = t.tmpvTranchesEnabled !== false;
+
+    const masterBadge = document.getElementById("badge-alert-master-state");
+    if (masterBadge && !masterBadge._isStub) {
+      const anyOn = t.firstLaunchEnabled || t.intradayDeltaEnabled || t.bgCronEnabled;
+      masterBadge.textContent = anyOn ? "🟢 Alerts Active" : "⏸️ Alerts Paused (Toggled Off)";
+      masterBadge.className = "badge " + (anyOn ? "badge-emerald" : "badge-amber");
+    }
+
+    const cronBadge = document.getElementById("bg-cron-worker-status-badge");
+    if (cronBadge && !cronBadge._isStub) {
+      cronBadge.textContent = t.bgCronEnabled ? "🟢 24/7 Background Cron: ON" : "⏸️ 24/7 Background Cron: OFF";
+      cronBadge.className = "badge " + (t.bgCronEnabled ? "badge-emerald" : "badge-amber");
+    }
+
+    // If user toggled off popups, immediately hide any visible floating banner
+    if (!t.firstLaunchEnabled && !t.intradayDeltaEnabled) {
+      const banner = document.getElementById("piai-floating-delta-alert-bar");
+      if (banner && !banner._isStub) banner.style.display = "none";
+    }
+  }
+
+  function saveAlertFeatureTogglesFromUI(syncCronNow = false) {
+    const c1 = document.getElementById("chk-alert-first-launch");
+    const c2 = document.getElementById("chk-alert-intraday-delta");
+    const c3 = document.getElementById("chk-alert-discount-buys");
+    const c4 = document.getElementById("chk-alert-bg-cron");
+    const c5 = document.getElementById("chk-alert-browser-push");
+    const c6 = document.getElementById("chk-alert-ntfy-push");
+    const c7 = document.getElementById("chk-alert-tmpv-tranches");
+    const current = loadAlertFeatureToggles();
+    const updated = {
+      firstLaunchEnabled: (c1 && !c1._isStub) ? !!c1.checked : current.firstLaunchEnabled,
+      intradayDeltaEnabled: (c2 && !c2._isStub) ? !!c2.checked : current.intradayDeltaEnabled,
+      discountBuysEnabled: (c3 && !c3._isStub) ? !!c3.checked : current.discountBuysEnabled,
+      browserPushEnabled: (c5 && !c5._isStub) ? !!c5.checked : current.browserPushEnabled,
+      ntfyPushEnabled: (c6 && !c6._isStub) ? !!c6.checked : current.ntfyPushEnabled,
+      bgCronEnabled: (c4 && !c4._isStub) ? !!c4.checked : current.bgCronEnabled,
+      tmpvTranchesEnabled: (c7 && !c7._isStub) ? !!c7.checked : current.tmpvTranchesEnabled
+    };
+    saveAlertFeatureToggles(updated);
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    if (stEl) {
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">✅ Updated Alert Feature Toggles (First-Launch: ${updated.firstLaunchEnabled ? 'ON' : 'OFF'} · Delta: ${updated.intradayDeltaEnabled ? 'ON' : 'OFF'} · Discount Recs: ${updated.discountBuysEnabled ? 'ON' : 'OFF'} · 24/7 Cron: ${updated.bgCronEnabled ? 'ON' : 'OFF'}).</span>`;
+    }
+    if (typeof renderDynamicBuyRecs === "function") {
+      try { renderDynamicBuyRecs(); } catch (e) {}
+    }
+    renderDeltaAlertBannerUI(false);
+    if (syncCronNow) {
+      syncSnapshotToBackgroundCronWorker(true);
+    }
+  }
+
+  function setAllAlertFeatureToggles(enableAll) {
+    const updated = {
+      firstLaunchEnabled: !!enableAll,
+      intradayDeltaEnabled: !!enableAll,
+      discountBuysEnabled: !!enableAll,
+      browserPushEnabled: !!enableAll,
+      ntfyPushEnabled: !!enableAll,
+      bgCronEnabled: !!enableAll
+    };
+    saveAlertFeatureToggles(updated);
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    if (stEl) {
+      stEl.innerHTML = `<span style="color:${enableAll ? 'var(--emerald)' : 'var(--amber)'}; font-weight:700;">${enableAll ? '✅ Enabled all Dynamic Alert & Cron features!' : '⏸️ Disabled all automatic Dynamic Alert popups & Background Cron.'}</span>`;
+    }
+    if (!enableAll) {
+      const banner = document.getElementById("piai-floating-delta-alert-bar");
+      if (banner && !banner._isStub) banner.style.display = "none";
+    }
+    if (typeof renderDynamicBuyRecs === "function") {
+      try { renderDynamicBuyRecs(); } catch (e) {}
+    }
+    renderDeltaAlertBannerUI(false);
+  }
+
+  async function syncSnapshotToBackgroundCronWorker(showFeedback = false) {
+    const toggles = loadAlertFeatureToggles();
+    const contacts = loadSecureAlertContacts();
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    const workerUrl = ((document.getElementById("dhan-proxy-url") && !document.getElementById("dhan-proxy-url")._isStub && document.getElementById("dhan-proxy-url").value) || safeGetStorage("piai_cf_worker_v4", "")).trim();
+
+    if (!workerUrl) {
+      if (showFeedback && stEl) {
+        stEl.innerHTML = `<span style="color:var(--amber); font-weight:700;">ℹ️ Saved toggle locally (${toggles.bgCronEnabled ? 'ON' : 'OFF'}). Configure your Cloudflare Worker URL in Broker APIs to sync 24/7 remote Cron state.</span>`;
+      }
+      return false;
+    }
+
+    const baseW = workerUrl.replace(/\?url=.*$/i, "").replace(/\/$/, "");
+    const syncEndpoint = `${baseW}/?piai_cron_action=sync`;
+    const payload = {
+      enabled: toggles.bgCronEnabled,
+      toggles,
+      contacts: {
+        email: contacts.email,
+        whatsapp: contacts.whatsapp,
+        waApiKey: contacts.waApiKey || "",
+        ntfyTopic: contacts.ntfyTopic || "",
+        emailApiKey: contacts.emailApiKey || ""
+      },
+      rules: {
+        exitDrawdown: typeof ruleExitDrawdown !== "undefined" ? ruleExitDrawdown : -20,
+        profitBook: typeof ruleProfitBook !== "undefined" ? ruleProfitBook : 60,
+        stopLossBuffer: typeof ruleStopLossBuffer !== "undefined" ? ruleStopLossBuffer : 12
+      },
+      multiGttOrders: (typeof buildAllPortfolioMultiGttOrders === "function")
+        ? buildAllPortfolioMultiGttOrders().map(o => ({
+            symbol: o.symbol,
+            ticker: o.ticker,
+            side: o.side,
+            recType: o.recType,
+            recLabel: o.recLabel,
+            tranches: o.tranches.map(t => ({ id: t.id, target: t.target, qty: t.qty, filled: t.filled, triggerDir: t.triggerDir }))
+          }))
+        : [],
+      tmpvTranches: (typeof loadTmpvTrancheState === "function")
+        ? loadTmpvTrancheState().tranches
+        : [
+            { id: "T1", target: 262.5, qty: 183, filled: false },
+            { id: "T2", target: 248.0, qty: 169, filled: false },
+            { id: "T3", target: 238.0, qty: 126, filled: false }
+          ],
+      holdings: (typeof holdings !== "undefined" && Array.isArray(holdings))
+        ? holdings.map(h => ({ n: h.n, ticker: h.ticker || "", qty: h.qty, avg: h.avg, ltp: h.ltp, sl: h.sl, tgt: h.tgt }))
+        : [],
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 5000);
+      const res = await fetch(syncEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal
+      });
+      clearTimeout(tid);
+      if (res.ok) {
+        if (showFeedback && stEl) {
+          stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">☁️ Synced ${payload.holdings.length} holdings &amp; Cron state (${toggles.bgCronEnabled ? 'ENABLED' : 'PAUSED'}) to Cloudflare Worker!</span>`;
+        }
+        return true;
+      }
+    } catch (e) {}
+    if (showFeedback && stEl) {
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔒 Saved alert &amp; Cron state (${toggles.bgCronEnabled ? 'ON' : 'OFF'}) locally. Deploy the upgraded Worker script to enable remote KV sync.</span>`;
+    }
+    return false;
+  }
+
+  function buildQualityDiscountBuyRecommendations() {
+    const toggles = loadAlertFeatureToggles();
+    if (!toggles.discountBuysEnabled) return [];
+    if (typeof holdings === "undefined" || !Array.isArray(holdings) || holdings.length === 0) return [];
+    const recs = [];
+    const seen = new Set();
+
+    // 1. Quality Portfolio Holdings Available at a Discount to Buy Average (-2.5% to -16% above Stop-Loss)
+    holdings.forEach(h => {
+      const ltp = parseFloat(h.ltp) || 0;
+      const avg = parseFloat(h.avg) || 0;
+      const sl = parseFloat(h.sl) || (avg * 0.85);
+      const pct = parseFloat(h.pct) || 0;
+      const dayPct = parseFloat(h.dayPct) || 0;
+      const act = String(h.act || "");
+      if (ltp <= 0 || avg <= 0 || act.includes("EXIT")) return;
+
+      if (pct <= -2.5 && pct > -16.5 && ltp > sl) {
+        const discPct = Math.abs(pct).toFixed(1);
+        const addQty = Math.max(1, Math.round((h.qty || 1) * 0.25));
+        const newAvg = +(((h.qty * avg) + (addQty * ltp)) / (h.qty + addQty)).toFixed(2);
+        recs.push({
+          n: h.n,
+          sec: h.sec || "Equity",
+          type: "DISCOUNT_TO_AVG",
+          badge: `🟢 ${discPct}% Below Avg`,
+          ltp,
+          avg,
+          sl,
+          discPct: +discPct,
+          addQty,
+          addCost: Math.round(addQty * ltp),
+          reason: `Trading ${discPct}% below your Buy Avg (₹${avg.toFixed(1)}) while holding above SL (₹${sl.toFixed(1)}). Adding ~${addQty} sh lowers Avg to ₹${newAvg}.`
+        });
+        seen.add(h.n);
+      } else if (!seen.has(h.n) && ((dayPct <= -1.0) || ((h.today || 0) < 0 && pct > 0 && Math.abs(h.today) >= (h.cur || 1) * 0.012))) {
+        const dipStr = dayPct < 0 ? `${dayPct.toFixed(1)}% today` : `₹${Math.abs(Math.round(h.today || 0))} dip today`;
+        const addQty = Math.max(1, Math.round((h.qty || 1) * 0.15));
+        recs.push({
+          n: h.n,
+          sec: h.sec || "Equity",
+          type: "INTRADAY_DIP_BUY",
+          badge: `🟢 Intraday Pullback (${dipStr})`,
+          ltp,
+          avg,
+          sl,
+          discPct: Math.abs(dayPct || 1.5),
+          addQty,
+          addCost: Math.round(addQty * ltp),
+          reason: `Strong holding (${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% overall) available on an intraday pullback (${dipStr}) at LTP ₹${ltp.toFixed(1)}.`
+        });
+        seen.add(h.n);
+      }
+    });
+
+    if (typeof watchlist !== "undefined" && Array.isArray(watchlist)) {
+      watchlist.forEach(w => {
+        if (!w || !w.name || seen.has(w.name)) return;
+        const ltp = parseFloat(w.ltp) || 0;
+        const tgt = parseFloat(w.target) || 0;
+        if (ltp > 0 && tgt > 0 && ltp <= tgt * 1.025) {
+          const diffPct = (((ltp - tgt) / tgt) * 100).toFixed(1);
+          recs.push({
+            n: w.name,
+            sec: "Watchlist Target",
+            type: "WATCHLIST_DISCOUNT",
+            badge: `🎯 In Buy Zone (${diffPct}%)`,
+            ltp,
+            avg: tgt,
+            sl: +(ltp * 0.90).toFixed(1),
+            discPct: Math.abs(+diffPct),
+            addQty: Math.max(1, Math.round(15000 / ltp)),
+            addCost: Math.round(Math.max(1, Math.round(15000 / ltp)) * ltp),
+            reason: `Watchlist target ₹${tgt.toFixed(1)} reached (Live LTP ₹${ltp.toFixed(1)}). High-conviction entry zone.`
+          });
+          seen.add(w.name);
+        }
+      });
+    }
+
+    return recs.sort((a, b) => b.discPct - a.discPct);
+  }
+
+
+  // ============================================================================
+  // 🎯 TMPV 3-TRANCHE GTT ACCUMULATION & PUSH NOTIFICATION ENGINE (Rs 262.5, Rs 248, Rs 238)
+  // ============================================================================
+  const STORAGE_KEY_TMPV_TRANCHES = "piai_tmpv_gtt_tranches_v1";
+
+  function getDefaultTmpvTrancheState() {
+    return {
+      symbol: "TMPV.NS",
+      bseCode: "500570.BO",
+      ltp: 262.40,
+      prevClose: 287.40,
+      octExitPrice: 283.10,
+      bookValue: 285.00,
+      trailingSlPct: 12,
+      lastSyncedAt: "16 Nov 2026 Close",
+      notifiedTranches: {},
+      tranches: [
+        { id: "T1", name: "Tranche 1 · 52W Support Floor (40%)", weightPct: 40, target: 262.50, qty: 183, filled: false, filledPrice: 0, filledAt: "" },
+        { id: "T2", name: "Tranche 2 · Post-Q2 Dip Test (35%)",  weightPct: 35, target: 248.00, qty: 169, filled: false, filledPrice: 0, filledAt: "" },
+        { id: "T3", name: "Tranche 3 · Deep Value / Q3 Clarity (25%)", weightPct: 25, target: 238.00, qty: 126, filled: false, filledPrice: 0, filledAt: "" }
+      ]
+    };
+  }
+
+  function loadTmpvTrancheState() {
+    const def = getDefaultTmpvTrancheState();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_TMPV_TRANCHES);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.tranches) && parsed.tranches.length === 3) {
+          window._memTmpvTrancheState = {
+            ...def,
+            ...parsed,
+            notifiedTranches: parsed.notifiedTranches || {},
+            tranches: parsed.tranches.map((t, i) => ({
+              ...def.tranches[i],
+              ...t,
+              target: Number(t.target) > 0 ? Number(t.target) : def.tranches[i].target,
+              qty: Number(t.qty) > 0 ? Math.round(Number(t.qty)) : def.tranches[i].qty,
+              filled: !!t.filled
+            }))
+          };
+          return window._memTmpvTrancheState;
+        }
+      }
+    } catch (e) {}
+    if (window._memTmpvTrancheState) return window._memTmpvTrancheState;
+    window._memTmpvTrancheState = def;
+    return def;
+  }
+
+  function saveTmpvTrancheState(state) {
+    const st = state || loadTmpvTrancheState();
+    window._memTmpvTrancheState = st;
+    try {
+      localStorage.setItem(STORAGE_KEY_TMPV_TRANCHES, JSON.stringify(st));
+    } catch (e) {}
+    renderTmpvTrancheTrackerUI();
+    if (typeof renderPortfolioMultiGttUI === 'function') renderPortfolioMultiGttUI();
+  }
+
+  function ensureTmpvTranchesInWatchlist() {
+    if (typeof watchlist === "undefined" || !Array.isArray(watchlist)) return;
+    const st = loadTmpvTrancheState();
+    let changed = false;
+    st.tranches.forEach(t => {
+      const wName = `TMPV (${t.id} GTT)`;
+      const existing = watchlist.find(w => w && (w.name === wName || w.tmpvTrancheId === t.id));
+      if (!existing) {
+        watchlist.push({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          name: wName,
+          tmpvTrancheId: t.id,
+          ltp: st.ltp || 262.40,
+          target: t.target
+        });
+        changed = true;
+      } else {
+        if (existing.target !== t.target || existing.ltp !== st.ltp) {
+          existing.target = t.target;
+          existing.ltp = st.ltp || existing.ltp;
+          changed = true;
+        }
+      }
+    });
+    if (changed && typeof persistState === "function") {
+      try { persistState(); } catch (e) {}
+      if (typeof renderWatchlist === "function") {
+        try { renderWatchlist(); } catch (e) {}
+      }
+    }
+  }
+
+  function updateTmpvTrancheField(trancheId, field, rawVal) {
+    const st = loadTmpvTrancheState();
+    const tr = st.tranches.find(t => t.id === trancheId);
+    if (!tr) return;
+    const num = parseFloat(rawVal);
+    if (field === "target" && num > 50 && num < 2000) {
+      tr.target = +(num.toFixed(2));
+      // Clear notified lock for this tranche if target changed so new zone can alert
+      delete st.notifiedTranches[tr.id];
+    } else if (field === "qty" && num >= 1 && num <= 50000) {
+      tr.qty = Math.round(num);
+    }
+    saveTmpvTrancheState(st);
+    ensureTmpvTranchesInWatchlist();
+    checkAndTriggerTmpvTranchePushAlerts(false);
+    if (typeof syncSnapshotToBackgroundCronWorker === "function") {
+      try { syncSnapshotToBackgroundCronWorker(false); } catch (e) {}
+    }
+  }
+
+  function toggleTmpvTrancheFilled(trancheId, addToPortfolio = true) {
+    const st = loadTmpvTrancheState();
+    const tr = st.tranches.find(t => t.id === trancheId);
+    if (!tr) return;
+    const stMsg = document.getElementById("tmpv-tranche-status-msg");
+    if (!tr.filled) {
+      tr.filled = true;
+      tr.filledPrice = st.ltp <= tr.target ? st.ltp : tr.target;
+      const ist = computeOfficialNSEMarketStatus();
+      tr.filledAt = `${ist.istDateStr} ${ist.istTimeStr}`;
+      if (addToPortfolio && typeof holdings !== "undefined" && Array.isArray(holdings)) {
+        const execPrice = tr.filledPrice;
+        const existing = holdings.find(h => h && (/^TMPV$/i.test(h.n) || /TATA\s*MOTORS\s*PV/i.test(h.n) || h.ticker === "TMPV.NS"));
+        if (existing) {
+          const totalQty = (Number(existing.qty) || 0) + tr.qty;
+          const totalInv = ((Number(existing.qty) || 0) * (Number(existing.avg) || execPrice)) + (tr.qty * execPrice);
+          existing.qty = totalQty;
+          existing.avg = +(totalInv / totalQty).toFixed(2);
+          existing.inv = Math.round(totalInv);
+          existing.ltp = st.ltp || execPrice;
+          existing.cur = Math.round(totalQty * existing.ltp);
+        } else {
+          holdings.push({
+            n: "TMPV",
+            ticker: "TMPV.NS",
+            sec: "Auto & EV",
+            broker: "Kotak Neo",
+            qty: tr.qty,
+            avg: execPrice,
+            ltp: st.ltp || execPrice,
+            prevClose: st.prevClose || 287.40,
+            inv: Math.round(tr.qty * execPrice),
+            cur: Math.round(tr.qty * (st.ltp || execPrice)),
+            dayPct: st.prevClose > 0 ? (((st.ltp - st.prevClose) / st.prevClose) * 100) : 0,
+            today: Math.round(((st.ltp || execPrice) - (st.prevClose || execPrice)) * tr.qty),
+            sl: +(execPrice * 0.88).toFixed(1),
+            tgt: 365
+          });
+        }
+        if (typeof persistState === "function") {
+          try { persistState(); } catch (e) {}
+        }
+        if (typeof recalculatePortfolioMetrics === "function") {
+          try { recalculatePortfolioMetrics(); } catch (e) {}
+        }
+      }
+      if (stMsg && !stMsg._isStub) {
+        stMsg.innerHTML = `<span style="color:var(--emerald); font-weight:700;">✅ Marked ${tr.id} (${tr.qty} sh @ ₹${tr.filledPrice.toFixed(2)}) as FILLED and synced to your PIAI portfolio!</span>`;
+      }
+    } else {
+      tr.filled = false;
+      tr.filledPrice = 0;
+      tr.filledAt = "";
+      delete st.notifiedTranches[tr.id];
+      if (stMsg && !stMsg._isStub) {
+        stMsg.innerHTML = `<span style="color:var(--amber); font-weight:700;">↺ Re-armed ${tr.id} GTT alert at target ₹${tr.target.toFixed(2)}.</span>`;
+      }
+    }
+    saveTmpvTrancheState(st);
+    if (typeof syncSnapshotToBackgroundCronWorker === "function") {
+      try { syncSnapshotToBackgroundCronWorker(false); } catch (e) {}
+    }
+  }
+
+  function resetTmpvTrancheAlertLedger() {
+    const st = loadTmpvTrancheState();
+    st.notifiedTranches = {};
+    saveTmpvTrancheState(st);
+    const stMsg = document.getElementById("tmpv-tranche-status-msg");
+    if (stMsg && !stMsg._isStub) {
+      stMsg.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔔 Reset TMPV tranche notification locks — re-checking active price zones now...</span>`;
+    }
+    checkAndTriggerTmpvTranchePushAlerts(true);
+  }
+
+  async function syncLiveTmpvTrancheLtp(manualTrigger = false) {
+    const st = loadTmpvTrancheState();
+    let livePrice = 0;
+    let prevCl = st.prevClose || 287.40;
+
+    // 1. Check if TMPV is already in live holdings with a fresh price
+    if (typeof holdings !== "undefined" && Array.isArray(holdings)) {
+      const h = holdings.find(item => item && (/^TMPV$/i.test(item.n) || /TATA\s*MOTORS/i.test(item.n) || item.ticker === "TMPV.NS"));
+      if (h && Number(h.ltp) > 0 && !manualTrigger) {
+        livePrice = Number(h.ltp);
+        if (Number(h.prevClose) > 0) prevCl = Number(h.prevClose);
+      }
+    }
+
+    // 2. Fetch live quote from Yahoo/Worker if needed
+    if (livePrice <= 0 && typeof fetchQuoteForSymbol === "function") {
+      for (const sym of ["TMPV.NS", "500570.BO", "TATAMOTORS.NS"]) {
+        try {
+          const q = await fetchQuoteForSymbol(sym);
+          if (q && Number(q.ltp) > 0) {
+            livePrice = Number(q.ltp);
+            if (Number(q.prevClose) > 0) prevCl = Number(q.prevClose);
+            break;
+          }
+        } catch (e) {}
+      }
+    }
+
+    if (livePrice > 0) {
+      st.ltp = +(livePrice.toFixed(2));
+      st.prevClose = +(prevCl.toFixed(2));
+      const ist = computeOfficialNSEMarketStatus();
+      st.lastSyncedAt = `${ist.istTimeStr} IST`;
+      saveTmpvTrancheState(st);
+      ensureTmpvTranchesInWatchlist();
+    } else {
+      renderTmpvTrancheTrackerUI();
+    }
+
+    await checkAndTriggerTmpvTranchePushAlerts(manualTrigger);
+    return st.ltp;
+  }
+
+  async function checkAndTriggerTmpvTranchePushAlerts(forcePush = false) {
+    const toggles = loadAlertFeatureToggles();
+    if (!forcePush && toggles.tmpvTranchesEnabled === false) return false;
+    const st = loadTmpvTrancheState();
+    const ltp = Number(st.ltp) || 262.40;
+    const ist = computeOfficialNSEMarketStatus();
+    const newlyHit = [];
+
+    st.tranches.forEach(tr => {
+      if (tr.filled) return;
+      if (ltp <= Number(tr.target)) {
+        const lockKey = `${tr.id}_${tr.target}_${ist.istIso}`;
+        if (forcePush || !st.notifiedTranches[lockKey]) {
+          newlyHit.push({ tr, lockKey });
+        }
+      }
+    });
+
+    if (newlyHit.length === 0) {
+      if (forcePush) {
+        const nextTr = st.tranches.find(t => !t.filled) || st.tranches[0];
+        const msg = `🎯 TMPV GTT Watch: Live LTP ₹${ltp.toFixed(2)} | T1: ₹${st.tranches[0].target.toFixed(1)} (${ltp <= st.tranches[0].target ? 'HIT' : 'Waiting'}) · T2: ₹${st.tranches[1].target.toFixed(1)} · T3: ₹${st.tranches[2].target.toFixed(1)}. Next target: ${nextTr.id} @ ₹${nextTr.target.toFixed(1)} (${nextTr.qty} sh).`;
+        triggerNativeBrowserPushNotification("🎯 PIAI TMPV Tranche Status", msg);
+        await sendInstantNtfyPushNotification(msg, "PIAI TMPV GTT Tranche Status", true);
+      }
+      return false;
+    }
+
+    const lines = newlyHit.map(({ tr }) => {
+      const cost = Math.round(tr.qty * ltp);
+      const pb = (ltp / (st.bookValue || 285)).toFixed(2);
+      const saveVsOct = Math.round((st.octExitPrice - ltp) * tr.qty);
+      return `🎯 ${tr.id} HIT (Target ₹${tr.target.toFixed(1)}): TMPV Live LTP ₹${ltp.toFixed(2)} (${pb}x Book) <= ₹${tr.target.toFixed(1)}! Buy ${tr.qty} sh (~₹${cost.toLocaleString("en-IN")}, saves ₹${saveVsOct.toLocaleString("en-IN")} vs ₹283.10 exit).`;
+    });
+
+    const title = `🎯 TMPV ${newlyHit.map(x => x.tr.id).join("+")} Price Zone Hit (₹${ltp.toFixed(2)})!`;
+    const body = lines.join(String.fromCharCode(10));
+
+    const pushedBrowser = triggerNativeBrowserPushNotification(title, body);
+    const pushedNtfy = await sendInstantNtfyPushNotification(body, title, forcePush);
+
+    newlyHit.forEach(({ lockKey }) => {
+      st.notifiedTranches[lockKey] = ist.istTimeStr;
+    });
+    saveTmpvTrancheState(st);
+
+    const stMsg = document.getElementById("tmpv-tranche-status-msg");
+    if (stMsg && !stMsg._isStub) {
+      stMsg.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🚀 Triggered Push Alert for ${newlyHit.map(x => x.tr.id + ' (₹' + x.tr.target.toFixed(1) + ')').join(', ')} at ${ist.istTimeStr} IST! (${pushedBrowser ? 'Browser Push Sent · ' : ''}${pushedNtfy ? 'ntfy.sh Phone Push Sent' : 'Ready in Delta Alert Banner'})</span>`;
+    }
+    return true;
+  }
+
+  async function triggerManualTmpvTranchePushTest(specificTrancheId = "") {
+    const st = loadTmpvTrancheState();
+    const ltp = Number(st.ltp) || 262.40;
+    const tr = specificTrancheId
+      ? st.tranches.find(t => t.id === specificTrancheId)
+      : (st.tranches.find(t => !t.filled && ltp <= t.target) || st.tranches[0]);
+    if (!tr) return;
+    const cost = Math.round(tr.qty * Math.min(ltp, tr.target));
+    const pb = (Math.min(ltp, tr.target) / (st.bookValue || 285)).toFixed(2);
+    const title = `TMPV ${tr.id} GTT Alert (Rs ${tr.target.toFixed(1)})`;
+    const msg = `🎯 TMPV ${tr.id} BUY ZONE ALERT: Live LTP ₹${ltp.toFixed(2)} vs Target ₹${tr.target.toFixed(1)} (${pb}x Book Value). Action: Accumulate ${tr.qty} shares (~₹${cost.toLocaleString("en-IN")}) | PIAI 12% Trailing SL: ₹220.81.`;
+
+    const bOk = triggerNativeBrowserPushNotification("🎯 " + title, msg);
+    const nOk = await sendInstantNtfyPushNotification(msg, title, true);
+    const stMsg = document.getElementById("tmpv-tranche-status-msg");
+    if (stMsg && !stMsg._isStub) {
+      if (bOk || nOk) {
+        stMsg.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🔔 Sent ${tr.id} (₹${tr.target.toFixed(1)}) Push Notification (${bOk ? 'Browser Tray' : ''}${bOk && nOk ? ' + ' : ''}${nOk ? 'ntfy.sh Mobile Push' : ''})!</span>`;
+      } else {
+        stMsg.innerHTML = `<span style="color:var(--amber); font-weight:700;">ℹ️ ${tr.id} Alert prepared: "${msg}" — Enable Browser Push or set your ntfy Topic in Admin Alerts to receive lock-screen push notifications.</span>`;
+      }
+    }
+  }
+
+  function renderTmpvTrancheTrackerUI() {
+    const container = document.getElementById("tmpv-tranches-grid-container");
+    if (!container || container._isStub) return;
+    const st = loadTmpvTrancheState();
+    const ltp = Number(st.ltp) || 262.40;
+    const totalShares = st.tranches.reduce((s, t) => s + (Number(t.qty) || 0), 0);
+    const totalCap = st.tranches.reduce((s, t) => s + ((Number(t.qty) || 0) * (Number(t.target) || 0)), 0);
+    const blendedAvg = totalShares > 0 ? (totalCap / totalShares) : 250.92;
+    const blendedPb = (blendedAvg / (st.bookValue || 285)).toFixed(2);
+    const slPrice = blendedAvg * (1 - (st.trailingSlPct || 12) / 100);
+    const savedVsOct = Math.round(((st.octExitPrice || 283.10) - blendedAvg) * totalShares);
+
+    const anyHit = st.tranches.some(t => !t.filled && ltp <= Number(t.target));
+    const ltpBadge = document.getElementById("tmpv-live-ltp-badge");
+    if (ltpBadge && !ltpBadge._isStub) {
+      const hitList = st.tranches.filter(t => !t.filled && ltp <= Number(t.target)).map(t => t.id).join(", ");
+      ltpBadge.textContent = anyHit
+        ? `🎯 TMPV LTP: ₹${ltp.toFixed(2)} (${hitList} Zone Hit!)`
+        : `TMPV LTP: ₹${ltp.toFixed(2)} (${st.lastSyncedAt || 'Live'})`;
+      ltpBadge.className = "badge " + (anyHit ? "badge-emerald" : "badge-amber");
+    }
+
+    const avgBadge = document.getElementById("tmpv-blended-avg-badge");
+    if (avgBadge && !avgBadge._isStub) {
+      avgBadge.textContent = `${totalShares} Sh · Blended Avg: ₹${blendedAvg.toFixed(2)} (${blendedPb}x P/B) · 12% SL: ₹${slPrice.toFixed(2)} · Saves ₹${savedVsOct.toLocaleString("en-IN")} vs ₹283.10 Exit`;
+    }
+
+    container.innerHTML = `
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(265px, 1fr)); gap:10px;">
+        ${st.tranches.map(t => {
+          const isHit = !t.filled && ltp <= Number(t.target);
+          const distPct = ((ltp - Number(t.target)) / Number(t.target)) * 100;
+          const cost = Math.round((Number(t.qty) || 0) * (Number(t.target) || 0));
+          const pb = (Number(t.target) / (st.bookValue || 285)).toFixed(2);
+          const borderCol = t.filled ? "#3b82f6" : isHit ? "#10b981" : "var(--border, #cbd5e1)";
+          const bgCol = t.filled ? "rgba(59,130,246,0.06)" : isHit ? "rgba(16,185,129,0.09)" : "var(--bg-card, #ffffff)";
+          const statusBadge = t.filled
+            ? `<span class="badge badge-purple" style="background:#dbeafe; color:#1d4ed8;">✅ FILLED @ ₹${(t.filledPrice || t.target).toFixed(1)}</span>`
+            : isHit
+            ? `<span class="badge badge-emerald" style="font-weight:800;">🎯 BUY ZONE HIT (LTP ≤ ₹${t.target.toFixed(1)})</span>`
+            : `<span class="badge badge-amber">⏳ Waiting (${distPct >= 0 ? '+' : ''}${distPct.toFixed(1)}% above zone)</span>`;
+
+          return `
+            <div style="border:2px solid ${borderCol}; background:${bgCol}; border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; justify-content:space-between; gap:8px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:6px;">
+                  <strong style="font-size:0.8rem; color:var(--text-main);">${t.name}</strong>
+                  ${statusBadge}
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px;">
+                  <div>
+                    <label style="font-size:0.68rem; color:var(--text-muted); display:block;">GTT Trigger Price (₹)</label>
+                    <input type="number" step="0.5" value="${t.target}" onchange="updateTmpvTrancheField('${t.id}', 'target', this.value)" style="width:100%; padding:4px 7px; font-size:0.78rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:6px; background:var(--bg-card, #fff); color:var(--text-main);" />
+                  </div>
+                  <div>
+                    <label style="font-size:0.68rem; color:var(--text-muted); display:block;">Planned Shares (Qty)</label>
+                    <input type="number" step="1" value="${t.qty}" onchange="updateTmpvTrancheField('${t.id}', 'qty', this.value)" style="width:100%; padding:4px 7px; font-size:0.78rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:6px; background:var(--bg-card, #fff); color:var(--text-main);" />
+                  </div>
+                </div>
+                <div style="font-size:0.72rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+                  <span>Capital: <strong>₹${cost.toLocaleString("en-IN")}</strong></span>
+                  <span>Valuation: <strong>${pb}x Book</strong></span>
+                </div>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; padding-top:4px; border-top:1px dashed var(--border, #e2e8f0);">
+                <button type="button" class="${t.filled ? 'btn-secondary' : 'btn-emerald'}" style="flex:1; padding:4px 8px; font-size:0.71rem;" onclick="toggleTmpvTrancheFilled('${t.id}', true)">
+                  ${t.filled ? '↺ Mark Unfilled' : '✅ Mark Filled (+Portfolio)'}
+                </button>
+                <button type="button" class="btn-purple" style="padding:4px 8px; font-size:0.71rem;" onclick="triggerManualTmpvTranchePushTest('${t.id}')" title="Send Instant Push Notification for ${t.id}">
+                  🔔 Push ${t.id}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+
+  // ============================================================================
+  // ⚡ PORTFOLIO-WIDE DELTA-ONLY MULTI-GTT ENGINE (ALL BUY & SELL RECOMMENDATIONS)
+  // ============================================================================
+  const STORAGE_KEY_MULTI_GTT_LEDGER = "piai_portfolio_multi_gtt_delta_v1";
+  const STORAGE_KEY_MULTI_GTT_OVERRIDES = "piai_portfolio_multi_gtt_overrides_v1";
+  let portfolioMultiGttViewMode = "DELTA_ONLY"; // "DELTA_ONLY" | "ALL"
+
+  function loadMultiGttDeltaLedger() {
+    const def = {
+      seenItems: {},       // itemKey -> { firstSeenAt, lastBaselineState, acked: true }
+      notifiedTranches: {},// hitKey -> { time, ltp }
+      filledTranches: {}   // trancheKey -> { time, price, qty }
+    };
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_MULTI_GTT_LEDGER);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && typeof p === "object") {
+          window._memMultiGttLedger = {
+            seenItems: p.seenItems || {},
+            notifiedTranches: p.notifiedTranches || {},
+            filledTranches: p.filledTranches || {}
+          };
+          return window._memMultiGttLedger;
+        }
+      }
+    } catch (e) {}
+    if (window._memMultiGttLedger) return window._memMultiGttLedger;
+    window._memMultiGttLedger = def;
+    return def;
+  }
+
+  function saveMultiGttDeltaLedger(ledger) {
+    const l = ledger || loadMultiGttDeltaLedger();
+    window._memMultiGttLedger = l;
+    try {
+      localStorage.setItem(STORAGE_KEY_MULTI_GTT_LEDGER, JSON.stringify(l));
+    } catch (e) {}
+  }
+
+  function loadMultiGttUserOverrides() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_MULTI_GTT_OVERRIDES);
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) {}
+    return window._memMultiGttOverrides || {};
+  }
+
+  function saveMultiGttUserOverrides(ov) {
+    window._memMultiGttOverrides = ov;
+    try {
+      localStorage.setItem(STORAGE_KEY_MULTI_GTT_OVERRIDES, JSON.stringify(ov));
+    } catch (e) {}
+  }
+
+  function updatePortfolioMultiGttField(trancheUid, field, val) {
+    const num = parseFloat(val);
+    if (isNaN(num) || num <= 0) return;
+    const ov = loadMultiGttUserOverrides();
+    ov[trancheUid] = ov[trancheUid] || {};
+    if (field === "target") {
+      ov[trancheUid].target = +(num.toFixed(2));
+      // Clear previous hit notification lock for this tranche so updated target triggers fresh delta
+      const ledger = loadMultiGttDeltaLedger();
+      Object.keys(ledger.notifiedTranches).forEach(k => {
+        if (k.startsWith(trancheUid + "__")) delete ledger.notifiedTranches[k];
+      });
+      saveMultiGttDeltaLedger(ledger);
+    } else if (field === "qty") {
+      ov[trancheUid].qty = Math.max(1, Math.round(num));
+    }
+    saveMultiGttUserOverrides(ov);
+    renderPortfolioMultiGttUI();
+    if (typeof syncSnapshotToBackgroundCronWorker === "function") {
+      try { syncSnapshotToBackgroundCronWorker(false); } catch (e) {}
+    }
+  }
+
+  function togglePortfolioMultiGttTrancheFilled(itemSymbol, side, trancheUid, targetPrice, plannedQty) {
+    const ledger = loadMultiGttDeltaLedger();
+    const ist = computeOfficialNSEMarketStatus();
+    const stEl = document.getElementById("portfolio-multi-gtt-status");
+
+    if (!ledger.filledTranches[trancheUid]) {
+      ledger.filledTranches[trancheUid] = {
+        time: `${ist.istDateStr} ${ist.istTimeStr}`,
+        price: Number(targetPrice) || 0,
+        qty: Number(plannedQty) || 1
+      };
+      // Also mark parent item as seen so remaining waiting tranches don't clutter Delta view until they hit
+      saveMultiGttDeltaLedger(ledger);
+      if (stEl && !stEl._isStub) {
+        stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">✅ Marked ${itemSymbol} (${side} · ${plannedQty} sh @ ₹${Number(targetPrice).toFixed(1)}) GTT tranche as FILLED!</span>`;
+      }
+    } else {
+      delete ledger.filledTranches[trancheUid];
+      saveMultiGttDeltaLedger(ledger);
+      if (stEl && !stEl._isStub) {
+        stEl.innerHTML = `<span style="color:var(--amber); font-weight:700;">↺ Re-armed ${itemSymbol} GTT tranche at ₹${Number(targetPrice).toFixed(1)}.</span>`;
+      }
+    }
+    renderPortfolioMultiGttUI();
+    if (typeof syncSnapshotToBackgroundCronWorker === "function") {
+      try { syncSnapshotToBackgroundCronWorker(false); } catch (e) {}
+    }
+  }
+
+  // Builds the complete list of Multi-GTT (T1/T2/T3) orders for ALL Portfolio Buy & Sell Recommendations
+  // and computes `isDelta` (true ONLY if the recommendation is newly emerged OR a tranche price zone is newly hit!)
+  function buildAllPortfolioMultiGttOrders() {
+    const ledger = loadMultiGttDeltaLedger();
+    const overrides = loadMultiGttUserOverrides();
+    const orders = [];
+    const seenSymbols = new Set();
+
+    function applyTrancheMeta(symbol, recType, side, rawTranches, liveLtp) {
+      return rawTranches.map(t => {
+        const uid = `${symbol}__${recType}__${t.id}`;
+        const uOv = overrides[uid] || {};
+        const target = uOv.target !== undefined ? Number(uOv.target) : +(Number(t.target).toFixed(1));
+        const qty = uOv.qty !== undefined ? Number(uOv.qty) : Math.max(1, Math.round(Number(t.qty) || 1));
+        const filledInfo = ledger.filledTranches[uid] || null;
+        const isFilled = !!filledInfo || !!t.filled;
+
+        let isZoneHit = false;
+        if (!isFilled && liveLtp > 0 && target > 0) {
+          if (side === "BUY") {
+            isZoneHit = liveLtp <= target;
+          } else {
+            // For SELL: T1/T2 target scaling hits when LTP >= target; trailing stop T3 hits when LTP <= target
+            isZoneHit = t.triggerDir === "BELOW" ? (liveLtp <= target) : (liveLtp >= target);
+          }
+        }
+        const hitKey = `${uid}__${target}`;
+        const alreadyNotifiedHit = !!ledger.notifiedTranches[hitKey];
+        const isNewTrancheHit = isZoneHit && !alreadyNotifiedHit;
+
+        return {
+          ...t,
+          uid,
+          hitKey,
+          target,
+          qty,
+          filled: isFilled,
+          isZoneHit,
+          alreadyNotifiedHit,
+          isNewTrancheHit
+        };
+      });
+    }
+
+    // 1. Always include TMPV 3-Tranche GTT Accumulation (linked to live TMPV state)
+    const toggles = loadAlertFeatureToggles();
+    if (toggles.tmpvTranchesEnabled !== false && typeof loadTmpvTrancheState === "function") {
+      const tmpvSt = loadTmpvTrancheState();
+      const tmpvLtp = Number(tmpvSt.ltp) || 262.40;
+      const itemKey = "GTT_REC__TMPV__BUY_REENTRY";
+      const tranches = tmpvSt.tranches.map(t => {
+        const uid = `TMPV__BUY_REENTRY__${t.id}`;
+        const hitKey = `${uid}__${t.target}`;
+        const isZoneHit = !t.filled && tmpvLtp <= Number(t.target);
+        const alreadyNotifiedHit = !!ledger.notifiedTranches[hitKey];
+        return {
+          id: t.id,
+          label: t.name,
+          target: Number(t.target),
+          qty: Number(t.qty),
+          triggerDir: "BELOW",
+          uid,
+          hitKey,
+          filled: !!t.filled,
+          isZoneHit,
+          alreadyNotifiedHit,
+          isNewTrancheHit: isZoneHit && !alreadyNotifiedHit,
+          isTmpvLinked: true
+        };
+      });
+      const isNewRec = !ledger.seenItems[itemKey];
+      const hasNewHit = tranches.some(t => t.isNewTrancheHit);
+      orders.push({
+        itemKey,
+        symbol: "TMPV",
+        ticker: "TMPV.NS",
+        broker: "Kotak Neo",
+        side: "BUY",
+        recType: "BUY_REENTRY",
+        recLabel: "🎯 3-Tranche Long-Term Turnaround Re-Entry (0.88x Book)",
+        ltp: tmpvLtp,
+        refPrice: tmpvSt.octExitPrice || 283.10,
+        refLabel: "Oct Exit ₹283.10",
+        tranches,
+        isNewRec,
+        hasNewHit,
+        isDelta: isNewRec || hasNewHit,
+        deltaReason: hasNewHit
+          ? `🎯 New Tranche Price Zone Hit (${tranches.filter(t => t.isNewTrancheHit).map(t => t.id + ' ≤ ₹' + t.target).join(', ')})`
+          : isNewRec
+          ? "🆕 Newly Added Multi-GTT Accumulation Plan"
+          : "Already Notified (No New Tranche Change)"
+      });
+      seenSymbols.add("TMPV");
+    }
+
+    // 2. Scan Portfolio Holdings for SELL (Exit / Profit Book) and BUY (Discount / Dip / Winner Scale) Recommendations
+    if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
+      holdings.forEach(h => {
+        if (!h || !h.n) return;
+        const sym = String(h.n).trim();
+        const ltp = parseFloat(h.ltp) || 0;
+        const avg = parseFloat(h.avg) || 0;
+        const qty = Math.max(1, parseInt(h.qty, 10) || 1);
+        const pct = parseFloat(h.pct) || (avg > 0 ? ((ltp - avg) / avg) * 100 : 0);
+        const dayPct = parseFloat(h.dayPct) || 0;
+        const sl = parseFloat(h.sl) || +(avg * (1 - (typeof ruleStopLossBuffer !== "undefined" ? ruleStopLossBuffer : 12) / 100)).toFixed(1);
+        const act = String(h.act || "");
+        if (ltp <= 0) return;
+
+        // 2A. SELL RECOMMENDATION — Critical Drawdown / Stop-Loss Exit
+        if (act.includes("EXIT") || pct <= (typeof ruleExitDrawdown !== "undefined" ? ruleExitDrawdown : -20)) {
+          const recType = "SELL_EXIT";
+          const itemKey = `GTT_REC__${sym}__${recType}`;
+          const q1 = Math.max(1, Math.round(qty * 0.50));
+          const q2 = Math.max(1, Math.round(qty * 0.30));
+          const q3 = Math.max(1, qty - q1 - q2);
+          const rawT = [
+            { id: "T1", label: "T1 · Immediate 50% Risk Cut (At Market/LTP)", target: +(ltp).toFixed(1), qty: q1, triggerDir: "BELOW" },
+            { id: "T2", label: "T2 · Bounce Limit Exit (+2% Relief Rally)", target: +(ltp * 1.02).toFixed(1), qty: q2, triggerDir: "ABOVE" },
+            { id: "T3", label: "T3 · Final Breakdown Hard Floor (-4% Stop)", target: +(ltp * 0.96).toFixed(1), qty: q3, triggerDir: "BELOW" }
+          ];
+          const tranches = applyTrancheMeta(sym, recType, "SELL", rawT, ltp);
+          const isNewRec = !ledger.seenItems[itemKey];
+          const hasNewHit = tranches.some(t => t.isNewTrancheHit);
+          orders.push({
+            itemKey,
+            symbol: sym,
+            ticker: h.ticker || (sym + ".NS"),
+            broker: h.broker || "Portfolio",
+            side: "SELL",
+            recType,
+            recLabel: `🚨 Stop-Loss / Drawdown Exit (${pct.toFixed(1)}% vs Avg ₹${avg.toFixed(1)})`,
+            ltp,
+            refPrice: avg,
+            refLabel: `Buy Avg ₹${avg.toFixed(1)}`,
+            tranches,
+            isNewRec,
+            hasNewHit,
+            isDelta: isNewRec || hasNewHit,
+            deltaReason: isNewRec ? "🆕 Newly Flagged Stop-Loss Exit Signal" : hasNewHit ? "🚨 New Exit Tranche Triggered" : "Already Seen"
+          });
+          seenSymbols.add(sym);
+          return;
+        }
+
+        // 2B. SELL RECOMMENDATION — Profit Booking (+60% or above target)
+        if (act.includes("BOOK") || pct >= (typeof ruleProfitBook !== "undefined" ? ruleProfitBook : 60)) {
+          const recType = "SELL_BOOK";
+          const itemKey = `GTT_REC__${sym}__${recType}`;
+          const q1 = Math.max(1, Math.round(qty * 0.35));
+          const q2 = Math.max(1, Math.round(qty * 0.35));
+          const q3 = Math.max(1, qty - q1 - q2);
+          const rawT = [
+            { id: "T1", label: "T1 · Book 35% Partial Profit Now", target: +(ltp).toFixed(1), qty: q1, triggerDir: "ABOVE" },
+            { id: "T2", label: "T2 · Scale Out 35% on +5% Extension", target: +(ltp * 1.05).toFixed(1), qty: q2, triggerDir: "ABOVE" },
+            { id: "T3", label: "T3 · Trailing Stop-Loss for 30% Runner (-6%)", target: +(ltp * 0.94).toFixed(1), qty: q3, triggerDir: "BELOW" }
+          ];
+          const tranches = applyTrancheMeta(sym, recType, "SELL", rawT, ltp);
+          const isNewRec = !ledger.seenItems[itemKey];
+          const hasNewHit = tranches.some(t => t.isNewTrancheHit);
+          orders.push({
+            itemKey,
+            symbol: sym,
+            ticker: h.ticker || (sym + ".NS"),
+            broker: h.broker || "Portfolio",
+            side: "SELL",
+            recType,
+            recLabel: `🟣 Profit Booking Ladder (+${pct.toFixed(1)}% Gain vs Avg ₹${avg.toFixed(1)})`,
+            ltp,
+            refPrice: avg,
+            refLabel: `Buy Avg ₹${avg.toFixed(1)}`,
+            tranches,
+            isNewRec,
+            hasNewHit,
+            isDelta: isNewRec || hasNewHit,
+            deltaReason: isNewRec ? "🆕 Newly Entered +60% Profit Booking Zone" : hasNewHit ? "🟣 New Profit Tranche Hit" : "Already Seen"
+          });
+          seenSymbols.add(sym);
+          return;
+        }
+
+        // 2C. BUY RECOMMENDATION — Quality Stock at Discount to Buy Avg (-2.5% to -16.5% above SL)
+        if (!seenSymbols.has(sym) && toggles.discountBuysEnabled !== false && pct <= -2.5 && pct > -16.5 && ltp > sl) {
+          const recType = "DISCOUNT_BUY";
+          const itemKey = `GTT_REC__${sym}__${recType}`;
+          const totalAdd = Math.max(3, Math.round(qty * 0.35));
+          const q1 = Math.max(1, Math.round(totalAdd * 0.40));
+          const q2 = Math.max(1, Math.round(totalAdd * 0.35));
+          const q3 = Math.max(1, totalAdd - q1 - q2);
+          const rawT = [
+            { id: "T1", label: "T1 · 40% Immediate Discount Entry", target: +(ltp).toFixed(1), qty: q1, triggerDir: "BELOW" },
+            { id: "T2", label: "T2 · 35% Support Dip GTT (-4.5%)", target: +(Math.max(sl * 1.01, ltp * 0.955)).toFixed(1), qty: q2, triggerDir: "BELOW" },
+            { id: "T3", label: "T3 · 25% Deep Value GTT (-8.5% above SL)", target: +(Math.max(sl * 1.005, ltp * 0.915)).toFixed(1), qty: q3, triggerDir: "BELOW" }
+          ];
+          const tranches = applyTrancheMeta(sym, recType, "BUY", rawT, ltp);
+          const isNewRec = !ledger.seenItems[itemKey];
+          const hasNewHit = tranches.some(t => t.isNewTrancheHit);
+          orders.push({
+            itemKey,
+            symbol: sym,
+            ticker: h.ticker || (sym + ".NS"),
+            broker: h.broker || "Portfolio",
+            side: "BUY",
+            recType,
+            recLabel: `💎 Discount Buy (${Math.abs(pct).toFixed(1)}% Below Avg ₹${avg.toFixed(1)} · Above SL ₹${sl.toFixed(1)})`,
+            ltp,
+            refPrice: avg,
+            refLabel: `Buy Avg ₹${avg.toFixed(1)}`,
+            tranches,
+            isNewRec,
+            hasNewHit,
+            isDelta: isNewRec || hasNewHit,
+            deltaReason: isNewRec ? `🆕 Newly Entered Discount Zone (${pct.toFixed(1)}% vs Avg)` : hasNewHit ? "🎯 Next Discount GTT Tranche Hit" : "Already Seen"
+          });
+          seenSymbols.add(sym);
+          return;
+        }
+
+        // 2D. BUY RECOMMENDATION — Intraday Pullback on Strong Winner
+        if (!seenSymbols.has(sym) && toggles.discountBuysEnabled !== false && dayPct <= -1.0 && pct > 0 && ltp > sl) {
+          const recType = "INTRADAY_DIP_BUY";
+          const itemKey = `GTT_REC__${sym}__${recType}`;
+          const totalAdd = Math.max(3, Math.round(qty * 0.25));
+          const q1 = Math.max(1, Math.round(totalAdd * 0.40));
+          const q2 = Math.max(1, Math.round(totalAdd * 0.35));
+          const q3 = Math.max(1, totalAdd - q1 - q2);
+          const rawT = [
+            { id: "T1", label: "T1 · 40% Intraday Pullback Add", target: +(ltp).toFixed(1), qty: q1, triggerDir: "BELOW" },
+            { id: "T2", label: "T2 · 35% Deeper Swing Dip (-3.5%)", target: +(ltp * 0.965).toFixed(1), qty: q2, triggerDir: "BELOW" },
+            { id: "T3", label: "T3 · 25% Support Cushion (-6.5%)", target: +(ltp * 0.935).toFixed(1), qty: q3, triggerDir: "BELOW" }
+          ];
+          const tranches = applyTrancheMeta(sym, recType, "BUY", rawT, ltp);
+          const isNewRec = !ledger.seenItems[itemKey];
+          const hasNewHit = tranches.some(t => t.isNewTrancheHit);
+          orders.push({
+            itemKey,
+            symbol: sym,
+            ticker: h.ticker || (sym + ".NS"),
+            broker: h.broker || "Portfolio",
+            side: "BUY",
+            recType,
+            recLabel: `🟢 Intraday Pullback (${dayPct.toFixed(1)}% Today · +${pct.toFixed(1)}% Overall Winner)`,
+            ltp,
+            refPrice: avg,
+            refLabel: `Buy Avg ₹${avg.toFixed(1)}`,
+            tranches,
+            isNewRec,
+            hasNewHit,
+            isDelta: isNewRec || hasNewHit,
+            deltaReason: isNewRec ? `🆕 New Intraday Pullback (${dayPct.toFixed(1)}% today)` : hasNewHit ? "🎯 Pullback GTT Tranche Hit" : "Already Seen"
+          });
+          seenSymbols.add(sym);
+        }
+      });
+    }
+
+    // 3. Scan Watchlist Items (excluding TMPV duplicates) for Multi-GTT Entry Ladders
+    if (typeof watchlist !== "undefined" && Array.isArray(watchlist)) {
+      watchlist.forEach(w => {
+        if (!w || !w.name || w.tmpvTrancheId || /^TMPV/i.test(w.name) || seenSymbols.has(w.name)) return;
+        const ltp = parseFloat(w.ltp) || 0;
+        const tgt = parseFloat(w.target) || 0;
+        if (ltp <= 0 || tgt <= 0) return;
+        const recType = "WATCHLIST_GTT";
+        const itemKey = `GTT_REC__${w.name}__${recType}`;
+        const baseQty = Math.max(3, Math.round(25000 / tgt));
+        const q1 = Math.max(1, Math.round(baseQty * 0.40));
+        const q2 = Math.max(1, Math.round(baseQty * 0.35));
+        const q3 = Math.max(1, baseQty - q1 - q2);
+        const rawT = [
+          { id: "T1", label: "T1 · 40% Watchlist Target Entry", target: +(tgt).toFixed(1), qty: q1, triggerDir: "BELOW" },
+          { id: "T2", label: "T2 · 35% Support Add (-4.5%)", target: +(tgt * 0.955).toFixed(1), qty: q2, triggerDir: "BELOW" },
+          { id: "T3", label: "T3 · 25% Deep Value Add (-8.5%)", target: +(tgt * 0.915).toFixed(1), qty: q3, triggerDir: "BELOW" }
+        ];
+        const tranches = applyTrancheMeta(w.name, recType, "BUY", rawT, ltp);
+        const isNewRec = !ledger.seenItems[itemKey];
+        const hasNewHit = tranches.some(t => t.isNewTrancheHit);
+        orders.push({
+          itemKey,
+          symbol: w.name,
+          ticker: w.name + ".NS",
+          broker: "Watchlist",
+          side: "BUY",
+          recType,
+          recLabel: `🎯 Watchlist Multi-GTT Ladder (Target ₹${tgt.toFixed(1)})`,
+          ltp,
+          refPrice: tgt,
+          refLabel: `Target ₹${tgt.toFixed(1)}`,
+          tranches,
+          isNewRec,
+          hasNewHit,
+          isDelta: isNewRec || hasNewHit,
+          deltaReason: hasNewHit ? "🎯 Watchlist GTT Zone Hit!" : isNewRec ? "🆕 Newly Added Watchlist Multi-GTT" : "Already Seen"
+        });
+        seenSymbols.add(w.name);
+      });
+    }
+
+    return orders;
+  }
+
+  function setPortfolioMultiGttViewMode(mode) {
+    portfolioMultiGttViewMode = mode === "ALL" ? "ALL" : "DELTA_ONLY";
+    const bDelta = document.getElementById("btn-gtt-mode-delta");
+    const bAll = document.getElementById("btn-gtt-mode-all");
+    if (bDelta && !bDelta._isStub) bDelta.className = portfolioMultiGttViewMode === "DELTA_ONLY" ? "btn-emerald" : "btn-secondary";
+    if (bAll && !bAll._isStub) bAll.className = portfolioMultiGttViewMode === "ALL" ? "btn-primary" : "btn-secondary";
+    renderPortfolioMultiGttUI();
+  }
+
+  function acknowledgeAllCurrentMultiGttDeltas() {
+    const ledger = loadMultiGttDeltaLedger();
+    const ist = computeOfficialNSEMarketStatus();
+    const orders = buildAllPortfolioMultiGttOrders();
+    let ackCount = 0;
+    orders.forEach(o => {
+      if (o.isDelta) ackCount++;
+      ledger.seenItems[o.itemKey] = { firstSeenAt: `${ist.istDateStr} ${ist.istTimeStr}`, acked: true };
+      o.tranches.forEach(t => {
+        if (t.isZoneHit) {
+          ledger.notifiedTranches[t.hitKey] = { time: ist.istTimeStr, ltp: o.ltp };
+        }
+      });
+    });
+    saveMultiGttDeltaLedger(ledger);
+    renderPortfolioMultiGttUI();
+    const stEl = document.getElementById("portfolio-multi-gtt-status");
+    if (stEl && !stEl._isStub) {
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">✓ Marked ${ackCount} active Multi-GTT recommendation(s) as seen! They are now hidden in Delta-Only mode and will only reappear if a deeper tranche (T2 / T3) or a new stock recommendation triggers.</span>`;
+    }
+  }
+
+  function resetPortfolioMultiGttDeltaLedger() {
+    window._memMultiGttLedger = null;
+    try { localStorage.removeItem(STORAGE_KEY_MULTI_GTT_LEDGER); } catch (e) {}
+    renderPortfolioMultiGttUI();
+    const stEl = document.getElementById("portfolio-multi-gtt-status");
+    if (stEl && !stEl._isStub) {
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">↺ Reset Multi-GTT Delta memory — all active Buy &amp; Sell Multi-GTT ladders are now treated as fresh deltas.</span>`;
+    }
+  }
+
+  async function pushDeltaMultiGttAlertsNow(isManual = false) {
+    const orders = buildAllPortfolioMultiGttOrders();
+    const deltaOrders = orders.filter(o => o.isDelta);
+    const stEl = document.getElementById("portfolio-multi-gtt-status");
+    const ist = computeOfficialNSEMarketStatus();
+
+    if (deltaOrders.length === 0) {
+      if (isManual && stEl && !stEl._isStub) {
+        stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">✅ Zero new Multi-GTT deltas since your last alert — no duplicate push sent! (Click '↺ Reset Delta Memory' if you want to re-push all active GTTs.)</span>`;
+      }
+      return false;
+    }
+
+    const lines = deltaOrders.map(o => {
+      const hitT = o.tranches.filter(t => t.isNewTrancheHit);
+      const tSummary = o.tranches.map(t => `${t.id}: ₹${t.target.toFixed(1)} (${t.qty}sh${t.isZoneHit ? ' · HIT!' : ''})`).join(" | ");
+      return `${o.side === "BUY" ? "🟢 [DELTA BUY GTT]" : "🔴 [DELTA SELL GTT]"} ${o.symbol} (LTP ₹${o.ltp.toFixed(1)}) — ${hitT.length > 0 ? hitT.map(x => x.id + ' HIT @ ₹' + x.target.toFixed(1)).join(', ') : 'New 3-Tranche GTT'} → ${tSummary}`;
+    });
+
+    const title = `PIAI Delta Multi-GTT (${deltaOrders.length} New Buy/Sell Rec${deltaOrders.length === 1 ? '' : 's'})`;
+    const body = lines.join(String.fromCharCode(10));
+
+    const bOk = triggerNativeBrowserPushNotification("⚡ " + title, body);
+    const nOk = await sendInstantNtfyPushNotification(body, title, isManual);
+
+    // Record in Delta Ledger so the exact same GTTs are not pushed again until a new tranche hits!
+    const ledger = loadMultiGttDeltaLedger();
+    deltaOrders.forEach(o => {
+      ledger.seenItems[o.itemKey] = { firstSeenAt: `${ist.istDateStr} ${ist.istTimeStr}`, acked: true };
+      o.tranches.forEach(t => {
+        if (t.isZoneHit) {
+          ledger.notifiedTranches[t.hitKey] = { time: ist.istTimeStr, ltp: o.ltp };
+        }
+      });
+    });
+    saveMultiGttDeltaLedger(ledger);
+    renderPortfolioMultiGttUI();
+
+    if (stEl && !stEl._isStub) {
+      stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🚀 Pushed ${deltaOrders.length} Delta-Only Multi-GTT alerts (${bOk ? 'Browser Push · ' : ''}${nOk ? 'ntfy.sh Mobile Push' : 'Logged & Silenced against duplicates'}) at ${ist.istTimeStr} IST!</span>`;
+    }
+    return true;
+  }
+
+  function renderPortfolioMultiGttUI() {
+    const mainEl = document.getElementById("portfolio-multi-gtt-container");
+    const mirrorEl = document.getElementById("recs-tab-multi-gtt-mirror");
+    if ((!mainEl || mainEl._isStub) && (!mirrorEl || mirrorEl._isStub)) return;
+
+    const allOrders = buildAllPortfolioMultiGttOrders();
+    const deltaOrders = allOrders.filter(o => o.isDelta);
+    const suppressedCount = Math.max(0, allOrders.length - deltaOrders.length);
+    const visibleOrders = portfolioMultiGttViewMode === "DELTA_ONLY" ? deltaOrders : allOrders;
+
+    const dBadge = document.getElementById("multi-gtt-delta-count-badge");
+    if (dBadge && !dBadge._isStub) {
+      dBadge.textContent = `⚡ ${deltaOrders.length} New Delta GTT Rec${deltaOrders.length === 1 ? '' : 's'}`;
+      dBadge.className = "badge " + (deltaOrders.length > 0 ? "badge-emerald" : "badge-amber");
+    }
+    const sBadge = document.getElementById("multi-gtt-suppressed-badge");
+    if (sBadge && !sBadge._isStub) {
+      sBadge.textContent = `🛡️ ${suppressedCount} Unchanged GTT${suppressedCount === 1 ? '' : 's'} Suppressed`;
+    }
+
+    const htmlContent = visibleOrders.length === 0
+      ? `<div class="empty-state" style="padding:14px; border:1px dashed var(--border, #cbd5e1); border-radius:10px;">
+          ${allOrders.length > 0
+            ? `✅ <strong>Zero New Delta Multi-GTT Changes!</strong> All <strong>${allOrders.length}</strong> active Buy/Sell Multi-GTT ladders have already been seen/notified and have not crossed a new tranche trigger price. Click <strong>"📋 Show All Active GTTs"</strong> above to inspect them or <strong>"↺ Reset Delta Memory"</strong> to re-arm.`
+            : `No active Buy or Sell Multi-GTT recommendations yet. Upload your portfolio CSV or sync live prices to generate 3-tranche Multi-GTT ladders.`}
+        </div>`
+      : `<div style="display:flex; flex-direction:column; gap:12px;">
+          ${visibleOrders.map(o => {
+            const isBuy = o.side === "BUY";
+            const sideBadge = isBuy
+              ? `<span class="badge badge-emerald" style="font-weight:800;">🟢 BUY MULTI-GTT</span>`
+              : `<span class="badge badge-red" style="background:#fee2e2; color:#b91c1c; font-weight:800;">🔴 SELL MULTI-GTT</span>`;
+            const deltaPill = o.isDelta
+              ? `<span class="badge badge-emerald" style="background:#d1fae5; color:#065f46;">⚡ DELTA: ${o.deltaReason}</span>`
+              : `<span class="badge badge-amber">✓ Previously Seen (Waiting for Next Tranche)</span>`;
+
+            return `
+              <div style="border:1.5px solid ${o.isDelta ? (isBuy ? '#10b981' : '#ef4444') : 'var(--border, #cbd5e1)'}; border-radius:10px; padding:10px 12px; background:var(--bg-card, #ffffff);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    ${sideBadge}
+                    <strong style="font-size:0.86rem; color:var(--text-main);">${o.symbol}</strong>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">(${o.broker} · Live LTP: <strong>₹${o.ltp.toFixed(2)}</strong> · ${o.refLabel})</span>
+                    <span style="font-size:0.75rem; font-weight:600; color:var(--accent, #0284c7);">${o.recLabel}</span>
+                  </div>
+                  ${deltaPill}
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(235px, 1fr)); gap:8px;">
+                  ${o.tranches.map(t => {
+                    const cost = Math.round(t.qty * t.target);
+                    const tStatus = t.filled
+                      ? `<span class="badge badge-purple" style="background:#dbeafe; color:#1d4ed8;">✅ Filled</span>`
+                      : t.isNewTrancheHit
+                      ? `<span class="badge badge-emerald" style="font-weight:800;">🎯 NEW ZONE HIT!</span>`
+                      : t.isZoneHit
+                      ? `<span class="badge badge-emerald">🟢 In Zone (Seen)</span>`
+                      : `<span class="badge badge-amber">⏳ Armed (${t.triggerDir === 'BELOW' ? '≤' : '≥'} ₹${t.target.toFixed(1)})</span>`;
+                    const changeHandlerPrice = t.isTmpvLinked
+                      ? `updateTmpvTrancheField('${t.id}', 'target', this.value)`
+                      : `updatePortfolioMultiGttField('${t.uid}', 'target', this.value)`;
+                    const changeHandlerQty = t.isTmpvLinked
+                      ? `updateTmpvTrancheField('${t.id}', 'qty', this.value)`
+                      : `updatePortfolioMultiGttField('${t.uid}', 'qty', this.value)`;
+                    const fillHandler = t.isTmpvLinked
+                      ? `toggleTmpvTrancheFilled('${t.id}', true)`
+                      : `togglePortfolioMultiGttTrancheFilled('${o.symbol}', '${o.side}', '${t.uid}', ${t.target}, ${t.qty})`;
+
+                    return `
+                      <div style="border:1px solid ${t.isNewTrancheHit ? '#10b981' : 'var(--border, #e2e8f0)'}; background:${t.isNewTrancheHit ? 'rgba(16,185,129,0.08)' : 'var(--bg-card-alt, #f8fafc)'}; border-radius:8px; padding:8px 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; margin-bottom:6px;">
+                          <strong style="font-size:0.74rem; color:var(--text-main);">${t.label}</strong>
+                          ${tStatus}
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">
+                          <div>
+                            <label style="font-size:0.65rem; color:var(--text-muted); display:block;">GTT Price (₹)</label>
+                            <input type="number" step="0.5" value="${t.target}" onchange="${changeHandlerPrice}" style="width:100%; padding:3px 6px; font-size:0.75rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:5px; background:var(--bg-card, #fff); color:var(--text-main);" />
+                          </div>
+                          <div>
+                            <label style="font-size:0.65rem; color:var(--text-muted); display:block;">Qty (Shares)</label>
+                            <input type="number" step="1" value="${t.qty}" onchange="${changeHandlerQty}" style="width:100%; padding:3px 6px; font-size:0.75rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:5px; background:var(--bg-card, #fff); color:var(--text-main);" />
+                          </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.7rem; color:var(--text-muted);">
+                          <span>Value: <strong>₹${cost.toLocaleString("en-IN")}</strong></span>
+                          <button type="button" class="${t.filled ? 'btn-secondary' : 'btn-emerald'}" style="padding:2px 7px; font-size:0.68rem;" onclick="${fillHandler}">
+                            ${t.filled ? '↺ Unfill' : '✅ Mark Filled'}
+                          </button>
+                        </div>
+                      </div>
+                    `;
+                  }).join("")}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>`;
+
+    if (mainEl && !mainEl._isStub) mainEl.innerHTML = htmlContent;
+    if (mirrorEl && !mirrorEl._isStub) mirrorEl.innerHTML = htmlContent;
+  }
+
+  // Computes the current day's actionable signal map (Key -> { category, label, detail })
+  function computeCurrentDaySignalMap() {
+    const map = {};
+    // Always evaluate TMPV 3-Tranche GTT Accumulation Zones (Rs 262.5, Rs 248.0, Rs 238.0)
+    const alertTogglesForTmpv = loadAlertFeatureToggles();
+    if (alertTogglesForTmpv.tmpvTranchesEnabled !== false && typeof loadTmpvTrancheState === "function") {
+      const tmpvSt = loadTmpvTrancheState();
+      const tLtp = Number(tmpvSt.ltp) || 262.40;
+      tmpvSt.tranches.forEach(tr => {
+        if (!tr.filled && tLtp <= Number(tr.target)) {
+          const cost = Math.round((Number(tr.qty) || 0) * tLtp);
+          const pb = (tLtp / (tmpvSt.bookValue || 285)).toFixed(2);
+          map[`TMPV_GTT__${tr.id}__${tr.target}`] = {
+            cat: "DISCOUNT_BUY",
+            n: `TMPV (${tr.id})`,
+            line: `• *TMPV ${tr.id} GTT ZONE HIT (≤ ₹${tr.target.toFixed(1)})*: Live LTP ₹${tLtp.toFixed(2)} (${pb}x Book) — *Accumulate ${tr.qty} sh (~₹${cost.toLocaleString("en-IN")}, 12% SL: ₹220.81)*`
+          };
+        }
+      });
+    }
+    if (typeof holdings !== "undefined" && Array.isArray(holdings) && holdings.length > 0) {
+      holdings.forEach(h => {
+        const act = String(h.act || "");
+        if (act.includes("EXIT")) {
+          map[`EXIT__${h.n}`] = {
+            cat: "EXIT",
+            n: h.n,
+            line: `• *${h.n}*: Down ${(h.pct || 0).toFixed(1)}% (LTP: ₹${(h.ltp || 0).toFixed(1)} vs SL: ₹${h.sl || 0}) — *Review Exit*`
+          };
+        } else if (act.includes("BOOK")) {
+          map[`BOOK__${h.n}`] = {
+            cat: "BOOK",
+            n: h.n,
+            line: `• *${h.n}*: Up +${(h.pct || 0).toFixed(1)}% (LTP: ₹${(h.ltp || 0).toFixed(1)}, Target: ₹${h.tgt || 0}) — *Book Partial Profit*`
+          };
+        }
+      });
+
+      const discountRecs = buildQualityDiscountBuyRecommendations();
+      discountRecs.forEach(r => {
+        map[`BUY__${r.n}__${r.type}`] = {
+          cat: "DISCOUNT_BUY",
+          n: r.n,
+          line: `• *${r.n}* (${r.badge}): LTP ₹${r.ltp.toFixed(1)} — ${r.reason}`
+        };
+      });
+
+      const scaleBuys = holdings.filter(h => (h.pct || 0) > 12 && (h.pct || 0) < 55 && (h.cur || 0) > 0 && !map[`BUY__${h.n}__DISCOUNT_TO_AVG`] && !map[`BUY__${h.n}__INTRADAY_DIP_BUY`]);
+      scaleBuys.slice(0, 4).forEach(h => {
+        map[`SCALE__${h.n}`] = {
+          cat: "SCALE_BUY",
+          n: h.n,
+          line: `• *${h.n}*: Outperformer (+${(h.pct || 0).toFixed(1)}%, LTP ₹${(h.ltp || 0).toFixed(1)}) — *Eligible for Winner Scaling*`
+        };
+      });
+    } else if (typeof lastGainzState !== "undefined" && lastGainzState && lastGainzState.recStrike) {
+      const sig = lastGainzState.signal;
+      if (sig === "BUY_CE" || sig === "BUY_PE") {
+        const key = `FNO__${activeUnderlying}__${lastGainzState.recStrike}_${lastGainzState.recOptType}__${sig}`;
+        map[key] = {
+          cat: "FNO",
+          n: activeUnderlying,
+          line: `• *${activeUnderlying} ${lastGainzState.recStrike} ${lastGainzState.recOptType}* (${sig === 'BUY_CE' ? '🟢 BUY CALL' : '🔴 BUY PUT'}): Entry ₹${lastGainzState.entryPrem} · SL ₹${lastGainzState.slPrem} · Target ₹${lastGainzState.tp1Prem}`
+        };
+      }
+    } else if (typeof activeInstrument !== "undefined" && typeof lastBacktestByAlgo !== "undefined" && typeof activeAlgoId !== "undefined") {
+      const bt = lastBacktestByAlgo[activeAlgoId];
+      if (bt && bt.latestSignal) {
+        const key = `MOCK__${activeInstrument}__${bt.latestSignal}`;
+        map[key] = {
+          cat: "MOCK",
+          n: activeInstrument,
+          line: `• *${activeInstrument}*: ${bt.latestSignal} — ${bt.latestReason || ''}`
+        };
+      }
+    }
+    return map;
+  }
+
+  const STORAGE_KEY_DAILY_ALERT_STATE = "piai_daily_delta_alert_state_v1";
+
+  function getDailyAlertLedger() {
+    const st = computeOfficialNSEMarketStatus();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_DAILY_ALERT_STATE);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.istDate === st.istIso) {
+          window._memDailyAlertLedger = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    if (window._memDailyAlertLedger && window._memDailyAlertLedger.istDate === st.istIso) {
+      return window._memDailyAlertLedger;
+    }
+    const fresh = {
+      istDate: st.istIso,
+      firstLaunchSent: false,
+      notifiedKeys: {},
+      historyLog: []
+    };
+    window._memDailyAlertLedger = fresh;
+    return fresh;
+  }
+
+  function saveDailyAlertLedger(ledger) {
+    window._memDailyAlertLedger = ledger;
+    try {
+      localStorage.setItem(STORAGE_KEY_DAILY_ALERT_STATE, JSON.stringify(ledger));
+    } catch (e) {}
+  }
+
+  function resetDailyAlertLedgerForTesting() {
+    window._memDailyAlertLedger = null;
+    try { localStorage.removeItem(STORAGE_KEY_DAILY_ALERT_STATE); } catch (e) {}
+    evaluateDailyLaunchAndDeltaAlerts(true);
+  }
+
+  // Builds either a FULL digest or a DELTA-ONLY digest (only newly triggered signals not yet sent today)
+  function buildActionableAlertDigestText(deltaOnly = false) {
+    const st = computeOfficialNSEMarketStatus();
+    const ledger = getDailyAlertLedger();
+    const currentMap = computeCurrentDaySignalMap();
+    const allKeys = Object.keys(currentMap);
+    const newDeltaKeys = allKeys.filter(k => !ledger.notifiedKeys[k]);
+
+    const isFirstToday = !ledger.firstLaunchSent;
+    const useDelta = deltaOnly && !isFirstToday;
+    const targetKeys = useDelta ? newDeltaKeys : allKeys;
+
+    const headerTitle = isFirstToday
+      ? `🌅 *PIAI First-Launch Daily Market & Portfolio Briefing*`
+      : useDelta
+      ? `⚡ *PIAI Intraday DELTA Alert (${newDeltaKeys.length} New Change${newDeltaKeys.length === 1 ? '' : 's'})*`
+      : `📊 *PIAI Real-Time Market Action Alert*`;
+
+    const lines = [`${headerTitle}`, `🕒 _${st.istDateStr} · ${st.istTimeStr} IST_`];
+
+    if (useDelta && targetKeys.length === 0) {
+      lines.push("");
+      lines.push("✅ *NO NEW DELTA CHANGES:* All previously alerted positions remain within their existing thresholds.");
+      return lines.join(String.fromCharCode(10));
+    }
+
+    const exits = targetKeys.filter(k => currentMap[k].cat === "EXIT").map(k => currentMap[k].line);
+    const books = targetKeys.filter(k => currentMap[k].cat === "BOOK").map(k => currentMap[k].line);
+    const discBuys = targetKeys.filter(k => currentMap[k].cat === "DISCOUNT_BUY").map(k => currentMap[k].line);
+    const scaleBuys = targetKeys.filter(k => currentMap[k].cat === "SCALE_BUY").map(k => currentMap[k].line);
+    const otherSigs = targetKeys.filter(k => ["FNO", "MOCK"].includes(currentMap[k].cat)).map(k => currentMap[k].line);
+
     lines.push("");
-    lines.push(`⚡ _Generated in real-time on-device by PIAI_`);
+    lines.push(useDelta ? "🔄 *NEW INTRADAY DELTA SIGNALS (ONLY CHANGES SINCE LAST ALERT):*" : "🎯 *TODAY'S DYNAMIC ACTION & BUY RECOMMENDATIONS:*");
+
+    if (exits.length > 0) {
+      lines.push(`🚨 *URGENT SELL / STOP-LOSS EXITS (${exits.length}):*`);
+      exits.slice(0, 6).forEach(l => lines.push("  " + l));
+    } else if (!useDelta && typeof holdings !== "undefined" && holdings.length > 0) {
+      lines.push(`✅ *SELL / EXITS:* Zero holdings breaching drawdown limit.`);
+    }
+
+    if (books.length > 0) {
+      lines.push(`🟣 *PROFIT BOOKING CANDIDATES (${books.length}):*`);
+      books.slice(0, 6).forEach(l => lines.push("  " + l));
+    }
+
+    if (discBuys.length > 0) {
+      lines.push(`🟢 *QUALITY STOCKS AT DISCOUNT — BUY RECOMMENDATIONS (${discBuys.length}):*`);
+      discBuys.slice(0, 6).forEach(l => lines.push("  " + l));
+    }
+
+    if (scaleBuys.length > 0) {
+      lines.push(`🚀 *MOMENTUM WINNERS TO SCALE (${scaleBuys.length}):*`);
+      scaleBuys.slice(0, 4).forEach(l => lines.push("  " + l));
+    }
+
+    if (otherSigs.length > 0) {
+      lines.push(`⚡ *ACTIVE TRADING SIGNALS:*`);
+      otherSigs.forEach(l => lines.push("  " + l));
+    }
+
+    lines.push("");
+    lines.push(`⚡ _Generated dynamically by PIAI (Zero stale history · Delta-Tracked)_`);
     return lines.join(String.fromCharCode(10));
   }
 
-  function sendPortfolioAlertViaWhatsApp(customText = "") {
+  function markCurrentSignalsAsNotified(keysToMark) {
+    const st = computeOfficialNSEMarketStatus();
+    const ledger = getDailyAlertLedger();
+    const currentMap = computeCurrentDaySignalMap();
+    const keys = keysToMark || Object.keys(currentMap);
+    ledger.firstLaunchSent = true;
+    keys.forEach(k => { ledger.notifiedKeys[k] = st.istTimeStr; });
+    ledger.historyLog.unshift({
+      time: st.istTimeStr,
+      count: keys.length,
+      type: keysToMark ? "Delta Update" : "Daily Launch Briefing"
+    });
+    ledger.historyLog = ledger.historyLog.slice(0, 15);
+    saveDailyAlertLedger(ledger);
+    renderDeltaAlertBannerUI();
+  }
+
+  // Evaluates whether this is the First Launch of the Day OR if new Delta signals appeared after a sync
+  let pendingAlertDigestText = "";
+  let pendingAlertModeLabel = "";
+
+  function evaluateDailyLaunchAndDeltaAlerts(forceShow = false) {
+    const toggles = loadAlertFeatureToggles();
+    updateAlertToggleUIState(toggles);
+    const currentMap = computeCurrentDaySignalMap();
+    const allKeys = Object.keys(currentMap);
+    if (allKeys.length === 0 && !forceShow) {
+      renderDeltaAlertBannerUI(false);
+      return;
+    }
+
+    const ledger = getDailyAlertLedger();
+    const isFirstToday = !ledger.firstLaunchSent;
+    const newDeltaKeys = allKeys.filter(k => !ledger.notifiedKeys[k]);
+
+    // Respect Admin Page Toggle Switches!
+    if (!forceShow) {
+      if (isFirstToday && !toggles.firstLaunchEnabled) {
+        renderDeltaAlertBannerUI(false);
+        return;
+      }
+      if (!isFirstToday && (!toggles.intradayDeltaEnabled || newDeltaKeys.length === 0)) {
+        renderDeltaAlertBannerUI(false);
+        return;
+      }
+    }
+
+    const isDeltaMode = !isFirstToday && newDeltaKeys.length > 0;
+    pendingAlertDigestText = buildActionableAlertDigestText(isDeltaMode);
+    pendingAlertModeLabel = isFirstToday
+      ? `🌅 First Launch of the Day (${allKeys.length} Actionable Signal${allKeys.length === 1 ? '' : 's'})`
+      : isDeltaMode
+      ? `⚡ New Intraday Delta Update (+${newDeltaKeys.length} New Change${newDeltaKeys.length === 1 ? '' : 's'})`
+      : `📊 Manual Alert Snapshot (${allKeys.length} Active Signal${allKeys.length === 1 ? '' : 's'})`;
+
+    renderDeltaAlertBannerUI(true, isFirstToday, newDeltaKeys);
+
+    // Automatically fire zero-click Browser Push & ntfy.sh Phone Push in the background!
+    if (!forceShow) {
+      const pushTitle = isFirstToday ? "PIAI Morning Briefing" : `PIAI Delta Alert (+${newDeltaKeys.length} New)`;
+      const pushedBrowser = triggerNativeBrowserPushNotification(pushTitle, pendingAlertDigestText);
+      sendInstantNtfyPushNotification(pendingAlertDigestText, pushTitle, false).then(pushedNtfy => {
+        if (pushedBrowser || pushedNtfy) {
+          markCurrentSignalsAsNotified();
+        }
+      });
+    }
+  }
+
+  function renderDeltaAlertBannerUI(showFloating = false, isFirstToday = false, newDeltaKeys = []) {
+    const ledger = getDailyAlertLedger();
+    const currentMap = computeCurrentDaySignalMap();
+    const allKeys = Object.keys(currentMap);
+    const deltaKeys = allKeys.filter(k => !ledger.notifiedKeys[k]);
+
+    // Update Admin Alert Log Box if present
+    const logBox = document.getElementById("admin-delta-alert-log-box");
+    if (logBox && !logBox._isStub) {
+      logBox.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+          <strong>📅 Today's Alert State (${ledger.istDate}):</strong>
+          <span class="badge ${ledger.firstLaunchSent ? 'badge-emerald' : 'badge-amber'}">
+            ${ledger.firstLaunchSent ? '✅ First-Launch Briefing Sent' : '⏳ First-Launch Briefing Pending'}
+          </span>
+        </div>
+        <div style="font-size:0.74rem; color:var(--text-muted);">
+          Tracked Signals Today: <strong>${Object.keys(ledger.notifiedKeys).length}</strong> already notified &nbsp;·&nbsp;
+          Pending New Delta Changes: <strong style="color:var(--emerald);">${deltaKeys.length}</strong>
+        </div>
+      `;
+    }
+
+    if (!showFloating) return;
+
+    let banner = document.getElementById("piai-floating-delta-alert-bar");
+    if (!banner || banner._isStub) {
+      banner = document.createElement("div");
+      banner.id = "piai-floating-delta-alert-bar";
+      banner.style.cssText = "position:fixed; bottom:18px; right:18px; z-index:9999; max-width:440px; width:calc(100% - 36px); background:var(--bg-card, #ffffff); color:var(--text-main, #0f172a); border:2px solid #10b981; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.22); padding:14px 16px; font-size:0.78rem; line-height:1.45;";
+      document.body.appendChild(banner);
+    }
+
+    const discountCount = (isFirstToday ? allKeys : deltaKeys).filter(k => currentMap[k] && currentMap[k].cat === "DISCOUNT_BUY").length;
+    const exitCount = (isFirstToday ? allKeys : deltaKeys).filter(k => currentMap[k] && currentMap[k].cat === "EXIT").length;
+    const bookCount = (isFirstToday ? allKeys : deltaKeys).filter(k => currentMap[k] && currentMap[k].cat === "BOOK").length;
+
+    banner.style.display = "block";
+    banner.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;">
+        <div style="font-weight:800; font-size:0.84rem; color:#059669;">
+          ${pendingAlertModeLabel}
+        </div>
+        <button type="button" onclick="dismissDeltaAlertBanner(true)" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.95rem; font-weight:700; padding:0 4px;" title="Mark as Seen & Dismiss">✕</button>
+      </div>
+      <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;">
+        ${isFirstToday
+          ? `Welcome back! Today's first-launch scan found <strong>${discountCount} Discount Buy Rec(s)</strong>, <strong>${bookCount} Profit Booking</strong>, and <strong>${exitCount} Exit Alerts</strong>.`
+          : `New intraday delta detected since your last alert: <strong>${newDeltaKeys.length} new signal change(s)</strong> (Zero old history repeated).`}
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-emerald" style="padding:6px 11px; font-size:0.74rem;" onclick="dispatchPendingDeltaAlert('WHATSAPP')">
+          💬 Send ${isFirstToday ? 'Daily Briefing' : 'Delta'} on WhatsApp
+        </button>
+        <button type="button" class="btn-primary" style="padding:6px 11px; font-size:0.74rem;" onclick="dispatchPendingDeltaAlert('EMAIL')">
+          ✉️ Send ${isFirstToday ? 'Daily Briefing' : 'Delta'} via Email
+        </button>
+        <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.72rem;" onclick="dismissDeltaAlertBanner(true)">
+          ✓ Mark Seen
+        </button>
+        <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.72rem; color:var(--text-muted);" onclick="setAllAlertFeatureToggles(false)" title="Turn off automatic alert popups (can be re-enabled in Admin -> Dynamic Alerts)">
+          ⏸️ Turn Off Auto-Alerts
+        </button>
+      </div>
+    `;
+  }
+
+  function dismissDeltaAlertBanner(markSeen = true) {
+    if (markSeen) markCurrentSignalsAsNotified();
+    const banner = document.getElementById("piai-floating-delta-alert-bar");
+    if (banner && !banner._isStub) banner.style.display = "none";
+  }
+
+  function dispatchPendingDeltaAlert(channel) {
+    const text = pendingAlertDigestText || buildActionableAlertDigestText(false);
+    markCurrentSignalsAsNotified();
+    const banner = document.getElementById("piai-floating-delta-alert-bar");
+    if (banner && !banner._isStub) banner.style.display = "none";
+    if (channel === "WHATSAPP") {
+      sendPortfolioAlertViaWhatsApp(text);
+    } else {
+      sendPortfolioAlertViaEmail(text);
+    }
+  }
+
+  function sendPortfolioAlertViaWhatsApp(customText = "", deltaOnly = false) {
     const c = loadSecureAlertContacts();
     let phone = (c.whatsapp || "").replace(/[^0-9]/g, "");
     if (!phone) {
@@ -1805,14 +3477,15 @@
         saveSecureAlertContactsFromUI();
       }
     }
-    const msg = customText || buildActionableAlertDigestText();
+    const msg = customText || buildActionableAlertDigestText(deltaOnly);
+    markCurrentSignalsAsNotified();
     const waUrl = phone
       ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
       : `https://wa.me/?text=${encodeURIComponent(msg)}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
   }
 
-  function sendPortfolioAlertViaEmail(customText = "") {
+  function sendPortfolioAlertViaEmail(customText = "", deltaOnly = false) {
     const c = loadSecureAlertContacts();
     let email = (c.email || "").trim();
     if (!email) {
@@ -1823,11 +3496,15 @@
       }
     }
     const st = computeOfficialNSEMarketStatus();
-    const subject = `PIAI Dynamic Action Alert — ${st.istDateStr}`;
-    const body = customText || buildActionableAlertDigestText().replace(/\*/g, "").replace(/_/g, "");
+    const subject = deltaOnly
+      ? `PIAI Intraday Delta Alert — ${st.istDateStr} (${st.istTimeStr} IST)`
+      : `PIAI Daily Action & Buy Recs Briefing — ${st.istDateStr}`;
+    const body = (customText || buildActionableAlertDigestText(deltaOnly)).replace(/\*/g, "").replace(/_/g, "");
+    markCurrentSignalsAsNotified();
     const mailUrl = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailUrl;
   }
+
 
   // Smart Indian Stock Sector Classifier
   function inferIndianStockSector(name, ticker, rawSec) {
@@ -2821,7 +4498,8 @@
   }
   function copyCloudflareWorkerCode() {
     const code = `export default {
-  async fetch(request) {
+  // 1. HTTP FETCH HANDLER: CORS Relay + Background Cron Portfolio Snapshot Sync
+  async fetch(request, env) {
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -2831,9 +4509,37 @@
       return new Response(null, { status: 204, headers: corsHeaders });
     }
     const reqUrl = new URL(request.url);
+
+    // Handle 24/7 Background Cron Snapshot Sync from PIAI Admin Page
+    const cronAction = reqUrl.searchParams.get("piai_cron_action");
+    if (cronAction === "sync" && request.method === "POST") {
+      const bodyJson = await request.json();
+      if (env && env.PIAI_KV) {
+        await env.PIAI_KV.put("piai_cron_snapshot_v1", JSON.stringify(bodyJson));
+      }
+      return new Response(JSON.stringify({ ok: true, enabled: !!bodyJson.enabled, savedAt: new Date().toISOString() }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    if (cronAction === "status") {
+      const raw = (env && env.PIAI_KV) ? await env.PIAI_KV.get("piai_cron_snapshot_v1") : null;
+      return new Response(raw || JSON.stringify({ enabled: false }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const url = reqUrl.searchParams.get("url");
     if (!url) {
-      return new Response(JSON.stringify({ error: "Missing ?url=" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const hasKv = !!(env && env.PIAI_KV);
+      return new Response(JSON.stringify({
+        ok: true,
+        service: "PIAI Multi-Broker CORS Relay & 24/7 Background Cron Worker",
+        status: "ONLINE",
+        kvBound: hasKv,
+        usage: "Append ?url=<encoded_target_url> for CORS relay, or ?piai_cron_action=status to inspect Cron state."
+      }, null, 2), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const upstreamHeaders = {
       "User-Agent": "Mozilla/5.0",
@@ -2867,13 +4573,84 @@
     });
     const body = await resp.text();
     return new Response(body, { status: resp.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  },
+
+  // 2. 24/7 AUTONOMOUS CRON HANDLER (Triggers every 5m during NSE hours: */5 3-10 * * 1-5)
+  async scheduled(event, env, ctx) {
+    if (!env || !env.PIAI_KV) return;
+    const rawSnap = await env.PIAI_KV.get("piai_cron_snapshot_v1");
+    if (!rawSnap) return;
+    const snap = JSON.parse(rawSnap);
+    if (!snap.enabled || !Array.isArray(snap.holdings) || snap.holdings.length === 0) return;
+
+    const istDate = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    const rawLedger = await env.PIAI_KV.get("piai_cron_delta_ledger_" + istDate);
+    const notifiedKeys = rawLedger ? JSON.parse(rawLedger) : {};
+    const newLines = [];
+
+    for (const h of snap.holdings.slice(0, 40)) {
+      const sym = (h.ticker || (h.n + ".NS")).toUpperCase();
+      try {
+        const r = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(sym) + "?interval=1d&range=2d", {
+          headers: { "User-Agent": "Mozilla/5.0" }
+        });
+        if (!r.ok) continue;
+        const j = await r.json();
+        const meta = j?.chart?.result?.[0]?.meta;
+        const ltp = meta?.regularMarketPrice;
+        if (!ltp || ltp <= 0) continue;
+        const pct = h.avg > 0 ? ((ltp - h.avg) / h.avg) * 100 : 0;
+
+        if (pct <= (snap.rules?.exitDrawdown || -20) && !notifiedKeys["EXIT__" + h.n]) {
+          notifiedKeys["EXIT__" + h.n] = ltp;
+          newLines.push("🚨 EXIT TRIGGER: " + h.n + " Down " + pct.toFixed(1) + "% (LTP ₹" + ltp + " <= SL ₹" + (h.sl || 0) + ")");
+        } else if (pct >= (snap.rules?.profitBook || 60) && !notifiedKeys["BOOK__" + h.n]) {
+          notifiedKeys["BOOK__" + h.n] = ltp;
+          newLines.push("🟣 PROFIT BOOKING: " + h.n + " Up +" + pct.toFixed(1) + "% (LTP ₹" + ltp + ")");
+        } else if (snap.toggles?.discountBuysEnabled !== false && pct <= -3.0 && pct > -16.0 && ltp > (h.sl || 0) && !notifiedKeys["DISC__" + h.n]) {
+          notifiedKeys["DISC__" + h.n] = ltp;
+          newLines.push("💎 DISCOUNT BUY REC: " + h.n + " trading " + Math.abs(pct).toFixed(1) + "% below Buy Avg ₹" + h.avg + " (LTP ₹" + ltp + ")");
+        }
+      } catch (e) {}
+    }
+
+    if (newLines.length > 0) {
+      await env.PIAI_KV.put("piai_cron_delta_ledger_" + istDate, JSON.stringify(notifiedKeys));
+      const nl = String.fromCharCode(10); const msg = "⚡ PIAI 24/7 Background Delta Alert (" + istDate + "):" + nl + newLines.join(nl);
+      const ntfyTopic = (snap.contacts?.ntfyTopic || "").replace(/[^a-zA-Z0-9_-]/g, "");
+      if (ntfyTopic && snap.toggles?.ntfyPushEnabled !== false) {
+        await fetch("https://ntfy.sh/" + encodeURIComponent(ntfyTopic), {
+          method: "POST",
+          headers: { "Title": "PIAI 24/7 Delta Alert (" + istDate + ")", "Priority": "high", "Tags": "chart_with_upwards_trend,bell" },
+          body: msg
+        });
+      }
+      const phone = (snap.contacts?.whatsapp || "").replace(/[^0-9]/g, "");
+      if (phone && snap.contacts?.waApiKey) {
+        await fetch("https://api.callmebot.com/whatsapp.php?phone=" + phone + "&text=" + encodeURIComponent(msg) + "&apikey=" + encodeURIComponent(snap.contacts.waApiKey));
+      }
+      if (snap.contacts?.email && snap.contacts?.emailApiKey) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + snap.contacts.emailApiKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: "PIAI Alerts <onboarding@resend.dev>",
+            to: [snap.contacts.email],
+            subject: "PIAI 24/7 Background Delta Alert — " + istDate,
+            text: msg
+          })
+        });
+      }
+    }
   }
 };`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(code);
     }
     const out = document.getElementById("diag-verify-output");
-    if (out) out.innerHTML = `<span style="color:var(--emerald);">✅ Copied Cloudflare Worker relay script to clipboard!</span>`;
+    if (out && !out._isStub) out.innerHTML = `<span style="color:var(--emerald);">✅ Copied Upgraded 24/7 Cron + Multi-Broker Relay Worker script to clipboard!</span>`;
+    const stEl = document.querySelector("[id='alert-contact-save-status']");
+    if (stEl) stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">📋 Copied 24/7 Cron + Relay Worker script to clipboard!</span>`;
   }
 
   function updateTelemetryUI() {
@@ -3684,6 +5461,7 @@
     calculateTaxHarvest();
     calculateWealthProjection();
     updateTelemetryUI();
+    evaluateDailyLaunchAndDeltaAlerts(false);
 
     document.getElementById("hdr-timestamp").textContent = lastSyncTelemetry.feedDisconnected
       ? `🔴 FEED DISCONNECTED AFTER 8s TIMEOUT — OPEN '🛡️ FEED DIAGNOSTICS & WORKER' TO VERIFY WORKER/TOKEN`
@@ -4131,7 +5909,19 @@
           </div>
         `);
       }
-      intraEl.innerHTML = sigCards.length ? sigCards.join("") : `<div style="padding:8px; color:#047857; font-size:0.78rem;">Click <strong>⚡ Sync Live NSE Prices</strong> above to refresh intraday signals.</div>`;
+      const discountRecs = buildQualityDiscountBuyRecommendations();
+      discountRecs.slice(0, 8).forEach(r => {
+        sigCards.push(`
+          <div class="rec-card" style="border-left:4px solid #10b981;">
+            <div class="rec-header">
+              <span class="rec-name">💎 ${r.n} <span class="badge badge-emerald" style="margin-left:6px;">${r.badge}</span></span>
+              <span class="rec-size">Accumulate ~${r.addQty} sh (₹${r.addCost.toLocaleString("en-IN")})</span>
+            </div>
+            <div class="rec-note">${r.reason}</div>
+          </div>
+        `);
+      });
+      intraEl.innerHTML = sigCards.length ? sigCards.join("") : `<div style="padding:8px; color:#047857; font-size:0.78rem;">Click <strong>⚡ Sync Live NSE Prices</strong> above to refresh intraday discount buy recommendations.</div>`;
     }
 
     const targetSectors = [
