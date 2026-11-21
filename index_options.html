@@ -133,7 +133,7 @@
     .btn-primary { background: #2563eb; color: #0f172a; }
     .btn-emerald { background: #059669; color: #0f172a; }
     .btn-purple { background: #7c3aed; color: #0f172a; }
-    .btn-secondary { background: #1f2937; color: #e5e7eb; border: 1px solid #374151; }
+    .btn-secondary { background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; }
     .btn-danger { background: #991b1b; color: #fecaca; }
     .btn-primary:hover, .btn-emerald:hover, .btn-purple:hover, .btn-secondary:hover, .btn-danger:hover { opacity: 0.9; }
 
@@ -146,8 +146,8 @@
       text-transform: uppercase;
     }
     .inp-field {
-      background: #090d16;
-      border: 1px solid #374151;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
       color: #0f172a;
       padding: 6px 9px;
       border-radius: 7px;
@@ -243,7 +243,7 @@
       border-bottom: 1px solid #1f2937;
     }
     .chain-table th {
-      background: #0f172a;
+      background: #f1f5f9;
       color: var(--text-muted);
       font-weight: 700;
       text-transform: uppercase;
@@ -252,7 +252,7 @@
     .chain-strike-col {
       text-align: center !important;
       font-weight: 800;
-      background: #1e293b;
+      background: #f1f5f9;
       color: #f8fafc;
     }
     .itm-ce { background: rgba(16, 185, 129, 0.07); }
@@ -304,7 +304,7 @@
     }
     .modal-backdrop.open { display: flex; }
     .modal-box {
-      background: #0f172a;
+      background: #f1f5f9;
       border: 1px solid #38bdf8;
       border-radius: 14px;
       width: 100%;
@@ -829,6 +829,103 @@
       .kpi-grid { grid-template-columns: 1fr !important; }
     }
 
+  
+    /* === PIAI CLEAN LIGHT THEME & SIMPLIFIED READABILITY OVERRIDE (ZERO BLACK BACKGROUNDS) === */
+    body:not([data-theme="dark"]) {
+      background: #f4f6f9 !important;
+      color: #0f172a !important;
+    }
+    body:not([data-theme="dark"]) .card,
+    body:not([data-theme="dark"]) .kpi-card {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #dbe2ea !important;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+      border-radius: 12px !important;
+    }
+    body:not([data-theme="dark"]) .inp-field,
+    body:not([data-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    body:not([data-theme="dark"]) select,
+    body:not([data-theme="dark"]) textarea {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .btn-secondary {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .btn-secondary:hover {
+      background: #e2e8f0 !important;
+    }
+    body:not([data-theme="dark"]) .tab-btn {
+      background: #ffffff !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .tab-btn.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+    }
+    body:not([data-theme="dark"]) .chain-table th,
+    body:not([data-theme="dark"]) .sim-matrix-table th,
+    body:not([data-theme="dark"]) table thead th {
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border-bottom: 1px solid #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .chain-table td,
+    body:not([data-theme="dark"]) table tbody td {
+      color: #0f172a !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    body:not([data-theme="dark"]) .chain-strike-col {
+      background: #e0f2fe !important;
+      color: #0369a1 !important;
+      font-weight: 800 !important;
+    }
+    body:not([data-theme="dark"]) .stock-expanded,
+    body:not([data-theme="dark"]) .rec-card,
+    body:not([data-theme="dark"]) .modal-box,
+    body:not([data-theme="dark"]) .code-box,
+    body:not([data-theme="dark"]) pre,
+    body:not([data-theme="dark"]) .chat-header,
+    body:not([data-theme="dark"]) .chat-bubble-ai {
+      background: #f8fafc !important;
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .sync-progress-bar {
+      background: #e2e8f0 !important;
+    }
+    body:not([data-theme="dark"]) canvas {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .global-app-bar {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border-bottom: 1px solid #dbe2ea !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05) !important;
+    }
+    body:not([data-theme="dark"]) .app-nav-tab {
+      background: #f8fafc !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body:not([data-theme="dark"]) .app-nav-tab.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #1d4ed8 !important;
+    }
+    .container, .main-wrap, main {
+      max-width: 1380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
   </style>
 </head>
 <body class="theme-light">
@@ -967,8 +1064,6 @@
       <button type="button" class="icon-refresh-btn" id="btn-sync-now" onclick="syncOptionsMarketData(true)" title="Refresh OHLC &amp; Expiries">↻</button>
       <button type="button" class="btn-primary" onclick="toggleDhanDrawer()">🛡️ DhanHQ API &amp; Worker</button>
       <button type="button" class="btn-purple" onclick="openOverrideSpotModal()">✏️ Override Spot / VIX</button>
-      <button type="button" id="btn-jump-seller-income" class="btn-primary" onclick="jumpToOptionsSection('option-selling-income-card')">💰 ₹5L Option Selling</button>
-      <button type="button" id="btn-jump-otm-hedge" class="btn-emerald" onclick="jumpToOptionsSection('portfolio-otm-hedge-card')">🛡️ OTM Put Insurance</button>
     </div>
   </div>
 
@@ -1308,29 +1403,29 @@
       <div id="hedge-action-toast" style="margin-top:8px; font-size:0.74rem; color:var(--text-muted);"></div>
     </div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title">
-          <span>📐 Multi-Leg Options Strategy &amp; Payoff Simulator</span>
-          <div style="display:flex; gap:5px; flex-wrap:wrap;">
-            <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="loadStrategyPreset('BUY_CE')">Long Call</button>
-            <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="loadStrategyPreset('BUY_PE')">Long Put</button>
-            <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="loadStrategyPreset('BULL_CALL_SPREAD')">Bull Call Spread</button>
-            <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="loadStrategyPreset('SHORT_STRADDLE')">Short Straddle</button>
-            <button type="button" class="btn-secondary" style="padding:2px 7px; font-size:0.68rem;" onclick="loadStrategyPreset('IRON_CONDOR')">Iron Condor</button>
-          </div>
+    <!-- 📐 FULL-WIDTH MULTI-LEG OPTIONS STRATEGY & PAYOFF SIMULATOR -->
+    <div class="card" id="strategy-simulator-card" style="margin-bottom:14px;">
+      <div class="card-title" style="flex-wrap:wrap; gap:8px;">
+        <span>📐 Multi-Leg Options Strategy &amp; Payoff Simulator</span>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.71rem;" onclick="loadStrategyPreset('BUY_CE')">Long Call</button>
+          <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.71rem;" onclick="loadStrategyPreset('BUY_PE')">Long Put</button>
+          <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.71rem;" onclick="loadStrategyPreset('BULL_CALL_SPREAD')">Bull Call Spread</button>
+          <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.71rem;" onclick="loadStrategyPreset('SHORT_STRADDLE')">Short Straddle</button>
+          <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.71rem;" onclick="loadStrategyPreset('IRON_CONDOR')">Iron Condor</button>
         </div>
-        <div id="strategy-legs-list" style="margin-bottom:10px;"></div>
-        <div id="strategy-metrics-summary" style="font-size:0.77rem; color:#334155; line-height:1.55; padding:8px; background:#f8fafc; border-radius:8px; border:1px solid #1f2937;"></div>
       </div>
+      <div id="strategy-legs-list" style="margin-bottom:10px;"></div>
+      <div id="strategy-metrics-summary" style="font-size:0.79rem; color:#0f172a; line-height:1.6; padding:12px 14px; background:#f8fafc; border-radius:8px; border:1px solid #cbd5e1;"></div>
+    </div>
 
-      <div class="card">
-        <div class="card-title">
-          <span>📈 Strategy Expiry Payoff Curve (±5% Spot Range)</span>
-          <span style="font-size:0.7rem; color:var(--text-muted);">Green = Profit Zone · Red = Loss Zone</span>
-        </div>
-        <canvas id="canvas-payoff-chart" width="540" height="210" style="width:100%; height:210px; background:#f8fafc; border-radius:8px; border:1px solid #1f2937;"></canvas>
+    <!-- 📈 SEPARATE FULL-WIDTH STRATEGY EXPIRY PAYOFF CURVE -->
+    <div class="card" id="strategy-payoff-curve-card" style="margin-bottom:14px;">
+      <div class="card-title">
+        <span>📈 Strategy Expiry Payoff Curve (±5% Spot Range)</span>
+        <span style="font-size:0.73rem; color:#475569;">Green = Profit Zone · Red = Loss Zone</span>
       </div>
+      <canvas id="canvas-payoff-chart" width="960" height="250" style="width:100%; height:250px; background:#ffffff; border-radius:8px; border:1px solid #cbd5e1;"></canvas>
     </div>
   </div>
 
@@ -5919,7 +6014,7 @@
     }
 
     listEl.innerHTML = strategyLegs.map((leg, i) => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:#1f2937; border-radius:6px; margin-bottom:5px; font-size:0.76rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:#f1f5f9; border-radius:6px; margin-bottom:5px; font-size:0.76rem;">
         <span>
           <span class="badge ${leg.side === 'BUY' ? 'badge-emerald' : 'badge-red'}">${leg.side}</span>
           <strong>${activeUnderlying} ${leg.strike} ${leg.optType}</strong> · ${leg.lots} Lot (${leg.lots * spec.lot} qty) @ ₹${leg.prem.toFixed(2)}
