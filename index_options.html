@@ -838,7 +838,7 @@
     <div class="global-left-brand-and-tabs">
       <span class="global-brand-heading">🎯 PIAI Options Hub</span>
       <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
-        <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab active" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
+        <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab active" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html#option-selling-income-card')">💰 ₹5L Selling</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html#portfolio-otm-hedge-card')">🛡️ OTM Hedge</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
       </div>
     </div>
 
@@ -967,8 +967,8 @@
       <button type="button" class="icon-refresh-btn" id="btn-sync-now" onclick="syncOptionsMarketData(true)" title="Refresh OHLC &amp; Expiries">↻</button>
       <button type="button" class="btn-primary" onclick="toggleDhanDrawer()">🛡️ DhanHQ API &amp; Worker</button>
       <button type="button" class="btn-purple" onclick="openOverrideSpotModal()">✏️ Override Spot / VIX</button>
-      <button type="button" id="btn-jump-seller-income" class="btn-primary" onclick="document.getElementById('option-selling-income-card').scrollIntoView({behavior:'smooth'})">💰 ₹5L Option Selling</button>
-      <button type="button" id="btn-jump-otm-hedge" class="btn-emerald" onclick="document.getElementById('portfolio-otm-hedge-card').scrollIntoView({behavior:'smooth'})">🛡️ OTM Put Insurance</button>
+      <button type="button" id="btn-jump-seller-income" class="btn-primary" onclick="jumpToOptionsSection('option-selling-income-card')">💰 ₹5L Option Selling</button>
+      <button type="button" id="btn-jump-otm-hedge" class="btn-emerald" onclick="jumpToOptionsSection('portfolio-otm-hedge-card')">🛡️ OTM Put Insurance</button>
     </div>
   </div>
 
@@ -1035,14 +1035,14 @@
 
   <!-- NAVIGATION TABS -->
   <div class="nav-tabs">
-    <button type="button" class="tab-btn active" id="tabbtn-scanner" onclick="switchOptionsTab('scanner')">📈 1. GainzAlgo V2 Alpha Scanner &amp; 5m OHLC</button>
-    <button type="button" class="tab-btn" id="tabbtn-chain" onclick="switchOptionsTab('chain')">⛓️ 2. Live Option Chain, Greeks &amp; Payoff Simulator</button>
+    <button type="button" class="tab-btn active" id="tabbtn-chain" onclick="switchOptionsTab('chain')">⛓️ 1. Option Chain, ₹5L Selling, OTM Hedge &amp; Payoff</button>
+    <button type="button" class="tab-btn" id="tabbtn-scanner" onclick="switchOptionsTab('scanner')">📈 2. GainzAlgo V2 Alpha Scanner &amp; 5m OHLC</button>
     <button type="button" class="tab-btn" id="tabbtn-pine" onclick="switchOptionsTab('pine')">📜 3. GainzAlgo Webhook JSON &amp; Pine Script v5</button>
     <button type="button" class="tab-btn" id="tabbtn-exec" onclick="switchOptionsTab('exec')">🚀 4. DhanHQ v2 F&amp;O Super Order &amp; API Execution</button>
   </div>
 
   <!-- ==================== TAB 1: GAINZALGO V2 ALPHA SCANNER ==================== -->
-  <div id="view-scanner" class="opt-tab-view">
+  <div id="view-scanner" class="opt-tab-view" style="display:none;">
     <div>
 
       <!-- Right: GainzAlgo Parameters + Strict RSI(14) Filter + Action Ticket -->
@@ -1132,7 +1132,7 @@
   </div>
 
   <!-- ==================== TAB 2: OPTION CHAIN & PAYOFF ==================== -->
-  <div id="view-chain" class="opt-tab-view" style="display:none;">
+  <div id="view-chain" class="opt-tab-view">
     <div class="card">
       <div class="card-title">
         <span>⛓️ Real-Time Option Chain &amp; Black-Scholes Greeks (Calls CE vs Puts PE)</span>
@@ -1166,6 +1166,67 @@
       </div>
     </div>
 
+
+    
+    <!-- 💰 LOW-RISK DEFINED-RISK OPTION SELLING ENGINE (₹5L THETA INCOME DESK) -->
+    <div class="card" id="option-selling-income-card" style="border:2px solid #059669; background:linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(2,132,199,0.03) 100%); margin-bottom:14px;">
+      <div class="card-title" style="flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span>💰 Low-Risk Defined-Risk Option Selling Engine (₹5L Theta Income Desk)</span>
+          <span class="badge badge-emerald" id="seller-pop-badge">~80% Win Probability · Capped Loss</span>
+          <span class="badge badge-blue" id="seller-margin-badge">50% Cash + 50% Buffer Rule</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn-purple" style="padding:3px 9px; font-size:0.71rem;" onclick="pushTopSellerSetupToPhone()">📲 Push Today's Income Setup</button>
+        </div>
+      </div>
+
+      <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:12px; line-height:1.5;">
+        Designed for <strong>full-time professionals</strong>: instead of risky naked selling, this desk recommends <strong>Defined-Risk Credit Spreads &amp; Iron Condors</strong> (buying protective wings 200–300 pts away) so your <strong>maximum loss is capped</strong>, margin drops ~65%, and <strong>Theta decay</strong> works passively while you work. <em>Note: No option strategy guarantees profit every single day—keep 35–50% cash idle as a MTM buffer.</em>
+      </div>
+
+      <div class="form-grid" style="margin-bottom:12px;">
+        <div>
+          <label class="inp-label" for="inp-seller-capital">Option Selling Capital (₹)</label>
+          <input type="number" id="inp-seller-capital" class="inp-field" value="500000" step="50000" min="100000" oninput="renderOptionSellingIncomeEngine()">
+        </div>
+        <div>
+          <label class="inp-label" for="sel-seller-deploy">Capital Deployment Cap</label>
+          <select id="sel-seller-deploy" class="inp-field" onchange="renderOptionSellingIncomeEngine()">
+            <option value="0.50" selected>Conservative 50% Deployed (50% Cash Buffer)</option>
+            <option value="0.65">Balanced 65% Deployed (35% Cash Buffer)</option>
+            <option value="0.35">Ultra-Safe 35% Deployed (65% Cash Buffer)</option>
+          </select>
+        </div>
+        <div>
+          <label class="inp-label" for="sel-seller-strategy">Income Strategy Style</label>
+          <select id="sel-seller-strategy" class="inp-field" onchange="renderOptionSellingIncomeEngine()">
+            <option value="IRON_CONDOR" selected>Iron Condor (Range-Bound · Neutral)</option>
+            <option value="BULL_PUT">Bull Put Credit Spread (Uptrend / Support)</option>
+            <option value="BEAR_CALL">Bear Call Credit Spread (Downtrend / Resistance)</option>
+          </select>
+        </div>
+        <div>
+          <label class="inp-label" for="sel-seller-wing">Protective Wing Width (Pts)</label>
+          <select id="sel-seller-wing" class="inp-field" onchange="renderOptionSellingIncomeEngine()">
+            <option value="200" selected>200 Pts (Lower Margin · Tighter Cap)</option>
+            <option value="300">300 Pts (Higher Credit · Wider Cushion)</option>
+            <option value="150">150 Pts (Ultra-Tight Risk Cap)</option>
+          </select>
+        </div>
+        <div>
+          <label class="inp-label" for="sel-seller-expiry">Expiry Cycle (Theta Decay)</label>
+          <select id="sel-seller-expiry" class="inp-field" onchange="renderOptionSellingIncomeEngine()">
+            <option value="7" selected>Next Weekly (5–10 DTE · Fast Daily Theta)</option>
+            <option value="14">2 Weeks Out (12–18 DTE · Smoother Gamma)</option>
+            <option value="30">Monthly (25–35 DTE · Low Maintenance)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="seller-recommendations-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:10px; margin-bottom:10px;"></div>
+      <div id="seller-action-toast" style="font-size:0.74rem; color:var(--text-muted);"></div>
+    </div>
 
     <!-- 🛡️ PORTFOLIO LOSS-INSURANCE HEDGE ENGINE (1+ MONTH OTM PUT SELECTOR) -->
     <div class="card" id="portfolio-otm-hedge-card" style="border:2px solid #0284c7; background:linear-gradient(180deg, rgba(2,132,199,0.06) 0%, rgba(16,185,129,0.03) 100%); margin-bottom:14px;">
@@ -3610,6 +3671,7 @@
     applyThemeMode(getActiveThemeMode());
     setTimeout(initCollapsibleCards, 80);
     setTimeout(populateSecureAlertInputs, 120);
+    setTimeout(() => { if (typeof syncPortfolioValueToHedgeEngine === "function") syncPortfolioValueToHedgeEngine(false); if (typeof renderOptionSellingIncomeEngine === "function") renderOptionSellingIncomeEngine(); const h = (window.location.hash || "").replace(/^#/, ""); if (h === "option-selling-income-card" || h === "portfolio-otm-hedge-card") jumpToOptionsSection(h); }, 180);
   });
 
 
@@ -3727,9 +3789,22 @@
 
   function navigateToModule(targetFile) {
     try {
+      if (typeof targetFile === "string" && targetFile.startsWith("index_options.html#")) {
+        const hashId = targetFile.split("#")[1];
+        if (hashId && typeof jumpToOptionsSection === "function") {
+          jumpToOptionsSection(hashId);
+          return;
+        }
+      }
       window.location.href = targetFile;
     } catch (e) {}
   }
+  window.addEventListener("hashchange", () => {
+    const h = (window.location.hash || "").replace(/^#/, "");
+    if ((h === "option-selling-income-card" || h === "portfolio-otm-hedge-card") && typeof jumpToOptionsSection === "function") {
+      jumpToOptionsSection(h);
+    }
+  });
 
   function safeGetStorage(key, fallback = "") {
     try { return localStorage.getItem(key) || fallback; } catch (e) { return fallback; }
@@ -6263,6 +6338,17 @@ print("Dhan F&O Order Response:", res)`;
     recomputeAllOptionModels();
   }
 
+
+  function jumpToOptionsSection(sectionId) {
+    if (typeof switchOptionsTab === "function") switchOptionsTab("chain");
+    if (typeof renderOptionSellingIncomeEngine === "function") renderOptionSellingIncomeEngine();
+    if (typeof renderOtmHedgeEngine === "function") renderOtmHedgeEngine();
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }
+
   function switchOptionsTab(tabId) {
     document.querySelectorAll(".opt-tab-view").forEach(el => el.style.display = "none");
     const target = document.getElementById("view-" + tabId);
@@ -6371,6 +6457,10 @@ print("Dhan F&O Order Response:", res)`;
         if (autoSyncRem <= 0 && !isSyncing) {
           autoSyncRem = autoSyncSec;
           if (typeof syncPortfolioValueToHedgeEngine === 'function') syncPortfolioValueToHedgeEngine(false);
+      if (typeof renderOptionSellingIncomeEngine === 'function') renderOptionSellingIncomeEngine();
+      if (window.location.hash && /^#(option-selling-income-card|portfolio-otm-hedge-card)$/.test(window.location.hash)) {
+        jumpToOptionsSection(window.location.hash.slice(1));
+      }
       syncOptionsMarketData(false);
         }
       }

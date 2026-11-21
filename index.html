@@ -861,7 +861,7 @@
     <div class="global-left-brand-and-tabs">
       <span class="global-brand-heading">📊 PIAI Portfolio</span>
       <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
-        <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
+        <button type="button" class="app-nav-tab active" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html#option-selling-income-card')">💰 ₹5L Selling</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html#portfolio-otm-hedge-card')">🛡️ OTM Hedge</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
       </div>
     </div>
 
@@ -966,16 +966,16 @@
     <div class="card" id="portfolio-multi-gtt-card" style="border:2px solid #10b981; background:linear-gradient(180deg, rgba(16,185,129,0.06) 0%, rgba(2,132,199,0.03) 100%);">
       <div class="card-title" style="flex-wrap:wrap; gap:8px;">
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-          <span>⚡ Portfolio Delta-Only Multi-GTT Tracker (All Buy &amp; Sell Recommendations · T1 / T2 / T3)</span>
-          <span class="badge badge-emerald" id="multi-gtt-delta-count-badge">0 New Delta GTTs</span>
-          <span class="badge badge-purple" id="multi-gtt-suppressed-badge">0 Repeated GTTs Suppressed</span>
+          <span>⚡ Actionable Multi-GTT Alerts (New &amp; Newly Hit Buy/Sell Zones Only)</span>
+          <span class="badge badge-emerald" id="multi-gtt-delta-count-badge">0 New Signals</span>
+          <span class="badge badge-purple" id="multi-gtt-suppressed-badge">0 Unchanged Hidden</span>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button type="button" class="btn-emerald" id="btn-gtt-mode-delta" style="padding:4px 10px; font-size:0.72rem;" onclick="setPortfolioMultiGttViewMode('DELTA_ONLY')">⚡ Delta Only (New / Hit)</button>
+          <button type="button" class="btn-emerald" id="btn-gtt-mode-delta" style="padding:4px 10px; font-size:0.72rem;" onclick="setPortfolioMultiGttViewMode('DELTA_ONLY')">⚡ New / Hit Only</button>
           <button type="button" class="btn-secondary" id="btn-gtt-mode-all" style="padding:4px 10px; font-size:0.72rem;" onclick="setPortfolioMultiGttViewMode('ALL')">📋 Show All Active GTTs</button>
-          <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.72rem;" onclick="acknowledgeAllCurrentMultiGttDeltas()">✓ Mark Current Deltas Seen</button>
-          <button type="button" class="btn-purple" style="padding:4px 10px; font-size:0.72rem;" onclick="pushDeltaMultiGttAlertsNow(true)">📲 Push Only Delta GTTs</button>
-          <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="resetPortfolioMultiGttDeltaLedger()">↺ Reset Delta Memory</button>
+          <button type="button" class="btn-primary" style="padding:4px 10px; font-size:0.72rem;" onclick="acknowledgeAllCurrentMultiGttDeltas()">✓ Mark All Seen</button>
+          <button type="button" class="btn-purple" style="padding:4px 10px; font-size:0.72rem;" onclick="pushDeltaMultiGttAlertsNow(true)">📲 Push New Alerts</button>
+          <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="resetPortfolioMultiGttDeltaLedger()">↺ Reset Alert Memory</button>
         </div>
       </div>
       <div style="font-size:0.76rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;">
@@ -3471,90 +3471,88 @@
 
     const dBadge = document.getElementById("multi-gtt-delta-count-badge");
     if (dBadge && !dBadge._isStub) {
-      dBadge.textContent = `⚡ ${deltaOrders.length} New Delta GTT Rec${deltaOrders.length === 1 ? '' : 's'}`;
+      dBadge.textContent = `${deltaOrders.length} New / Active`;
       dBadge.className = "badge " + (deltaOrders.length > 0 ? "badge-emerald" : "badge-amber");
     }
     const sBadge = document.getElementById("multi-gtt-suppressed-badge");
     if (sBadge && !sBadge._isStub) {
-      sBadge.textContent = `🛡️ ${suppressedCount} Unchanged GTT${suppressedCount === 1 ? '' : 's'} Suppressed`;
+      sBadge.textContent = `${suppressedCount} Unchanged Hidden`;
     }
 
     const htmlContent = visibleOrders.length === 0
       ? `<div class="empty-state" style="padding:14px; border:1px dashed var(--border, #cbd5e1); border-radius:10px;">
           ${allOrders.length > 0
-            ? `✅ <strong>Zero New Delta Multi-GTT Changes!</strong> All <strong>${allOrders.length}</strong> active Buy/Sell Multi-GTT ladders have already been seen/notified and have not crossed a new tranche trigger price. Click <strong>"📋 Show All Active GTTs"</strong> above to inspect them or <strong>"↺ Reset Delta Memory"</strong> to re-arm.`
-            : `No active Buy or Sell Multi-GTT recommendations yet. Upload your portfolio CSV or sync live prices to generate 3-tranche Multi-GTT ladders.`}
+            ? `✅ <strong>All Caught Up:</strong> Your ${allOrders.length} existing Buy/Sell Multi-GTT plans have already been reviewed and have not crossed a new price zone. Click <strong>"📋 Show All Active GTTs"</strong> to view them.`
+            : `No active Buy or Sell Multi-GTT alerts yet. Upload your portfolio CSV or sync live prices to populate your table.`}
         </div>`
-      : `<div style="display:flex; flex-direction:column; gap:12px;">
-          ${visibleOrders.map(o => {
-            const isBuy = o.side === "BUY";
-            const sideBadge = isBuy
-              ? `<span class="badge badge-emerald" style="font-weight:800;">🟢 BUY MULTI-GTT</span>`
-              : `<span class="badge badge-red" style="background:#fee2e2; color:#b91c1c; font-weight:800;">🔴 SELL MULTI-GTT</span>`;
-            const deltaPill = o.isDelta
-              ? `<span class="badge badge-emerald" style="background:#d1fae5; color:#065f46;">⚡ DELTA: ${o.deltaReason}</span>`
-              : `<span class="badge badge-amber">✓ Previously Seen (Waiting for Next Tranche)</span>`;
+      : `<div style="overflow-x:auto; border:1px solid var(--border, #cbd5e1); border-radius:10px; background:var(--bg-card, #ffffff);">
+          <table style="width:100%; border-collapse:collapse; font-size:0.76rem; text-align:left;">
+            <thead>
+              <tr style="background:var(--bg-card-alt, #f1f5f9); border-bottom:2px solid var(--border, #cbd5e1); color:var(--text-muted); font-size:0.71rem; text-transform:uppercase;">
+                <th style="padding:9px 10px;">Stock &amp; Signal</th>
+                <th style="padding:9px 10px;">Live LTP</th>
+                <th style="padding:9px 10px;">Tranche 1 (40%)</th>
+                <th style="padding:9px 10px;">Tranche 2 (35%)</th>
+                <th style="padding:9px 10px;">Tranche 3 (25%)</th>
+                <th style="padding:9px 10px;">Alert Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${visibleOrders.map(o => {
+                const isBuy = o.side === "BUY";
+                const sidePill = isBuy
+                  ? `<span class="badge badge-emerald" style="font-weight:800;">BUY</span>`
+                  : `<span class="badge badge-red" style="background:#fee2e2; color:#b91c1c; font-weight:800;">SELL</span>`;
+                const statusPill = o.hasNewHit
+                  ? `<span class="badge badge-emerald" style="font-weight:800;">🎯 Zone Hit</span>`
+                  : o.isNewRec
+                  ? `<span class="badge badge-blue">🆕 New Signal</span>`
+                  : `<span class="badge badge-amber">✓ Seen</span>`;
 
-            return `
-              <div style="border:1.5px solid ${o.isDelta ? (isBuy ? '#10b981' : '#ef4444') : 'var(--border, #cbd5e1)'}; border-radius:10px; padding:10px 12px; background:var(--bg-card, #ffffff);">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    ${sideBadge}
-                    <strong style="font-size:0.86rem; color:var(--text-main);">${o.symbol}</strong>
-                    <span style="font-size:0.75rem; color:var(--text-muted);">(${o.broker} · Live LTP: <strong>₹${o.ltp.toFixed(2)}</strong> · ${o.refLabel})</span>
-                    <span style="font-size:0.75rem; font-weight:600; color:var(--accent, #0284c7);">${o.recLabel}</span>
-                  </div>
-                  ${deltaPill}
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(235px, 1fr)); gap:8px;">
-                  ${o.tranches.map(t => {
-                    const cost = Math.round(t.qty * t.target);
-                    const tStatus = t.filled
-                      ? `<span class="badge badge-purple" style="background:#dbeafe; color:#1d4ed8;">✅ Filled</span>`
-                      : t.isNewTrancheHit
-                      ? `<span class="badge badge-emerald" style="font-weight:800;">🎯 NEW ZONE HIT!</span>`
-                      : t.isZoneHit
-                      ? `<span class="badge badge-emerald">🟢 In Zone (Seen)</span>`
-                      : `<span class="badge badge-amber">⏳ Armed (${t.triggerDir === 'BELOW' ? '≤' : '≥'} ₹${t.target.toFixed(1)})</span>`;
-                    const changeHandlerPrice = t.isTmpvLinked
-                      ? `updateTmpvTrancheField('${t.id}', 'target', this.value)`
-                      : `updatePortfolioMultiGttField('${t.uid}', 'target', this.value)`;
-                    const changeHandlerQty = t.isTmpvLinked
-                      ? `updateTmpvTrancheField('${t.id}', 'qty', this.value)`
-                      : `updatePortfolioMultiGttField('${t.uid}', 'qty', this.value)`;
-                    const fillHandler = t.isTmpvLinked
-                      ? `toggleTmpvTrancheFilled('${t.id}', true)`
-                      : `togglePortfolioMultiGttTrancheFilled('${o.symbol}', '${o.side}', '${t.uid}', ${t.target}, ${t.qty})`;
+                const tCells = o.tranches.map(t => {
+                  const changeHandlerPrice = t.isTmpvLinked
+                    ? `updateTmpvTrancheField('${t.id}', 'target', this.value)`
+                    : `updatePortfolioMultiGttField('${t.uid}', 'target', this.value)`;
+                  const changeHandlerQty = t.isTmpvLinked
+                    ? `updateTmpvTrancheField('${t.id}', 'qty', this.value)`
+                    : `updatePortfolioMultiGttField('${t.uid}', 'qty', this.value)`;
+                  const fillHandler = t.isTmpvLinked
+                    ? `toggleTmpvTrancheFilled('${t.id}', true)`
+                    : `togglePortfolioMultiGttTrancheFilled('${o.symbol}', '${o.side}', '${t.uid}', ${t.target}, ${t.qty})`;
+                  const bgStyle = t.filled
+                    ? "background:rgba(59,130,246,0.08);"
+                    : t.isZoneHit
+                    ? "background:rgba(16,185,129,0.10);"
+                    : "";
+                  return `<td style="padding:8px 10px; vertical-align:top; ${bgStyle}">
+                    <div style="display:flex; gap:4px; align-items:center; margin-bottom:4px;">
+                      <span style="font-size:0.7rem; color:var(--text-muted);">₹</span>
+                      <input type="number" step="0.5" value="${t.target}" onchange="${changeHandlerPrice}" style="width:68px; padding:2px 5px; font-size:0.74rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:4px; background:var(--bg-card, #fff); color:var(--text-main);" />
+                      <span style="font-size:0.7rem; color:var(--text-muted);">×</span>
+                      <input type="number" step="1" value="${t.qty}" onchange="${changeHandlerQty}" style="width:52px; padding:2px 5px; font-size:0.74rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:4px; background:var(--bg-card, #fff); color:var(--text-main);" />
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:4px;">
+                      <span style="font-size:0.68rem; color:var(--text-muted);">₹${Math.round(t.qty * t.target).toLocaleString("en-IN")}</span>
+                      <button type="button" class="${t.filled ? 'btn-secondary' : 'btn-emerald'}" style="padding:1px 6px; font-size:0.66rem;" onclick="${fillHandler}">${t.filled ? '↺ Undo' : (t.isZoneHit ? '✅ Fill Now' : 'Mark Fill')}</button>
+                    </div>
+                  </td>`;
+                }).join("");
 
-                    return `
-                      <div style="border:1px solid ${t.isNewTrancheHit ? '#10b981' : 'var(--border, #e2e8f0)'}; background:${t.isNewTrancheHit ? 'rgba(16,185,129,0.08)' : 'var(--bg-card-alt, #f8fafc)'}; border-radius:8px; padding:8px 10px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:4px; margin-bottom:6px;">
-                          <strong style="font-size:0.74rem; color:var(--text-main);">${t.label}</strong>
-                          ${tStatus}
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">
-                          <div>
-                            <label style="font-size:0.65rem; color:var(--text-muted); display:block;">GTT Price (₹)</label>
-                            <input type="number" step="0.5" value="${t.target}" onchange="${changeHandlerPrice}" style="width:100%; padding:3px 6px; font-size:0.75rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:5px; background:var(--bg-card, #fff); color:var(--text-main);" />
-                          </div>
-                          <div>
-                            <label style="font-size:0.65rem; color:var(--text-muted); display:block;">Qty (Shares)</label>
-                            <input type="number" step="1" value="${t.qty}" onchange="${changeHandlerQty}" style="width:100%; padding:3px 6px; font-size:0.75rem; font-weight:700; border:1px solid var(--border, #cbd5e1); border-radius:5px; background:var(--bg-card, #fff); color:var(--text-main);" />
-                          </div>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.7rem; color:var(--text-muted);">
-                          <span>Value: <strong>₹${cost.toLocaleString("en-IN")}</strong></span>
-                          <button type="button" class="${t.filled ? 'btn-secondary' : 'btn-emerald'}" style="padding:2px 7px; font-size:0.68rem;" onclick="${fillHandler}">
-                            ${t.filled ? '↺ Unfill' : '✅ Mark Filled'}
-                          </button>
-                        </div>
-                      </div>
-                    `;
-                  }).join("")}
-                </div>
-              </div>
-            `;
-          }).join("")}
+                return `<tr style="border-bottom:1px solid var(--border, #e2e8f0);">
+                  <td style="padding:8px 10px; vertical-align:top;">
+                    <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
+                      ${sidePill}
+                      <strong style="font-size:0.8rem; color:var(--text-main);">${o.symbol}</strong>
+                    </div>
+                    <div style="font-size:0.69rem; color:var(--text-muted);">${o.broker} · ${o.refLabel}</div>
+                  </td>
+                  <td style="padding:8px 10px; vertical-align:top; font-weight:700;">₹${o.ltp.toFixed(2)}</td>
+                  ${tCells}
+                  <td style="padding:8px 10px; vertical-align:top;">${statusPill}</td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
         </div>`;
 
     if (mainEl && !mainEl._isStub) mainEl.innerHTML = htmlContent;
@@ -3799,7 +3797,7 @@
     pendingAlertModeLabel = isFirstToday
       ? `🌅 First Launch of the Day (${allKeys.length} Actionable Signal${allKeys.length === 1 ? '' : 's'})`
       : isDeltaMode
-      ? `⚡ New Intraday Delta Update (+${newDeltaKeys.length} New Change${newDeltaKeys.length === 1 ? '' : 's'})`
+      ? `⚡ New Market Update (+${newDeltaKeys.length} New Change${newDeltaKeys.length === 1 ? '' : 's'})`
       : `📊 Manual Alert Snapshot (${allKeys.length} Active Signal${allKeys.length === 1 ? '' : 's'})`;
 
     renderDeltaAlertBannerUI(true, isFirstToday, newDeltaKeys);
@@ -3864,7 +3862,7 @@
       <div style="font-size:0.74rem; color:var(--text-muted); margin-bottom:10px;">
         ${isFirstToday
           ? `Welcome back! Today's first-launch scan found <strong>${discountCount} Discount Buy Rec(s)</strong>, <strong>${bookCount} Profit Booking</strong>, and <strong>${exitCount} Exit Alerts</strong>.`
-          : `New intraday delta detected since your last alert: <strong>${newDeltaKeys.length} new signal change(s)</strong> (Zero old history repeated).`}
+          : `New market changes since your last alert: <strong>${newDeltaKeys.length} new signal change(s)</strong> (Zero old history repeated).`}
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button type="button" class="btn-emerald" style="padding:6px 11px; font-size:0.74rem;" onclick="dispatchPendingDeltaAlert('WHATSAPP')">
@@ -4668,6 +4666,27 @@
     }));
   }
 
+
+  function formatKotakMfSchemeLabel(rawName) {
+    const u = String(rawName || "").trim().toUpperCase();
+    if (/^HDAC/i.test(u)) return `HDFC Mutual Fund (${u})`;
+    if (/^KO\d+/i.test(u)) return `Kotak Mutual Fund (${u})`;
+    if (/^QUPE/i.test(u)) return `Quant Mutual Fund (${u})`;
+    if (/^EAA/i.test(u)) return `Edelweiss / MF Scheme (${u})`;
+    if (/^EOA/i.test(u)) return `Equity Opportunities MF (${u})`;
+    if (/^44T/i.test(u)) return `Tata / Nippon MF Scheme (${u})`;
+    if (/^8002/i.test(u)) return `ICICI / Kotak MF Scheme (${u})`;
+    return `Mutual Fund Scheme (${u})`;
+  }
+
+  function isKotakMutualFundCode(rawName, qtyVal) {
+    const clean = String(rawName || "").trim().toUpperCase().replace(/\.(NS|BO)$/i, "");
+    const hasMfSuffix = /-(GR|DP|RG|IDCW|DIV|G|D)$/i.test(clean);
+    const isFractional = typeof qtyVal === "number" && !isNaN(qtyVal) && Math.abs(qtyVal - Math.round(qtyVal)) > 0.0005;
+    const isKnownRtaCode = /^(44T|8002|KO\d+D?|HDAC[A-Z0-9]+|EAA[A-Z0-9]+|EOA[A-Z0-9]+|QUPED[A-Z0-9]+)$/i.test(clean);
+    return hasMfSuffix || isKnownRtaCode || (isFractional && /^[A-Z0-9-]{3,16}$/i.test(clean));
+  }
+
   function loadPersistedState() {
     try {
       const raw = safeGetStorage(STORAGE_KEY_STATE, "");
@@ -4711,7 +4730,28 @@
           // Also strip any leftover 7 Dhan/INDmoney demo items if they got mixed into real user uploads
           const cleanedHoldings = loadedHoldings.filter(h => !((h.broker === "Dhan" || h.broker === "INDmoney") && demoDhanIndSet.has(`${h.n}:${h.qty}:${h.avg}`)));
           const cleanedEtfs = loadedEtfs.filter(e => !demoEtfSet.has(`${e.n}:${e.qty}:${e.avg}`));
-          holdings = cleanedHoldings;
+        const migratedMfs = [];
+        const cleanEq = [];
+        cleanedHoldings.forEach(h => {
+          if (h && isKotakMutualFundCode(h.n || h.ticker, Number(h.qty))) {
+            migratedMfs.push({
+              n: formatKotakMfSchemeLabel(h.n || h.ticker),
+              broker: h.broker || "Kotak",
+              inv: Number(h.inv) || 0,
+              cur: Number(h.cur) || 0,
+              qty: Number(h.qty) || 1,
+              avg: Number(h.avg) || 0,
+              ltp: Number(h.ltp) || 0
+            });
+          } else {
+            cleanEq.push(h);
+          }
+        });
+        holdings = cleanEq;
+        if (migratedMfs.length > 0) {
+          mfs = [...mfs, ...migratedMfs];
+          setTimeout(() => { try { persistState(); } catch (e) {} }, 200);
+        }
           etfs = cleanedEtfs;
           if (cleanedHoldings.length !== loadedHoldings.length || cleanedEtfs.length !== loadedEtfs.length) {
             persistState();

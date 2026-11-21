@@ -861,7 +861,7 @@
     <div class="global-left-brand-and-tabs">
       <span class="global-brand-heading">⚙️ PIAI Admin Hub</span>
       <div class="app-module-tabs" role="navigation" aria-label="PIAI Modules">
-        <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab active" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
+        <button type="button" class="app-nav-tab" onclick="navigateToModule('index.html')">📊 Portfolio</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_algo.html')">🤖 Algo</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html')">🎯 Options</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html#option-selling-income-card')">💰 ₹5L Selling</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_options.html#portfolio-otm-hedge-card')">🛡️ OTM Hedge</button><button type="button" class="app-nav-tab" onclick="navigateToModule('index_mock.html')">🧪 Mock</button><button type="button" class="app-nav-tab active" id="nav-tab-admin" onclick="navigateToModule('index_admin.html')">⚙️ Admin</button>
       </div>
     </div>
 
@@ -7176,6 +7176,27 @@
     return isNaN(n) ? NaN : n;
   }
 
+
+  function formatKotakMfSchemeLabel(rawName) {
+    const u = String(rawName || "").trim().toUpperCase();
+    if (/^HDAC/i.test(u)) return `HDFC Mutual Fund (${u})`;
+    if (/^KO\d+/i.test(u)) return `Kotak Mutual Fund (${u})`;
+    if (/^QUPE/i.test(u)) return `Quant Mutual Fund (${u})`;
+    if (/^EAA/i.test(u)) return `Edelweiss / MF Scheme (${u})`;
+    if (/^EOA/i.test(u)) return `Equity Opportunities MF (${u})`;
+    if (/^44T/i.test(u)) return `Tata / Nippon MF Scheme (${u})`;
+    if (/^8002/i.test(u)) return `ICICI / Kotak MF Scheme (${u})`;
+    return `Mutual Fund Scheme (${u})`;
+  }
+
+  function isKotakMutualFundCode(rawName, qtyVal) {
+    const clean = String(rawName || "").trim().toUpperCase().replace(/\.(NS|BO)$/i, "");
+    const hasMfSuffix = /-(GR|DP|RG|IDCW|DIV|G|D)$/i.test(clean);
+    const isFractional = typeof qtyVal === "number" && !isNaN(qtyVal) && Math.abs(qtyVal - Math.round(qtyVal)) > 0.0005;
+    const isKnownRtaCode = /^(44T|8002|KO\d+D?|HDAC[A-Z0-9]+|EAA[A-Z0-9]+|EOA[A-Z0-9]+|QUPED[A-Z0-9]+)$/i.test(clean);
+    return hasMfSuffix || isKnownRtaCode || (isFractional && /^[A-Z0-9-]{3,16}$/i.test(clean));
+  }
+
   document.getElementById("csv-file-input").addEventListener("change", function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -7258,8 +7279,8 @@
         else if (lowFile.includes("indmoney") || lowFile.includes("indstocks")) csvBroker = "INDmoney";
         else if (lowFile.includes("kotak")) csvBroker = "Kotak";
 
-        if (cat.includes("mutual fund") || (cat.includes("fund") && !cat.includes("etf") && !cat.includes("invit"))) {
-          newMFs.push({ n: name, broker: csvBroker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
+        if (cat.includes("mutual fund") || (cat.includes("fund") && !cat.includes("etf") && !cat.includes("invit")) || isKotakMutualFundCode(name, qty)) {
+          newMFs.push({ n: isKotakMutualFundCode(name, qty) ? formatKotakMfSchemeLabel(name) : name, broker: csvBroker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else if (cat.includes("etf") || cat.includes("bees") || isInstrumentETF(explicitTicker || name, name, typeStr, secStr)) {
           newETFs.push({ n: name, broker: csvBroker, ticker: explicitTicker, inv: fInv, cur: fCur, qty, avg: fAvg, ltp: fLtp });
         } else if (cat.includes("bond") || cat.includes("sgb") || cat.includes("invit") || cat.includes("gold bond")) {
