@@ -1127,6 +1127,34 @@
         <div id="sl-loss-events-table-container" style="margin-bottom:10px;"></div>
         <div id="sl-recovery-plan-container"></div>
         <div id="sl-recovery-status-msg" style="margin-top:8px; font-size:0.74rem; color:#475569;"></div>
+
+      <!-- SUB-SECTION C: LIVE MULTI-BROKER ORDER BOOK, TRADE BOOK & HOLDINGS API SYNC -->
+      <div id="multi-broker-order-trade-sync-box" style="border-top:1px solid #cbd5e1; padding-top:12px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <strong style="font-size:0.78rem; color:#0369a1;">🔌 3. Live Broker Order Book, Trade Book &amp; Holdings API Sync (INDstocks · DhanHQ · Kotak Neo)</strong>
+            <span class="badge badge-blue" id="broker-books-count-badge">0 Trades · 0 Orders</span>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn-emerald" id="btn-sync-broker-books" style="padding:4px 10px; font-size:0.72rem;" onclick="syncAllBrokerOrderAndTradeBooks(true)">🔄 Sync Orders, Trades &amp; Holdings</button>
+            <button type="button" class="btn-secondary" id="btn-tab-tradebook" style="padding:3px 9px; font-size:0.71rem;" onclick="switchBrokerBookView('TRADES')">📒 Trade Book</button>
+            <button type="button" class="btn-secondary" id="btn-tab-orderbook" style="padding:3px 9px; font-size:0.71rem;" onclick="switchBrokerBookView('ORDERS')">📋 Order Book</button>
+            <button type="button" class="btn-secondary" style="padding:3px 9px; font-size:0.71rem;" onclick="navigateToModule('index_admin.html')">⚙️ Broker Tokens</button>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:0.72rem; color:#475569; margin-bottom:8px;">
+          <span>Dhan History Range (optional):</span>
+          <input type="date" id="inp-dhan-hist-from" style="padding:2px 6px; font-size:0.71rem; border-radius:5px;">
+          <span>to</span>
+          <input type="date" id="inp-dhan-hist-to" style="padding:2px 6px; font-size:0.71rem; border-radius:5px;">
+          <span style="color:#64748b;">(INDstocks &amp; Kotak Neo return live same-day session fills; any executed SL or realized loss auto-populates Section 2 above.)</span>
+        </div>
+
+        <div id="broker-books-status-msg" style="font-size:0.73rem; color:#475569; margin-bottom:8px;"></div>
+        <div id="broker-books-table-container"></div>
+      </div>
+
       </div>
     </div>
 
@@ -1192,7 +1220,7 @@
       <button type="button" class="filter-chip" onclick="setStockFilter('BOOK', this)">🟣 Profit Book</button>
       <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
         <button type="button" class="btn-secondary" id="btn-toggle-all-sectors" style="padding:5px 12px; font-size:0.74rem;" onclick="toggleAllSectorSections()">➖ Collapse All Sectors</button>
-        <button type="button" class="btn-secondary" style="padding:5px 12px; font-size:0.74rem;" onclick="loadSampleIndianPortfolio()" title="Load verified 20 Indian stocks across 9 sectors">🇮🇳 Load Sample Sectors</button>
+        
       </div>
     </div>
     <div id="stocks-list-container"></div>
@@ -3863,6 +3891,380 @@
     return true;
   }
 
+
+  // ============================================================================
+  // 🔌 LIVE MULTI-BROKER ORDER BOOK, TRADE BOOK & HOLDINGS SYNC (INDstocks · DhanHQ · Kotak Neo)
+  // ============================================================================
+  const STORAGE_KEY_BROKER_BOOKS = "piai_broker_order_trade_books_v1";
+  let activeBrokerBookTab = "TRADES"; // "TRADES" | "ORDERS"
+
+  function loadCachedBrokerBooks() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_BROKER_BOOKS);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && typeof p === "object") return { trades: p.trades || [], orders: p.orders || [], syncedAt: p.syncedAt || "" };
+      }
+    } catch (e) {}
+    return { trades: [], orders: [], syncedAt: "" };
+  }
+
+  function saveCachedBrokerBooks(data) {
+    try { localStorage.setItem(STORAGE_KEY_BROKER_BOOKS, JSON.stringify(data)); } catch (e) {}
+    renderBrokerOrderTradeBookUI();
+  }
+
+  function switchBrokerBookView(tab) {
+    activeBrokerBookTab = tab === "ORDERS" ? "ORDERS" : "TRADES";
+    const tBtn = document.getElementById("btn-tab-tradebook");
+    const oBtn = document.getElementById("btn-tab-orderbook");
+    if (tBtn) tBtn.className = activeBrokerBookTab === "TRADES" ? "btn-primary" : "btn-secondary";
+    if (oBtn) oBtn.className = activeBrokerBookTab === "ORDERS" ? "btn-primary" : "btn-secondary";
+    renderBrokerOrderTradeBookUI();
+  }
+
+  async function relayBrokerGetJson(workerBase, targetUrl, headersObj) {
+    const cleanBase = String(workerBase || "").replace(/\?url=.*$/i, "").replace(/\/$/, "");
+    const finalUrl = cleanBase ? `${cleanBase}/?url=${encodeURIComponent(targetUrl)}` : targetUrl;
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 8000);
+    try {
+      const res = await fetch(finalUrl, { method: "GET", headers: headersObj || {}, signal: ctrl.signal });
+      clearTimeout(tid);
+      if (!res.ok) return { ok: false, status: res.status, data: null };
+      const json = await res.json();
+      return { ok: true, status: res.status, data: json };
+    } catch (e) {
+      clearTimeout(tid);
+      return { ok: false, status: 0, error: e.message || "Network/Timeout", data: null };
+    }
+  }
+
+  function autoLogRealizedSlLossFromTrade(trade) {
+    if (!trade || trade.side !== "SELL" || Number(trade.realizedPnl) >= -50) return false;
+    const lossAbs = Math.round(Math.abs(Number(trade.realizedPnl)));
+    const list = loadSlLossEvents();
+    const uid = `api_${trade.broker}_${trade.id}`.replace(/[^a-zA-Z0-9_-]/g, "_");
+    if (list.some(ev => ev.id === uid)) return false;
+
+    list.unshift({
+      id: uid,
+      date: trade.time || computeOfficialNSEMarketStatus().istDateStr,
+      symbol: trade.symbol,
+      qty: trade.qty,
+      exitPrice: trade.price,
+      impliedAvg: trade.buyAvg > 0 ? trade.buyAvg : +(trade.price + (lossAbs / Math.max(1, trade.qty))).toFixed(1),
+      lossAmt: lossAbs,
+      status: trade.isSl ? "SL Auto-Detected" : "Realized Loss Synced",
+      note: `Auto-synced from ${trade.broker} Trade Book (${trade.orderType || 'SELL'} #${trade.id}). Review tax-loss harvesting & recovery plan below.`
+    });
+    selectedSlLossId = uid;
+    saveSlLossEvents(list);
+    return true;
+  }
+
+  async function syncAllBrokerOrderAndTradeBooks(showFeedback = true) {
+    const stEl = document.getElementById("broker-books-status-msg");
+    const btn = document.getElementById("btn-sync-broker-books");
+    if (btn) { btn.disabled = true; btn.textContent = "⏳ Syncing Broker APIs..."; }
+    if (stEl) stEl.innerHTML = `<span style="color:#0369a1;">🔄 Connecting to INDstocks, DhanHQ v2, and Kotak Neo via Cloudflare Worker...</span>`;
+
+    const workerUrl = safeGetStorage("piai_cf_worker_v4", "");
+    let dhanCreds = {}, kotakCreds = {}, indCreds = {};
+    try { dhanCreds = JSON.parse(safeGetStorage("piai_dhan_creds_v3", "{}") || "{}"); } catch (e) {}
+    try { kotakCreds = JSON.parse(safeGetStorage("piai_kotak_creds_v1", "{}") || "{}"); } catch (e) {}
+    try { indCreds = JSON.parse(safeGetStorage("piai_indmoney_creds_v1", "{}") || "{}"); } catch (e) {}
+
+    const allTrades = [];
+    const allOrders = [];
+    const summaryNotes = [];
+    let autoLoggedSlCount = 0;
+
+    function lookupHoldingAvg(symName) {
+      if (typeof holdings === "undefined" || !Array.isArray(holdings)) return 0;
+      const clean = String(symName || "").toUpperCase().replace(/-(EQ|BE|BL|GR)$/i, "").trim();
+      const match = holdings.find(h => h && String(h.n || "").toUpperCase().replace(/-(EQ|BE|BL|GR)$/i, "").trim() === clean);
+      return match ? (Number(match.avg) || 0) : 0;
+    }
+
+    // 1. INDSTOCKS (INDmoney) — /portfolio/holdings, /portfolio/positions, /order-book, /trade-book
+    if (indCreds.accessToken) {
+      const hdr = { "Authorization": indCreds.accessToken, "Accept": "application/json" };
+      const [hRes, pRes, oRes, tEqRes, tDrvRes] = await Promise.all([
+        relayBrokerGetJson(workerUrl, "https://api.indstocks.com/portfolio/holdings", hdr),
+        relayBrokerGetJson(workerUrl, "https://api.indstocks.com/portfolio/positions", hdr),
+        relayBrokerGetJson(workerUrl, "https://api.indstocks.com/order-book", hdr),
+        relayBrokerGetJson(workerUrl, "https://api.indstocks.com/trade-book?segment=EQUITY", hdr),
+        relayBrokerGetJson(workerUrl, "https://api.indstocks.com/trade-book?segment=DERIVATIVE", hdr)
+      ]);
+
+      const posPnlMap = {};
+      if (pRes.ok && Array.isArray(pRes.data?.data)) {
+        pRes.data.data.forEach(p => {
+          if (p.symbol) posPnlMap[String(p.symbol).toUpperCase()] = { realized: Number(p.realized_profit) || 0, buyAvg: Number(p.buy_avg) || 0 };
+        });
+      }
+      if (hRes.ok && Array.isArray(hRes.data?.data) && typeof holdings !== "undefined") {
+        // Refresh INDmoney holdings avg prices in memory
+        hRes.data.data.forEach(item => {
+          if (!item.symbol || Number(item.total_qty) <= 0) return;
+          const idx = holdings.findIndex(x => x.broker === "INDmoney" && String(x.n).toUpperCase() === String(item.symbol).toUpperCase());
+          if (idx !== -1) {
+            holdings[idx].qty = Number(item.total_qty);
+            holdings[idx].avg = Number(item.avg_price) || holdings[idx].avg;
+            holdings[idx].inv = Math.round(holdings[idx].qty * holdings[idx].avg);
+          }
+        });
+      }
+      if (oRes.ok && Array.isArray(oRes.data?.data)) {
+        oRes.data.data.forEach(o => {
+          allOrders.push({
+            broker: "INDstocks",
+            id: String(o.order_id || o.exchange_order_id || Date.now()),
+            time: o.order_timestamp || o.created_at || "Today",
+            symbol: String(o.symbol || o.trading_symbol || "UNKNOWN").toUpperCase(),
+            side: String(o.txn_type || o.transaction_type || "").toUpperCase(),
+            qty: Number(o.qty || o.quantity || 0),
+            price: Number(o.limit_price || o.avg_price || o.trigger_price || 0),
+            orderType: String(o.order_type || "LIMIT").toUpperCase(),
+            status: String(o.status || o.order_status || "OPEN").toUpperCase()
+          });
+        });
+      }
+      const indTradesRaw = [
+        ...(tEqRes.ok && Array.isArray(tEqRes.data?.data) ? tEqRes.data.data : []),
+        ...(tDrvRes.ok && Array.isArray(tDrvRes.data?.data) ? tDrvRes.data.data : [])
+      ];
+      indTradesRaw.forEach(t => {
+        const sym = String(t.symbol || t.trading_symbol || "UNKNOWN").toUpperCase();
+        const side = String(t.txn_type || t.transaction_type || "").toUpperCase();
+        const qty = Number(t.filled_qty || t.qty || t.quantity || 0);
+        const price = Number(t.traded_price || t.fill_price || t.price || 0);
+        const oType = String(t.order_type || "EXEC").toUpperCase();
+        const posInfo = posPnlMap[sym];
+        const buyAvg = (posInfo && posInfo.buyAvg > 0) ? posInfo.buyAvg : lookupHoldingAvg(sym);
+        const realizedPnl = side === "SELL"
+          ? (posInfo && posInfo.realized !== 0 ? posInfo.realized : (buyAvg > 0 ? Math.round((price - buyAvg) * qty) : 0))
+          : 0;
+        const trObj = {
+          broker: "INDstocks",
+          id: String(t.trade_id || t.order_id || Date.now()),
+          time: t.trade_timestamp || t.timestamp || "Today",
+          symbol: sym,
+          side,
+          qty,
+          price,
+          buyAvg,
+          orderType: oType,
+          isSl: /SL|STOP|TRIGGER/i.test(oType),
+          realizedPnl
+        };
+        allTrades.push(trObj);
+        if (autoLogRealizedSlLossFromTrade(trObj)) autoLoggedSlCount++;
+      });
+      summaryNotes.push(oRes.ok || tEqRes.ok ? `🟣 INDstocks: ${indTradesRaw.length} fills` : `🟣 INDstocks: Token expired/401`);
+    }
+
+    // 2. DHANHQ v2 — /v2/orders, /v2/trades, and optional /v2/trades/{from}/{to}/0
+    if (dhanCreds.accessToken && dhanCreds.clientId) {
+      const hdr = { "access-token": dhanCreds.accessToken, "client-id": dhanCreds.clientId, "Accept": "application/json" };
+      const fromDt = document.getElementById("inp-dhan-hist-from")?.value || "";
+      const toDt = document.getElementById("inp-dhan-hist-to")?.value || "";
+      const tradeUrl = (fromDt && toDt)
+        ? `https://api.dhan.co/v2/trades/${fromDt}/${toDt}/0`
+        : "https://api.dhan.co/v2/trades";
+
+      const [oRes, tRes] = await Promise.all([
+        relayBrokerGetJson(workerUrl, "https://api.dhan.co/v2/orders", hdr),
+        relayBrokerGetJson(workerUrl, tradeUrl, hdr)
+      ]);
+
+      const dhanOrdersArr = Array.isArray(oRes.data) ? oRes.data : [];
+      dhanOrdersArr.forEach(o => {
+        allOrders.push({
+          broker: "DhanHQ",
+          id: String(o.orderId || Date.now()),
+          time: o.updateTime || o.createTime || "Today",
+          symbol: String(o.tradingSymbol || o.customSymbol || "UNKNOWN").toUpperCase(),
+          side: String(o.transactionType || "").toUpperCase(),
+          qty: Number(o.quantity || 0),
+          price: Number(o.price || o.triggerPrice || 0),
+          orderType: String(o.orderType || "LIMIT").toUpperCase(),
+          status: String(o.orderStatus || "OPEN").toUpperCase()
+        });
+      });
+
+      const dhanTradesArr = Array.isArray(tRes.data) ? tRes.data : [];
+      dhanTradesArr.forEach(t => {
+        const sym = String(t.tradingSymbol || t.customSymbol || "UNKNOWN").toUpperCase();
+        const side = String(t.transactionType || "").toUpperCase();
+        const qty = Number(t.tradedQuantity || t.quantity || 0);
+        const price = Number(t.tradedPrice || t.price || 0);
+        const oType = String(t.orderType || "EXEC").toUpperCase();
+        const buyAvg = lookupHoldingAvg(sym);
+        const realizedPnl = (side === "SELL" && buyAvg > 0) ? Math.round((price - buyAvg) * qty) : 0;
+        const trObj = {
+          broker: "DhanHQ",
+          id: String(t.exchangeTradeId || t.orderId || Date.now()),
+          time: t.exchangeTime || t.createTime || "Today",
+          symbol: sym,
+          side,
+          qty,
+          price,
+          buyAvg,
+          orderType: oType,
+          isSl: /SL|STOP/i.test(oType),
+          realizedPnl
+        };
+        allTrades.push(trObj);
+        if (autoLogRealizedSlLossFromTrade(trObj)) autoLoggedSlCount++;
+      });
+      summaryNotes.push(oRes.ok || tRes.ok ? `⚡ DhanHQ: ${dhanTradesArr.length} fills` : `⚡ DhanHQ: Token expired/401`);
+    }
+
+    // 3. KOTAK NEO v2 — /quick/user/orders, /quick/user/trades
+    if (kotakCreds.sessionAuth && kotakCreds.sessionSid) {
+      const kBase = (kotakCreds.baseUrl || "https://gw-napi.kotaksecurities.com").replace(/\/$/, "");
+      const hdr = { "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
+      const [oRes, tRes] = await Promise.all([
+        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr),
+        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr)
+      ]);
+
+      const kOrdersArr = Array.isArray(oRes.data?.data) ? oRes.data.data : [];
+      kOrdersArr.forEach(o => {
+        allOrders.push({
+          broker: "Kotak Neo",
+          id: String(o.nOrdNo || Date.now()),
+          time: o.ordDtTm || o.flDtTm || "Today",
+          symbol: String(o.trdSym || o.sym || "UNKNOWN").toUpperCase(),
+          side: String(o.trnsTp || "").toUpperCase() === "S" ? "SELL" : "BUY",
+          qty: Number(o.qty || 0),
+          price: Number(o.prc || o.avgPrc || o.trgPrc || 0),
+          orderType: String(o.prcTp || "L").toUpperCase(),
+          status: String(o.ordSt || "OPEN").toUpperCase()
+        });
+      });
+
+      const kTradesArr = Array.isArray(tRes.data?.data) ? tRes.data.data : [];
+      kTradesArr.forEach(t => {
+        const sym = String(t.trdSym || t.sym || "UNKNOWN").toUpperCase();
+        const side = String(t.trnsTp || "").toUpperCase() === "S" ? "SELL" : "BUY";
+        const qty = Number(t.fldQty || t.qty || 0);
+        const price = Number(t.avgPrc || t.flPrc || 0);
+        const oType = String(t.prcTp || "EXEC").toUpperCase();
+        const buyAvg = lookupHoldingAvg(sym);
+        const realizedPnl = (side === "SELL" && buyAvg > 0) ? Math.round((price - buyAvg) * qty) : 0;
+        const trObj = {
+          broker: "Kotak Neo",
+          id: String(t.flId || t.nOrdNo || Date.now()),
+          time: t.flDtTm || t.exTm || "Today",
+          symbol: sym,
+          side,
+          qty,
+          price,
+          buyAvg,
+          orderType: oType,
+          isSl: /SL|STOP/i.test(oType),
+          realizedPnl
+        };
+        allTrades.push(trObj);
+        if (autoLogRealizedSlLossFromTrade(trObj)) autoLoggedSlCount++;
+      });
+      summaryNotes.push(oRes.ok || tRes.ok ? `🏦 Kotak Neo: ${kTradesArr.length} fills` : `🏦 Kotak Neo: Session expired`);
+    }
+
+    const ist = computeOfficialNSEMarketStatus();
+    saveCachedBrokerBooks({ trades: allTrades, orders: allOrders, syncedAt: `${ist.istDateStr} ${ist.istTimeStr}` });
+
+    if (btn) { btn.disabled = false; btn.textContent = "🔄 Sync Orders, Trades & Holdings"; }
+    if (stEl) {
+      if (summaryNotes.length === 0) {
+        stEl.innerHTML = `<span style="color:#b45309; font-weight:700;">⚠️ No broker API tokens configured yet. Open ⚙️ Admin → Broker APIs to paste your INDstocks, DhanHQ, or Kotak Neo token.</span>`;
+      } else {
+        stEl.innerHTML = `<span style="color:#047857; font-weight:700;">✅ Synced (${ist.istTimeStr} IST): ${summaryNotes.join(" · ")}${autoLoggedSlCount > 0 ? ` · 🚨 Auto-logged ${autoLoggedSlCount} executed SL loss(es) into Loss Recovery Planner above!` : ""}</span>`;
+      }
+    }
+    if (autoLoggedSlCount > 0 && typeof pushNearingSlAndRecoveryAlerts === "function") {
+      pushNearingSlAndRecoveryAlerts(false);
+    }
+  }
+
+  function renderBrokerOrderTradeBookUI() {
+    const container = document.getElementById("broker-books-table-container");
+    const badge = document.getElementById("broker-books-count-badge");
+    if (!container) return;
+
+    const cached = loadCachedBrokerBooks();
+    if (badge) {
+      badge.textContent = `${cached.trades.length} Trades · ${cached.orders.length} Orders${cached.syncedAt ? " (" + cached.syncedAt + ")" : ""}`;
+    }
+
+    const rows = activeBrokerBookTab === "ORDERS" ? cached.orders : cached.trades;
+    if (!rows || rows.length === 0) {
+      container.innerHTML = `<div style="padding:10px 12px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; font-size:0.74rem; color:#64748b;">
+        No ${activeBrokerBookTab === "ORDERS" ? "orders" : "executed trades"} synced yet. Configure your <strong>INDstocks</strong>, <strong>DhanHQ</strong>, or <strong>Kotak Neo</strong> token in <strong>⚙️ Admin</strong> and click <strong>🔄 Sync Orders, Trades &amp; Holdings</strong> above.
+      </div>`;
+      return;
+    }
+
+    if (activeBrokerBookTab === "ORDERS") {
+      container.innerHTML = `
+        <div style="overflow-x:auto; border:1px solid #cbd5e1; border-radius:8px; background:#ffffff;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.74rem; text-align:left;">
+            <thead>
+              <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1; color:#334155;">
+                <th style="padding:6px 8px;">Broker &amp; Time</th>
+                <th style="padding:6px 8px;">Symbol</th>
+                <th style="padding:6px 8px;">Side &amp; Type</th>
+                <th style="padding:6px 8px;">Qty @ Price</th>
+                <th style="padding:6px 8px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.slice(0, 40).map(o => `
+                <tr style="border-bottom:1px solid #e2e8f0;">
+                  <td style="padding:6px 8px;"><strong>${o.broker}</strong><div style="font-size:0.67rem; color:#64748b;">${o.time}</div></td>
+                  <td style="padding:6px 8px; font-weight:700;">${o.symbol}</td>
+                  <td style="padding:6px 8px;"><span class="badge ${o.side === 'SELL' ? 'badge-red' : 'badge-emerald'}">${o.side}</span> <span style="font-size:0.69rem; color:#475569;">${o.orderType}</span></td>
+                  <td style="padding:6px 8px;">${o.qty} @ ₹${Number(o.price).toFixed(2)}</td>
+                  <td style="padding:6px 8px;"><span class="badge badge-blue">${o.status}</span></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    } else {
+      container.innerHTML = `
+        <div style="overflow-x:auto; border:1px solid #cbd5e1; border-radius:8px; background:#ffffff;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.74rem; text-align:left;">
+            <thead>
+              <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1; color:#334155;">
+                <th style="padding:6px 8px;">Broker &amp; Time</th>
+                <th style="padding:6px 8px;">Symbol</th>
+                <th style="padding:6px 8px;">Side / Type</th>
+                <th style="padding:6px 8px;">Qty @ Fill</th>
+                <th style="padding:6px 8px;">Est. Realized P&amp;L</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.slice(0, 40).map(t => `
+                <tr style="border-bottom:1px solid #e2e8f0;">
+                  <td style="padding:6px 8px;"><strong>${t.broker}</strong><div style="font-size:0.67rem; color:#64748b;">${t.time}</div></td>
+                  <td style="padding:6px 8px; font-weight:700;">${t.symbol}</td>
+                  <td style="padding:6px 8px;"><span class="badge ${t.side === 'SELL' ? 'badge-red' : 'badge-emerald'}">${t.side}</span> ${t.isSl ? '<span class="badge badge-amber">SL</span>' : ''}</td>
+                  <td style="padding:6px 8px;">${t.qty} @ ₹${Number(t.price).toFixed(2)}</td>
+                  <td style="padding:6px 8px; font-weight:700; color:${t.realizedPnl < 0 ? '#b91c1c' : t.realizedPnl > 0 ? '#047857' : '#64748b'};">
+                    ${t.realizedPnl !== 0 ? (t.realizedPnl > 0 ? '+' : '-') + '₹' + Math.abs(Math.round(t.realizedPnl)).toLocaleString("en-IN") : '—'}
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>`;
+    }
+  }
+
   function renderPortfolioMultiGttUI() {
     const mainEl = document.getElementById("portfolio-multi-gtt-container");
     const mirrorEl = document.getElementById("recs-tab-multi-gtt-mirror");
@@ -5199,37 +5601,9 @@
 
   
   function loadSampleIndianPortfolio() {
-    isUsingDemoSamplePortfolio = true;
-    holdings = [
-  {"n":"TCS","broker":"Kotak","ticker":"TCS.NS","sec":"💻 IT, Tech & Digital","qty":15,"avg":3850,"ltp":3940,"inv":57750,"cur":59100,"today":850},
-  {"n":"INFY","broker":"Kotak","ticker":"INFY.NS","sec":"💻 IT, Tech & Digital","qty":30,"avg":1680,"ltp":1725,"inv":50400,"cur":51750,"today":620},
-  {"n":"HDFCBANK","broker":"Kotak","ticker":"HDFCBANK.NS","sec":"🏦 Banking & Financial Services","qty":40,"avg":1580,"ltp":1640,"inv":63200,"cur":65600,"today":960},
-  {"n":"ICICIBANK","broker":"Dhan","ticker":"ICICIBANK.NS","sec":"🏦 Banking & Financial Services","qty":35,"avg":1120,"ltp":1210,"inv":39200,"cur":42350,"today":480},
-  {"n":"SBIN","broker":"Kotak","ticker":"SBIN.NS","sec":"🏦 Banking & Financial Services","qty":50,"avg":740,"ltp":795,"inv":37000,"cur":39750,"today":350},
-  {"n":"BAJFINANCE","broker":"INDmoney","ticker":"BAJFINANCE.NS","sec":"🏦 Banking & Financial Services","qty":6,"avg":6850,"ltp":7150,"inv":41100,"cur":42900,"today":520},
-  {"n":"TMPV","broker":"Kotak","ticker":"TMPV.NS","sec":"🚗 Automobile & EV Components","qty":45,"avg":860,"ltp":920,"inv":38700,"cur":41400,"today":640},
-  {"n":"MARUTI","broker":"Kotak","ticker":"MARUTI.NS","sec":"🚗 Automobile & EV Components","qty":4,"avg":11800,"ltp":12350,"inv":47200,"cur":49400,"today":780},
-  {"n":"RELIANCE","broker":"Dhan","ticker":"RELIANCE.NS","sec":"⚡ Energy, Oil & Power Utilities","qty":25,"avg":1260,"ltp":1320,"inv":31500,"cur":33000,"today":420},
-  {"n":"NTPC","broker":"Kotak","ticker":"NTPC.NS","sec":"⚡ Energy, Oil & Power Utilities","qty":80,"avg":355,"ltp":382,"inv":28400,"cur":30560,"today":280},
-  {"n":"SUNPHARMA","broker":"INDmoney","ticker":"SUNPHARMA.NS","sec":"💊 Pharma & Healthcare","qty":22,"avg":1640,"ltp":1760,"inv":36080,"cur":38720,"today":340},
-  {"n":"CIPLA","broker":"Kotak","ticker":"CIPLA.NS","sec":"💊 Pharma & Healthcare","qty":20,"avg":1430,"ltp":1510,"inv":28600,"cur":30200,"today":220},
-  {"n":"ITC","broker":"Kotak","ticker":"ITC.NS","sec":"🛒 FMCG, Retail & Consumer","qty":80,"avg":450,"ltp":485,"inv":36000,"cur":38800,"today":310},
-  {"n":"HINDUNILVR","broker":"Kotak","ticker":"HINDUNILVR.NS","sec":"🛒 FMCG, Retail & Consumer","qty":15,"avg":2380,"ltp":2460,"inv":35700,"cur":36900,"today":260},
-  {"n":"TITAN","broker":"Dhan","ticker":"TITAN.NS","sec":"🛒 FMCG, Retail & Consumer","qty":10,"avg":3400,"ltp":3580,"inv":34000,"cur":35800,"today":450},
-  {"n":"LT","broker":"Kotak","ticker":"LT.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":12,"avg":3380,"ltp":3520,"inv":40560,"cur":42240,"today":510},
-  {"n":"HAL","broker":"INDmoney","ticker":"HAL.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":8,"avg":4120,"ltp":4460,"inv":32960,"cur":35680,"today":490},
-  {"n":"BEL","broker":"Kotak","ticker":"BEL.NS","sec":"🏗️ Defence, Infra & Capital Goods","qty":90,"avg":275,"ltp":298,"inv":24750,"cur":26820,"today":270},
-  {"n":"TATASTEEL","broker":"Kotak","ticker":"TATASTEEL.NS","sec":"🔩 Metals, Mining & Cement","qty":150,"avg":135,"ltp":144,"inv":20250,"cur":21600,"today":190},
-  {"n":"BHARTIARTL","broker":"Dhan","ticker":"BHARTIARTL.NS","sec":"📡 Telecom & Connectivity","qty":25,"avg":1480,"ltp":1590,"inv":37000,"cur":39750,"today":420}
-];
-    etfs = [
-  {"n":"NIFTYBEES","broker":"Kotak","ticker":"NIFTYBEES.NS","sec":"ETF","qty":120,"avg":255,"ltp":268,"inv":30600,"cur":32160,"today":240},
-  {"n":"BANKBEES","broker":"Kotak","ticker":"BANKBEES.NS","sec":"ETF","qty":50,"avg":495,"ltp":518,"inv":24750,"cur":25900,"today":210},
-  {"n":"GOLDBEES","broker":"Dhan","ticker":"GOLDBEES.NS","sec":"ETF","qty":150,"avg":62,"ltp":68,"inv":9300,"cur":10200,"today":90}
-];
-    persistState();
-    runPortfolioIntelligenceEngine();
-    showToast("✅ Loaded 20 verified Indian stock holdings across 9 sectors!");
+    // Disabled per user preference: never load sample stocks; keep portfolio clear until CSV or Broker API is synced.
+    isUsingDemoSamplePortfolio = false;
+    return false;
   }
 
   function clearAllPortfolioData() {
