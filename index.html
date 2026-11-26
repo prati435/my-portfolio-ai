@@ -1082,6 +1082,54 @@
       <div id="portfolio-multi-gtt-status" style="margin-top:8px; font-size:0.74rem; color:var(--text-muted);"></div>
     </div>
 
+
+    <!-- 🛡️ STOP-LOSS PROXIMITY RADAR & LOSS RECOVERY PLANNER -->
+    <div class="card" id="sl-proximity-recovery-card" style="border:2px solid #dc2626; margin-bottom:14px;">
+      <div class="card-title" style="flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span>🛡️ Stop-Loss Proximity Radar &amp; Loss Recovery Planner</span>
+          <span class="badge badge-amber" id="sl-nearing-count-badge">0 Nearing SL (≤5%)</span>
+          <span class="badge badge-red" id="sl-events-count-badge" style="background:#fee2e2; color:#b91c1c;">1 Logged SL Loss (₹80,000)</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn-purple" style="padding:3px 9px; font-size:0.71rem;" onclick="pushNearingSlAndRecoveryAlerts(true)">📲 Push Nearing-SL Warnings</button>
+          <button type="button" class="btn-emerald" style="padding:3px 9px; font-size:0.71rem;" onclick="navigateToModule('index_options.html#option-selling-income-card')">💰 Open ₹5L Recovery Desk</button>
+          <button type="button" class="btn-primary" style="padding:3px 9px; font-size:0.71rem;" onclick="navigateToModule('index_options.html#portfolio-otm-hedge-card')">🛡️ Open OTM Put Hedge</button>
+        </div>
+      </div>
+
+      <!-- SUB-SECTION A: NEARING STOP-LOSS EARLY WARNINGS -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.78rem; font-weight:700; color:#b45309; margin-bottom:6px;">
+          ⚠️ 1. Holdings Nearing Stop-Loss (Within 5% Buffer) — Pre-Trigger Instructions
+        </div>
+        <div id="sl-nearing-table-container"></div>
+      </div>
+
+      <!-- SUB-SECTION B: LOGGED MAJOR SL TRIGGERS & STRUCTURED RECOVERY PLAN -->
+      <div style="border-top:1px solid #cbd5e1; padding-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+          <div style="font-size:0.78rem; font-weight:700; color:#b91c1c;">
+            📉 2. Major SL Trigger Findings &amp; Actionable Loss Recovery Plan
+          </div>
+          <button type="button" class="btn-secondary" style="padding:2px 8px; font-size:0.7rem;" onclick="toggleAddSlLossForm()">➕ Log New SL / Realized Loss</button>
+        </div>
+
+        <form id="form-add-sl-loss" onsubmit="addNewSlLossEvent(event)" style="display:none; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px;">
+          <input type="text" id="inp-slloss-sym" placeholder="Stock (e.g. TMPV)" required style="padding:5px 8px; font-size:0.75rem; border-radius:6px;">
+          <input type="number" id="inp-slloss-qty" placeholder="Qty (e.g. 260)" required min="1" style="padding:5px 8px; font-size:0.75rem; border-radius:6px;">
+          <input type="number" id="inp-slloss-exit" placeholder="Exit Price ₹" step="0.05" required style="padding:5px 8px; font-size:0.75rem; border-radius:6px;">
+          <input type="number" id="inp-slloss-amt" placeholder="Realized Loss ₹" required min="1" style="padding:5px 8px; font-size:0.75rem; border-radius:6px;">
+          <input type="text" id="inp-slloss-note" placeholder="Broker / Note (optional)" style="padding:5px 8px; font-size:0.75rem; border-radius:6px;">
+          <button type="submit" class="btn-primary" style="padding:5px 10px; font-size:0.74rem;">💾 Save &amp; Build Plan</button>
+        </form>
+
+        <div id="sl-loss-events-table-container" style="margin-bottom:10px;"></div>
+        <div id="sl-recovery-plan-container"></div>
+        <div id="sl-recovery-status-msg" style="margin-top:8px; font-size:0.74rem; color:#475569;"></div>
+      </div>
+    </div>
+
     <!-- 🎯 TMPV 3-TRANCHE GTT ACCUMULATION & PUSH NOTIFICATION TRACKER -->
     <div class="card" id="tmpv-tranche-tracker-card" style="border:2px solid #0284c7; background:linear-gradient(180deg, rgba(2,132,199,0.06) 0%, rgba(16,185,129,0.03) 100%);">
       <div class="card-title" style="flex-wrap:wrap; gap:8px;">
@@ -3552,6 +3600,265 @@
 
     if (stEl && !stEl._isStub) {
       stEl.innerHTML = `<span style="color:var(--emerald); font-weight:700;">🚀 Pushed ${deltaOrders.length} Delta-Only Multi-GTT alerts (${bOk ? 'Browser Push · ' : ''}${nOk ? 'ntfy.sh Mobile Push' : 'Logged & Silenced against duplicates'}) at ${ist.istTimeStr} IST!</span>`;
+    }
+    return true;
+  }
+
+
+  // ============================================================================
+  // 🛡️ STOP-LOSS PROXIMITY RADAR & LOSS RECOVERY PLANNER
+  // ============================================================================
+  const STORAGE_KEY_SL_LOSS_EVENTS = "piai_sl_loss_events_v1";
+  let selectedSlLossId = "tmpv_2026_11_26";
+
+  function getDefaultSlLossEvents() {
+    return [
+      {
+        id: "tmpv_2026_11_26",
+        date: "26 Nov 2026",
+        symbol: "TMPV",
+        qty: 260,
+        exitPrice: 261.0,
+        impliedAvg: 568.7,
+        lossAmt: 80000,
+        status: "Verify Contract Note",
+        note: "₹80k loss on 260 qty = ₹307.69/sh drop (implies ~₹569 avg — verify if pre-demerger cost basis was unadjusted by broker vs. actual realized loss)."
+      }
+    ];
+  }
+
+  function loadSlLossEvents() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_SL_LOSS_EVENTS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return getDefaultSlLossEvents();
+  }
+
+  function saveSlLossEvents(list) {
+    try { localStorage.setItem(STORAGE_KEY_SL_LOSS_EVENTS, JSON.stringify(list)); } catch (e) {}
+    renderSlProximityAndRecoveryUI();
+  }
+
+  function toggleAddSlLossForm() {
+    const f = document.getElementById("form-add-sl-loss");
+    if (f) f.style.display = f.style.display === "none" ? "grid" : "none";
+  }
+
+  function addNewSlLossEvent(e) {
+    e.preventDefault();
+    const sym = (document.getElementById("inp-slloss-sym")?.value || "").trim().toUpperCase();
+    const qty = Math.max(1, parseInt(document.getElementById("inp-slloss-qty")?.value, 10) || 1);
+    const exitPrice = parseFloat(document.getElementById("inp-slloss-exit")?.value) || 0;
+    const lossAmt = Math.max(1, parseFloat(document.getElementById("inp-slloss-amt")?.value) || 0);
+    const note = (document.getElementById("inp-slloss-note")?.value || "").trim() || "Realized SL exit — recovery plan generated.";
+    if (!sym) return;
+
+    const ist = computeOfficialNSEMarketStatus();
+    const id = "sl_" + Date.now();
+    const list = loadSlLossEvents();
+    list.unshift({
+      id,
+      date: ist.istDateStr,
+      symbol: sym,
+      qty,
+      exitPrice,
+      impliedAvg: +(exitPrice + (lossAmt / qty)).toFixed(1),
+      lossAmt: Math.round(lossAmt),
+      status: "Active Recovery",
+      note
+    });
+    selectedSlLossId = id;
+    saveSlLossEvents(list);
+    e.target.reset();
+    toggleAddSlLossForm();
+  }
+
+  function selectSlLossEvent(id) {
+    selectedSlLossId = id;
+    renderSlProximityAndRecoveryUI();
+  }
+
+  function deleteSlLossEvent(id) {
+    const list = loadSlLossEvents().filter(x => x.id !== id);
+    if (selectedSlLossId === id) selectedSlLossId = list[0]?.id || "";
+    saveSlLossEvents(list);
+  }
+
+  function getHoldingsNearingStopLoss() {
+    if (typeof holdings === "undefined" || !Array.isArray(holdings) || holdings.length === 0) return [];
+    const alerts = [];
+    holdings.forEach(h => {
+      const ltp = parseFloat(h.ltp) || 0;
+      const avg = parseFloat(h.avg) || 0;
+      const sl = parseFloat(h.sl) || +(avg * (1 - (typeof ruleStopLossBuffer !== "undefined" ? ruleStopLossBuffer : 12) / 100)).toFixed(1);
+      if (ltp <= 0 || sl <= 0) return;
+      const bufPct = ((ltp - sl) / sl) * 100;
+      if (bufPct <= 5.0) {
+        const severity = bufPct <= 0 ? "BREACHED" : bufPct <= 2.5 ? "CRITICAL" : "WARNING";
+        const estLossAtSl = Math.max(0, Math.round((avg - sl) * (h.qty || 1)));
+        const instruction = severity === "BREACHED"
+          ? "SL Breached: Do NOT average down. Confirm cost basis (check corporate actions), execute exit, log loss below for tax offset."
+          : severity === "CRITICAL"
+          ? "≤2.5% to SL: Review thesis immediately. Trim 40–50% now OR buy 1-Month OTM Put hedge in Options Hub; keep hard SL active."
+          : "2.5–5% to SL: Place alert, tighten trailing SL if in profit, and avoid adding fresh quantity until stock reclaims 20-DMA.";
+        alerts.push({ n: h.n, broker: h.broker || "Portfolio", qty: h.qty || 1, avg, ltp, sl, bufPct, severity, estLossAtSl, instruction });
+      }
+    });
+    return alerts.sort((a, b) => a.bufPct - b.bufPct);
+  }
+
+  function renderSlProximityAndRecoveryUI() {
+    const nearEl = document.getElementById("sl-nearing-table-container");
+    const eventsEl = document.getElementById("sl-loss-events-table-container");
+    const planEl = document.getElementById("sl-recovery-plan-container");
+    if (!nearEl || !eventsEl || !planEl) return;
+
+    const nearing = getHoldingsNearingStopLoss();
+    const nearBadge = document.getElementById("sl-nearing-count-badge");
+    if (nearBadge) {
+      nearBadge.textContent = `${nearing.length} Nearing / At SL (≤5%)`;
+      nearBadge.className = "badge " + (nearing.some(x => x.severity !== "WARNING") ? "badge-red" : nearing.length > 0 ? "badge-amber" : "badge-emerald");
+    }
+
+    nearEl.innerHTML = nearing.length === 0
+      ? `<div style="padding:10px 12px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:0.75rem; color:#334155;">
+          ✅ <strong>All Clear:</strong> No current portfolio holdings are within 5% of their Stop-Loss buffer. When any stock moves within 5% of SL, pre-trigger instructions appear here automatically and push to your phone.
+        </div>`
+      : `<div style="overflow-x:auto; border:1px solid #cbd5e1; border-radius:8px; background:#ffffff;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.75rem; text-align:left;">
+            <thead>
+              <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1; color:#334155;">
+                <th style="padding:7px 9px;">Stock</th>
+                <th style="padding:7px 9px;">Live LTP / SL</th>
+                <th style="padding:7px 9px;">Buffer Left</th>
+                <th style="padding:7px 9px;">Est. Risk at SL</th>
+                <th style="padding:7px 9px;">Pre-Trigger Instructions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${nearing.map(x => `
+                <tr style="border-bottom:1px solid #e2e8f0;">
+                  <td style="padding:7px 9px;"><strong>${x.n}</strong><div style="font-size:0.68rem; color:#64748b;">${x.broker} · ${x.qty} sh</div></td>
+                  <td style="padding:7px 9px;">₹${x.ltp.toFixed(1)} <span style="color:#64748b;">/ SL ₹${x.sl.toFixed(1)}</span></td>
+                  <td style="padding:7px 9px;"><span class="badge ${x.severity === 'BREACHED' ? 'badge-red' : x.severity === 'CRITICAL' ? 'badge-red' : 'badge-amber'}">${x.bufPct <= 0 ? 'BREACHED (' + x.bufPct.toFixed(1) + '%)' : '+' + x.bufPct.toFixed(1) + '% left'}</span></td>
+                  <td style="padding:7px 9px; color:#b91c1c; font-weight:700;">₹${x.estLossAtSl.toLocaleString("en-IN")}</td>
+                  <td style="padding:7px 9px; color:#0f172a; line-height:1.4;">${x.instruction}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>`;
+
+    const events = loadSlLossEvents();
+    const totalLoss = events.reduce((s, x) => s + (Number(x.lossAmt) || 0), 0);
+    const evBadge = document.getElementById("sl-events-count-badge");
+    if (evBadge) {
+      evBadge.textContent = `${events.length} Logged SL Loss${events.length === 1 ? '' : 'es'} (₹${totalLoss.toLocaleString("en-IN")})`;
+    }
+
+    if (events.length === 0) {
+      eventsEl.innerHTML = `<div style="padding:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; font-size:0.75rem; color:#64748b;">No realized SL losses logged. Click <strong>➕ Log New SL / Realized Loss</strong> if a stop-loss triggers to build a recovery plan.</div>`;
+      planEl.innerHTML = "";
+      return;
+    }
+
+    const activeEv = events.find(x => x.id === selectedSlLossId) || events[0];
+    selectedSlLossId = activeEv.id;
+
+    eventsEl.innerHTML = `
+      <div style="overflow-x:auto; border:1px solid #cbd5e1; border-radius:8px; background:#ffffff;">
+        <table style="width:100%; border-collapse:collapse; font-size:0.75rem; text-align:left;">
+          <thead>
+            <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1; color:#334155;">
+              <th style="padding:7px 9px;">Date &amp; Stock</th>
+              <th style="padding:7px 9px;">Qty &amp; Exit</th>
+              <th style="padding:7px 9px;">Implied Avg</th>
+              <th style="padding:7px 9px;">Realized Loss</th>
+              <th style="padding:7px 9px;">Verification / Finding</th>
+              <th style="padding:7px 9px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${events.map(ev => `
+              <tr style="border-bottom:1px solid #e2e8f0; ${ev.id === activeEv.id ? 'background:#eff6ff;' : ''}">
+                <td style="padding:7px 9px;"><strong>${ev.symbol}</strong><div style="font-size:0.68rem; color:#64748b;">${ev.date}</div></td>
+                <td style="padding:7px 9px;">${ev.qty} sh @ ₹${Number(ev.exitPrice).toFixed(1)}</td>
+                <td style="padding:7px 9px;">₹${Number(ev.impliedAvg).toFixed(1)}</td>
+                <td style="padding:7px 9px; color:#b91c1c; font-weight:800;">-₹${Number(ev.lossAmt).toLocaleString("en-IN")}</td>
+                <td style="padding:7px 9px; color:#334155; max-width:340px; line-height:1.4;">${ev.note}</td>
+                <td style="padding:7px 9px; white-space:nowrap;">
+                  <button type="button" class="btn-primary" style="padding:2px 7px; font-size:0.68rem;" onclick="selectSlLossEvent('${ev.id}')">View Plan</button>
+                  <button type="button" class="btn-secondary" style="padding:2px 6px; font-size:0.68rem;" onclick="deleteSlLossEvent('${ev.id}')">✕</button>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+    // Build 3-Path Structured Recovery Plan for activeEv
+    const loss = Number(activeEv.lossAmt) || 80000;
+    const freedCap = Math.round((Number(activeEv.qty) || 1) * (Number(activeEv.exitPrice) || 260));
+    const stcgTaxSave = Math.round(loss * 0.20);
+    const ltcgTaxSave = Math.round(loss * 0.125);
+    const netEconomicLoss = Math.max(0, loss - stcgTaxSave);
+    const monthsAt12k = Math.max(1, Math.ceil(netEconomicLoss / 12000));
+    const monthsAt10k = Math.max(1, Math.ceil(loss / 10000));
+
+    planEl.innerHTML = `
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:12px 14px;">
+        <div style="font-size:0.8rem; font-weight:800; color:#0f172a; margin-bottom:8px;">
+          🧭 Structured Recovery Plan for ${activeEv.symbol} (-₹${loss.toLocaleString("en-IN")} Loss · ~₹${freedCap.toLocaleString("en-IN")} Capital Freed)
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px; font-size:0.74rem; line-height:1.5;">
+          <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:4px solid #0284c7; border-radius:8px; padding:9px 11px;">
+            <strong style="color:#0369a1;">1. Immediate Tax-Loss Harvesting Offset</strong>
+            <div style="margin-top:4px; color:#334155;">
+              Book this realized loss against short-term gains (20% STCG) to save <strong>₹${stcgTaxSave.toLocaleString("en-IN")}</strong> in tax (or <strong>₹${ltcgTaxSave.toLocaleString("en-IN")}</strong> vs 12.5% LTCG). Effective net loss drops to <strong>₹${netEconomicLoss.toLocaleString("en-IN")}</strong>.
+            </div>
+          </div>
+          <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:4px solid #059669; border-radius:8px; padding:9px 11px;">
+            <strong style="color:#047857;">2. ₹5L Defined-Risk Option Selling Recovery</strong>
+            <div style="margin-top:4px; color:#334155;">
+              Using weekly/monthly Iron Condors at a disciplined <strong>₹10k–₹12k/month</strong> net theta target (50% cash buffer + 2× leg SL) recovers the net loss in <strong>${monthsAt12k}–${monthsAt10k} months</strong> without revenge-trading.
+            </div>
+          </div>
+          <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:4px solid #7c3aed; border-radius:8px; padding:9px 11px;">
+            <strong style="color:#6d28d9;">3. No-Revenge Re-Deployment Rule</strong>
+            <div style="margin-top:4px; color:#334155;">
+              Wait <strong>30 days</strong> before re-entering ${activeEv.symbol} (avoids wash/emotional whipsaws). Park freed <strong>₹${freedCap.toLocaleString("en-IN")}</strong> into Nifty 50 ETF / core leaders or split into 3 staggered tranches only after trend stabilizes.
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function pushNearingSlAndRecoveryAlerts(isManual = false) {
+    const nearing = getHoldingsNearingStopLoss();
+    const events = loadSlLossEvents();
+    const stEl = document.getElementById("sl-recovery-status-msg");
+    const lines = [];
+
+    nearing.forEach(x => {
+      lines.push(`${x.severity === 'BREACHED' ? '🚨 SL BREACHED' : '⚠️ NEARING SL'}: ${x.n} LTP ₹${x.ltp.toFixed(1)} vs SL ₹${x.sl.toFixed(1)} (${x.bufPct.toFixed(1)}%). ${x.instruction}`);
+    });
+    if (lines.length === 0 && isManual && events.length > 0) {
+      const ev = events[0];
+      lines.push(`🧭 PIAI Recovery Plan (${ev.symbol} -₹${Number(ev.lossAmt).toLocaleString("en-IN")}): Offset up to ₹${Math.round(ev.lossAmt * 0.20).toLocaleString("en-IN")} STCG tax, avoid 30d revenge re-entry, and target steady ₹10k-₹12k/mo via ₹5L defined-risk Iron Condors.`);
+    }
+
+    if (lines.length === 0) return false;
+    const msg = lines.join(String.fromCharCode(10));
+    const title = nearing.length > 0 ? `PIAI Stop-Loss Proximity Alert (${nearing.length})` : "PIAI Loss Recovery Plan";
+    const bOk = typeof triggerNativeBrowserPushNotification === "function" ? triggerNativeBrowserPushNotification(title, msg) : false;
+    const nOk = typeof sendInstantNtfyPushNotification === "function" ? await sendInstantNtfyPushNotification(msg, title, isManual) : false;
+
+    if (stEl && isManual) {
+      stEl.innerHTML = `<span style="color:${(bOk || nOk) ? '#047857' : '#b45309'}; font-weight:700;">${(bOk || nOk) ? '📲 Sent Stop-Loss / Recovery alert to your device!' : 'ℹ️ Set your ntfy.sh topic in Admin Alerts to receive mobile push notifications.'}</span>`;
     }
     return true;
   }
