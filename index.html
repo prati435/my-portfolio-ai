@@ -4131,21 +4131,24 @@
       summaryNotes.push(oRes.ok || tRes.ok ? `⚡ DhanHQ: ${dhanTradesArr.length} fills` : `⚡ DhanHQ: Token expired/401`);
     }
 
-    // 3. KOTAK NEO v2 — /quick/user/orders, /quick/user/trades (with Authorization + hdr_* relay params)
+    // 3. KOTAK NEO v2 — /quick/user/orders, /quick/user/trades (Try pure Auth+Sid first; auto-fallback to Bearer sessionAuth if 401)
     if (kotakCreds.sessionAuth && kotakCreds.sessionSid) {
       const kBase = (kotakCreds.baseUrl || "https://gw-napi.kotaksecurities.com").replace(/\/$/, "");
-      const hdr = { "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
-      if (kotakCreds.consumerKey) hdr["Authorization"] = kotakCreds.consumerKey;
-      const kParams = {
-        hdr_auth: kotakCreds.sessionAuth,
-        hdr_sid: kotakCreds.sessionSid,
-        hdr_neokey: "neotradeapi",
-        hdr_authorization: kotakCreds.consumerKey || ""
-      };
-      const [oRes, tRes] = await Promise.all([
-        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr, kParams),
-        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr, kParams)
+      const hdr1 = { "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
+      const kParams1 = { hdr_auth: kotakCreds.sessionAuth, hdr_sid: kotakCreds.sessionSid, hdr_neokey: "neotradeapi" };
+      let [oRes, tRes] = await Promise.all([
+        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr1, kParams1),
+        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr1, kParams1)
       ]);
+      if ((oRes.status === 401 || tRes.status === 401) && !oRes.ok && !tRes.ok) {
+        const bearerTok = kotakCreds.sessionAuth.startsWith("Bearer ") ? kotakCreds.sessionAuth : `Bearer ${kotakCreds.sessionAuth}`;
+        const hdr2 = { "Authorization": bearerTok, "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
+        const kParams2 = { hdr_authorization: bearerTok, hdr_auth: kotakCreds.sessionAuth, hdr_sid: kotakCreds.sessionSid, hdr_neokey: "neotradeapi" };
+        [oRes, tRes] = await Promise.all([
+          relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr2, kParams2),
+          relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr2, kParams2)
+        ]);
+      }
 
       const kOrdersArr = Array.isArray(oRes.data?.data) ? oRes.data.data : [];
       kOrdersArr.forEach(o => {
