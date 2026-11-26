@@ -4108,6 +4108,7 @@
         if (tick) item.ticker = tick;
       }
     });
+    dedupePortfolioArrays();
     persistState();
     runPortfolioIntelligenceEngine();
     e.target.reset();
@@ -4384,6 +4385,30 @@
   }
 
   // Non-destructively merges a single broker's stocks, ETFs, MFs, and Bonds without overriding other brokers!
+
+  function dedupePortfolioArrays() {
+    const dedupeByBrokerAndName = (arr) => {
+      if (!Array.isArray(arr)) return [];
+      const seen = new Map();
+      arr.forEach(item => {
+        if (!item || !item.n) return;
+        const b = normalizeBrokerTag(item.broker || "Custom");
+        const normName = String(item.n).trim().toUpperCase().replace(/\.(NS|BO)$/i, "");
+        const key = `${b}__${normName}`;
+        // Always keep the latest record for the same broker + symbol (prevents compounding duplicates!)
+        seen.set(key, { ...item, broker: b });
+      });
+      return Array.from(seen.values());
+    };
+    const beforeTotal = (holdings?.length || 0) + (etfs?.length || 0) + (mfs?.length || 0) + (bonds?.length || 0);
+    holdings = dedupeByBrokerAndName(holdings);
+    etfs = dedupeByBrokerAndName(etfs);
+    mfs = dedupeByBrokerAndName(mfs);
+    bonds = dedupeByBrokerAndName(bonds);
+    const afterTotal = holdings.length + etfs.length + mfs.length + bonds.length;
+    return beforeTotal !== afterTotal;
+  }
+
   function mergeBrokerPortfolio(brokerName, newEq = [], newETFs = [], newMFs = null, newBonds = null) {
     purgeDemoSamplePortfolioIfActive();
     const bTag = normalizeBrokerTag(brokerName);
@@ -4500,7 +4525,8 @@
           const cleanedEtfs = loadedEtfs.filter(e => !demoEtfSet.has(`${e.n}:${e.qty}:${e.avg}`));
           holdings = cleanedHoldings;
           etfs = cleanedEtfs;
-          if (cleanedHoldings.length !== loadedHoldings.length || cleanedEtfs.length !== loadedEtfs.length) {
+          const hadDupesAdm = dedupePortfolioArrays();
+          if (hadDupesAdm || cleanedHoldings.length !== loadedHoldings.length || cleanedEtfs.length !== loadedEtfs.length) {
             persistState();
           }
         }
@@ -4837,10 +4863,37 @@
     if (consumerKey) kHeaders["Authorization"] = consumerKey;
     const qParams = { hdr_auth: sessionAuth, hdr_sid: sessionSid, hdr_neokey: "neotradeapi", hdr_authorization: consumerKey };
 
-    const [hRes, pRes] = await Promise.all([
+    const [hRes, pRes, oRes, tRes] = await Promise.all([
       brokerRelayRequest(`${baseUrl}/portfolio/v1/holdings`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS),
-      brokerRelayRequest(`${baseUrl}/quick/user/positions`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS)
+      brokerRelayRequest(`${baseUrl}/quick/user/positions`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS),
+      brokerRelayRequest(`${baseUrl}/quick/user/orders`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS).catch(() => null),
+      brokerRelayRequest(`${baseUrl}/quick/user/trades`, "GET", kHeaders, undefined, qParams, FEED_TIMEOUT_MS).catch(() => null)
     ]);
+    try {
+      const cachedB = JSON.parse(localStorage.getItem("piai_broker_order_trade_books_v1") || '{"trades":[],"orders":[]}');
+      const otherOrders = (cachedB.orders || []).filter(x => x.broker !== "Kotak Neo");
+      const otherTrades = (cachedB.trades || []).filter(x => x.broker !== "Kotak Neo");
+      const kOrders = (oRes && Array.isArray(oRes.data) ? oRes.data : []).map(o => ({
+        broker: "Kotak Neo", id: String(o.nOrdNo || Date.now()), time: o.ordDtTm || o.flDtTm || "Today",
+        symbol: String(o.trdSym || o.sym || "UNKNOWN").toUpperCase(),
+        side: String(o.trnsTp || "").toUpperCase() === "S" ? "SELL" : "BUY",
+        qty: Number(o.qty || 0), price: Number(o.prc || o.avgPrc || o.trgPrc || 0),
+        orderType: String(o.prcTp || "L").toUpperCase(), status: String(o.ordSt || "OPEN").toUpperCase()
+      }));
+      const kTrades = (tRes && Array.isArray(tRes.data) ? tRes.data : []).map(t => ({
+        broker: "Kotak Neo", id: String(t.flId || t.nOrdNo || Date.now()), time: t.flDtTm || t.exTm || "Today",
+        symbol: String(t.trdSym || t.sym || "UNKNOWN").toUpperCase(),
+        side: String(t.trnsTp || "").toUpperCase() === "S" ? "SELL" : "BUY",
+        qty: Number(t.fldQty || t.qty || 0), price: Number(t.avgPrc || t.flPrc || 0),
+        buyAvg: 0, orderType: String(t.prcTp || "EXEC").toUpperCase(),
+        isSl: /SL|STOP/i.test(String(t.prcTp || "")), realizedPnl: 0
+      }));
+      localStorage.setItem("piai_broker_order_trade_books_v1", JSON.stringify({
+        orders: [...otherOrders, ...kOrders],
+        trades: [...otherTrades, ...kTrades],
+        syncedAt: new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" }) + " IST"
+      }));
+    } catch (e) {}
 
     const hList = (hRes && Array.isArray(hRes.data)) ? hRes.data : (Array.isArray(hRes) ? hRes : []);
     const pList = (pRes && Array.isArray(pRes.data)) ? pRes.data : (Array.isArray(pRes) ? pRes : []);

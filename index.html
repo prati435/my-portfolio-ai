@@ -4140,13 +4140,21 @@
         relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr1, kParams1),
         relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr1, kParams1)
       ]);
-      if ((oRes.status === 401 || tRes.status === 401) && !oRes.ok && !tRes.ok) {
-        const bearerTok = kotakCreds.sessionAuth.startsWith("Bearer ") ? kotakCreds.sessionAuth : `Bearer ${kotakCreds.sessionAuth}`;
-        const hdr2 = { "Authorization": bearerTok, "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
-        const kParams2 = { hdr_authorization: bearerTok, hdr_auth: kotakCreds.sessionAuth, hdr_sid: kotakCreds.sessionSid, hdr_neokey: "neotradeapi" };
+      if ((oRes.status === 401 || tRes.status === 401) && !oRes.ok && !tRes.ok && kotakCreds.consumerKey) {
+        const hdr2 = { "Authorization": kotakCreds.consumerKey, "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
+        const kParams2 = { hdr_authorization: kotakCreds.consumerKey, hdr_auth: kotakCreds.sessionAuth, hdr_sid: kotakCreds.sessionSid, hdr_neokey: "neotradeapi" };
         [oRes, tRes] = await Promise.all([
           relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr2, kParams2),
           relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr2, kParams2)
+        ]);
+      }
+      if ((oRes.status === 401 || tRes.status === 401) && !oRes.ok && !tRes.ok) {
+        const bearerTok = kotakCreds.sessionAuth.startsWith("Bearer ") ? kotakCreds.sessionAuth : `Bearer ${kotakCreds.sessionAuth}`;
+        const hdr3 = { "Authorization": bearerTok, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
+        const kParams3 = { hdr_authorization: bearerTok, hdr_sid: kotakCreds.sessionSid, hdr_neokey: "neotradeapi" };
+        [oRes, tRes] = await Promise.all([
+          relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr3, kParams3),
+          relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr3, kParams3)
         ]);
       }
 
@@ -4196,7 +4204,11 @@
     }
 
     const ist = computeOfficialNSEMarketStatus();
-    saveCachedBrokerBooks({ trades: allTrades, orders: allOrders, syncedAt: `${ist.istDateStr} ${ist.istTimeStr}` });
+    const prevBooks = loadCachedBrokerBooks();
+    const hasFreshKotak = allTrades.some(x => x.broker === "Kotak Neo") || allOrders.some(x => x.broker === "Kotak Neo");
+    const mergedTrades = hasFreshKotak ? allTrades : [...allTrades, ...(prevBooks.trades || []).filter(x => x.broker === "Kotak Neo")];
+    const mergedOrders = hasFreshKotak ? allOrders : [...allOrders, ...(prevBooks.orders || []).filter(x => x.broker === "Kotak Neo")];
+    saveCachedBrokerBooks({ trades: mergedTrades, orders: mergedOrders, syncedAt: `${ist.istDateStr} ${ist.istTimeStr}` });
 
     if (btn) { btn.disabled = false; btn.textContent = "🔄 Sync Orders, Trades & Holdings"; }
     if (stEl) {
@@ -5146,6 +5158,7 @@
         if (tick) item.ticker = tick;
       }
     });
+    dedupePortfolioArrays();
     persistState();
     runPortfolioIntelligenceEngine();
     e.target.reset();
@@ -5422,6 +5435,30 @@
   }
 
   // Non-destructively merges a single broker's stocks, ETFs, MFs, and Bonds without overriding other brokers!
+
+  function dedupePortfolioArrays() {
+    const dedupeByBrokerAndName = (arr) => {
+      if (!Array.isArray(arr)) return [];
+      const seen = new Map();
+      arr.forEach(item => {
+        if (!item || !item.n) return;
+        const b = normalizeBrokerTag(item.broker || "Custom");
+        const normName = String(item.n).trim().toUpperCase().replace(/\.(NS|BO)$/i, "");
+        const key = `${b}__${normName}`;
+        // Always keep the latest record for the same broker + symbol (prevents compounding duplicates!)
+        seen.set(key, { ...item, broker: b });
+      });
+      return Array.from(seen.values());
+    };
+    const beforeTotal = (holdings?.length || 0) + (etfs?.length || 0) + (mfs?.length || 0) + (bonds?.length || 0);
+    holdings = dedupeByBrokerAndName(holdings);
+    etfs = dedupeByBrokerAndName(etfs);
+    mfs = dedupeByBrokerAndName(mfs);
+    bonds = dedupeByBrokerAndName(bonds);
+    const afterTotal = holdings.length + etfs.length + mfs.length + bonds.length;
+    return beforeTotal !== afterTotal;
+  }
+
   function mergeBrokerPortfolio(brokerName, newEq = [], newETFs = [], newMFs = null, newBonds = null) {
     purgeDemoSamplePortfolioIfActive();
     const bTag = normalizeBrokerTag(brokerName);
@@ -5577,9 +5614,12 @@
         holdings = cleanEq;
         if (migratedMfs.length > 0) {
           mfs = [...mfs, ...migratedMfs];
-          setTimeout(() => { try { persistState(); } catch (e) {} }, 200);
         }
           etfs = cleanedEtfs;
+          const hadDupes = dedupePortfolioArrays();
+          if (migratedMfs.length > 0 || hadDupes) {
+            setTimeout(() => { try { persistState(); } catch (e) {} }, 150);
+          }
           if (cleanedHoldings.length !== loadedHoldings.length || cleanedEtfs.length !== loadedEtfs.length) {
             persistState();
           }
