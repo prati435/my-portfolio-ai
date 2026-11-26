@@ -3923,16 +3923,25 @@
     renderBrokerOrderTradeBookUI();
   }
 
-  async function relayBrokerGetJson(workerBase, targetUrl, headersObj) {
+  async function relayBrokerGetJson(workerBase, targetUrl, headersObj, extraQueryParams = {}) {
     const cleanBase = String(workerBase || "").replace(/\?url=.*$/i, "").replace(/\/$/, "");
-    const finalUrl = cleanBase ? `${cleanBase}/?url=${encodeURIComponent(targetUrl)}` : targetUrl;
+    let qs = "";
+    if (cleanBase && extraQueryParams && typeof extraQueryParams === "object") {
+      Object.entries(extraQueryParams).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && String(v).trim() !== "") {
+          qs += `&${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`;
+        }
+      });
+    }
+    const finalUrl = cleanBase ? `${cleanBase}/?url=${encodeURIComponent(targetUrl)}${qs}` : targetUrl;
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 8000);
     try {
       const res = await fetch(finalUrl, { method: "GET", headers: headersObj || {}, signal: ctrl.signal });
       clearTimeout(tid);
-      if (!res.ok) return { ok: false, status: res.status, data: null };
-      const json = await res.json();
+      let json = null;
+      try { json = await res.json(); } catch (e) {}
+      if (!res.ok) return { ok: false, status: res.status, data: json };
       return { ok: true, status: res.status, data: json };
     } catch (e) {
       clearTimeout(tid);
@@ -4122,13 +4131,20 @@
       summaryNotes.push(oRes.ok || tRes.ok ? `⚡ DhanHQ: ${dhanTradesArr.length} fills` : `⚡ DhanHQ: Token expired/401`);
     }
 
-    // 3. KOTAK NEO v2 — /quick/user/orders, /quick/user/trades
+    // 3. KOTAK NEO v2 — /quick/user/orders, /quick/user/trades (with Authorization + hdr_* relay params)
     if (kotakCreds.sessionAuth && kotakCreds.sessionSid) {
       const kBase = (kotakCreds.baseUrl || "https://gw-napi.kotaksecurities.com").replace(/\/$/, "");
       const hdr = { "Auth": kotakCreds.sessionAuth, "Sid": kotakCreds.sessionSid, "sid": kotakCreds.sessionSid, "neo-fin-key": "neotradeapi", "Accept": "application/json" };
+      if (kotakCreds.consumerKey) hdr["Authorization"] = kotakCreds.consumerKey;
+      const kParams = {
+        hdr_auth: kotakCreds.sessionAuth,
+        hdr_sid: kotakCreds.sessionSid,
+        hdr_neokey: "neotradeapi",
+        hdr_authorization: kotakCreds.consumerKey || ""
+      };
       const [oRes, tRes] = await Promise.all([
-        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr),
-        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr)
+        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/orders`, hdr, kParams),
+        relayBrokerGetJson(workerUrl, `${kBase}/quick/user/trades`, hdr, kParams)
       ]);
 
       const kOrdersArr = Array.isArray(oRes.data?.data) ? oRes.data.data : [];
@@ -4171,7 +4187,9 @@
         allTrades.push(trObj);
         if (autoLogRealizedSlLossFromTrade(trObj)) autoLoggedSlCount++;
       });
-      summaryNotes.push(oRes.ok || tRes.ok ? `🏦 Kotak Neo: ${kTradesArr.length} fills` : `🏦 Kotak Neo: Session expired`);
+      const kNoData = (oRes.data && /no data/i.test(String(oRes.data.errMsg || oRes.data.message || ""))) || (tRes.data && /no data/i.test(String(tRes.data.errMsg || tRes.data.message || "")));
+      const kStatus = oRes.status || tRes.status || 0;
+      summaryNotes.push((oRes.ok || tRes.ok || kNoData) ? `🏦 Kotak Neo: ${kTradesArr.length} fills` : `🏦 Kotak Neo: HTTP ${kStatus || "ERR"} (${(tRes.data && (tRes.data.errMsg || tRes.data.message)) || "Re-authenticate in Admin"})`);
     }
 
     const ist = computeOfficialNSEMarketStatus();
